@@ -1,84 +1,97 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Button, Label, TextInput, Textarea } from "flowbite-react";
+
 const GetInToch = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
 
-  const sendMail = (e) => {
-    e.preventDefault(); // Add this!
-    axios
-      .get("http://localhost:5000/", {
-        params: { email, subject, message, name },
-      })
-      .then(() => {
-        console.log("success");
-        alert("Email sent successfully!");
-      })
-      .catch((err) => {
-        console.log("Error", err);
-        alert("Failed to send email", err);
+  const sendMail = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post("http://localhost:5000/send-email", {
+        email,
+        name,
+        subject,
+        message,
       });
+
+      alert("Email sent successfully!");
+
+      // optional: clear fields after sending
+      setEmail("");
+      setName("");
+      setSubject("");
+      setMessage("");
+    } catch (err) {
+      console.error("Error sending email:", err);
+      alert("Failed to send email.");
+    }
   };
 
   return (
-    <form className="flex max-w-md flex-col gap-4 bg-amber-400 p-5">
+    <form
+      className="flex max-w-md flex-col gap-4 bg-amber-400 p-5"
+      onSubmit={sendMail}
+    >
       <div>
-        <div className="mb-2 block">
-          <Label htmlFor="input-name" color="gray">
-            Name
-          </Label>
-        </div>
+        <Label htmlFor="input-name" color="gray" className="mb-2 block">
+          Name
+        </Label>
         <TextInput
           id="input-name"
           placeholder="Name"
           required
-          color="gray"
+          value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
+
       <div>
-        <div className="mb-2 block">
-          <Label htmlFor="email1">Your email</Label>
-        </div>
+        <Label htmlFor="email1" className="mb-2 block">
+          Your email
+        </Label>
         <TextInput
           id="email1"
           type="email"
-          placeholder="name@flowbite.com"
+          placeholder="name@example.com"
           required
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
       <div>
-        <div className="mb-2 block">
-          <Label htmlFor="input-subject" color="gray">
-            Subject of your message
-          </Label>
-        </div>
+        <Label htmlFor="input-subject" color="gray" className="mb-2 block">
+          Subject
+        </Label>
         <TextInput
           id="input-subject"
-          placeholder="Subject "
+          placeholder="Subject"
           required
-          color="gray"
+          value={subject}
           onChange={(e) => setSubject(e.target.value)}
         />
       </div>
 
-      <div className="max-w-md">
-        <div className="mb-2 block">
-          <Label htmlFor="comment">Your message</Label>
-        </div>
+      <div>
+        <Label htmlFor="comment" className="mb-2 block">
+          Your message
+        </Label>
         <Textarea
           id="comment"
           placeholder="Leave a comment..."
-          required
           rows={4}
+          required
+          value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
       </div>
-      <Button type="submit" color="gray" onClick={sendMail}>
+
+      <Button type="submit" color="gray">
         Submit
       </Button>
     </form>

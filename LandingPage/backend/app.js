@@ -11,48 +11,53 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
-function sendEmail({ email, subject, message }) {
-  return new Promise((resolve, reject) => {
-    if (!process.env.EMAIL || !process.env.EMAIL_PASSWORD) {
-      return reject({ message: "Credentials missing from .env" });
-    }
+async function sendEmail({ email, subject, message }) {
+  if (!process.env.EMAIL || !process.env.EMAIL_PASSWORD) {
+    throw new Error("Credentials missing from .env");
+  }
 
-    var transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    const mail_configs = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: subject,
-      text: message,
-    };
-
-    transporter.sendMail(mail_configs, function (error, info) {
-      if (error) {
-        return reject({ message: error.message });
-      }
-
-      return resolve({ message: "Email sent successfully" });
-    });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
   });
+
+  // Email sent to the user
+  const mail_to_user = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: "Thank you for your response",
+    text: "Thank you for your response. Will get back to you soon",
+  };
+
+  // Email sent to the owner
+  const mail_to_owner = {
+    from: process.env.EMAIL,
+    to: "thayalanmayura@gmail.com", // replace with your own email
+    subject: "New Response - HIVE",
+    text: `Email: ${email}\nMessage: ${message}`,
+  };
+
+  // Send email to user
+  await transporter.sendMail(mail_to_user);
+
+  // Send email to owner
+  await transporter.sendMail(mail_to_owner);
+
+  return "Emails sent successfully";
 }
 
-app.get("/", (req, res) => {
-  console.log("Request received:", req.query);
-
-  sendEmail(req.query)
-    .then((response) => {
-      res.send(response.message);
-    })
-    .catch((error) => {
-      console.error("Request failed");
-      res.status(500).send(error.message);
-    });
+// POST route to send email
+app.post("/send-email", async (req, res) => {
+  try {
+    const result = await sendEmail(req.body);
+    res.status(200).json({ message: result });
+  } catch (error) {
+    console.error("Email sending failed:", error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(port, () => {
