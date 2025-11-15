@@ -34,8 +34,10 @@ const GetInToch = () => {
 
   return (
     <form
-      className="flex max-w-md flex-col gap-4 bg-amber-400 p-5"
       onSubmit={sendMail}
+      className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl 
+             bg-amber-400 p-4 sm:p-6 md:p-8 
+             rounded-xl mx-auto flex flex-col gap-4"
     >
       <div>
         <Label htmlFor="input-name" color="gray" className="mb-2 block">

@@ -35,7 +35,7 @@ async function sendEmail({ email, subject, message }) {
   // Email sent to the owner
   const mail_to_owner = {
     from: process.env.EMAIL,
-    to: "thayalanmayura@gmail.com", // replace with your own email
+    to: process.env.EMAIL_OWNER1,
     subject: "New Response - HIVE",
     text: `Email: ${email}\nMessage: ${message}`,
   };
