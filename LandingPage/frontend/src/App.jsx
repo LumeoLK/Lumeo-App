@@ -6,6 +6,7 @@ import Features from "../src/pages/Features.jsx";
 import About from "../src/pages/About.jsx";
 import Contact from "../src/pages/Contact.jsx";
 import Privacy from "../src/pages/Privacy.jsx";
+
 const App = () => {
   return (
     <div>
