@@ -5,9 +5,7 @@ const Hero = () => {
     <section>
       <Scene1 />
 
-      <div>
-        <h2>hi</h2>
-      </div>
+      
     </section>
   );
 };
