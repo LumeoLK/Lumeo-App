@@ -1,5 +1,5 @@
 import React from "react";
-import GetInToch from "../components/GetInToch.jsx";
+import GetInTouch from "../components/GetInTouch.jsx";
 import FeaturesHome from "../components/FeaturesHome.jsx";
 import Hero from "../components/Hero.jsx";
 import Navbar from "../components/NavBar.jsx";
@@ -10,7 +10,8 @@ const Home = () => {
       <Navbar />
       <Hero />
       <FeaturesHome />
-      <GetInToch />
+      <GetInTouch />
+
     </div>
   );
 };
