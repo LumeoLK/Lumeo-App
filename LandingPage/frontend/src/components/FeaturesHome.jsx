@@ -10,39 +10,34 @@ const FeaturesHome = () => {
 
   const data = [
     {
-      title: 'Kirby',
-      subtitle: 'Star Allies',
-      rating: '4.7',
+      title: 'Multistore Platform',
+      subtitle: 'Explore various stores',
       backgroundColors: { top: '#FBDA35', bottom: '#E3A237' },
       image: Placement,
     },
     {
-      title: 'Mario',
-      subtitle: 'Super Bros',
-      rating: '4.8',
+      title: 'Customizable furniture',
+      subtitle: 'Make it to your own taste',
       backgroundColors: { top: '#FBDA35', bottom: '#E3A237' },
-      image: Img2,
+      image: Placement,
     },
     {
-      title: 'Pokemon',
-      subtitle: 'Bulbasaur',
-      rating: '4.9',
+      title: 'Visualise with AR',
+      subtitle: 'See it in your space',
       backgroundColors: { top: '#FBDA35', bottom: '#E3A237' },
-      image: Img3,
+      image: Placement,
     },
     {
-      title: 'Sonic',
-      subtitle: 'Blue Sonic',
-      rating: '4.9',
+      title: 'Find your match',
+      subtitle: 'Upload a picture to find similar items',
       backgroundColors: { top: '#FBDA35', bottom: '#E3A237' },
-      image: Img4,
+      image: Placement,
     },
     {
-      title: 'Pokemon',
-      subtitle: 'Pikachu',
-      rating: '5.0',
+      title: 'Match your style',
+      subtitle: 'Find furniture that fit your aesthetic',
       backgroundColors: { top: '#FBDA35', bottom: '#E3A237' },
-      image: Img5,
+      image: Placement,
     },
   ];
 

@@ -39,7 +39,7 @@ const GetInToch = () => {
              bg-amber-400 p-4 sm:p-6 md:p-8 
              rounded-xl mx-auto flex flex-col gap-4"
     >
-      <h1 className="font-bold text-3xl">Get In Toch </h1>
+      <h1 className="font-bold text-3xl">Get In Touch </h1>
       <div>
         <Label htmlFor="input-name" color="gray" className="mb-2 block">
           Name
