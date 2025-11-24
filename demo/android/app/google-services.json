@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "696751112768",
+    "project_id": "lumeo-d9b6c",
+    "storage_bucket": "lumeo-d9b6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696751112768:android:5bd279e9dc318f86a015a5",
+        "android_client_info": {
+          "package_name": "com.example.demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "696751112768-q1eggeskb496vkfjq2v4jk89al64iong.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.demo",
+            "certificate_hash": "1ddefddf850e620b66b843638f51adba8737f141"
+          }
+        },
+        {
+          "client_id": "696751112768-5rqr8r5odu729k18kgb1p2d1tb0eonjq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG66TfenyfuATWZrL6P0HBkNxsVEcNGqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "696751112768-5rqr8r5odu729k18kgb1p2d1tb0eonjq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
