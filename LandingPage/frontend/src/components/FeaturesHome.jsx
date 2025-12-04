@@ -38,7 +38,7 @@ const FeaturesHome = () => {
   ];
 
   return (
-    <div className="w-screen h-screen overflow-hidden flex items-center justify-center bg-black">
+    <div className="h-screen overflow-hidden flex items-center justify-center bg-black">
       
      
       <CardStacker data={data} />
