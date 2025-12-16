@@ -1,3 +1,4 @@
+import 'package:demo/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatefulWidget {
@@ -8,10 +9,8 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  
-
-  signout() async {
-    //await signOut();
+  void signout(BuildContext context) async {
+    AuthService().signout(context);
   }
 
   @override
@@ -25,7 +24,7 @@ class _HomepageState extends State<Homepage> {
         // ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: signout,
+        onPressed: () => signout(context),
         child: Icon(Icons.login_rounded),
       ),
     );
