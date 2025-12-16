@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class Forgotpassword extends StatefulWidget {
   Forgotpassword({super.key});
@@ -13,7 +13,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
   TextEditingController email = TextEditingController();
 
   resetPassword() async {
-    await FirebaseAuth.instance.sendPasswordResetEmail(email: email.text);
+    print("Password reseted");
   }
 
   @override
@@ -87,10 +87,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
                         onPressed: () {
                           // Trigger form validation
                           if (_formKey.currentState!.validate()) {
-                            // If valid, send reset email
-                            resetPassword();
-
-                            // Optional: Show confirmation
+       
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Password reset email sent!'),

@@ -1,8 +1,5 @@
-import 'package:demo/wrapper.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class Register extends StatefulWidget {
   Register({super.key});
@@ -20,33 +17,13 @@ class _RegisterState extends State<Register> {
   TextEditingController confirmPassword = TextEditingController();
 
   register() async {
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: email.text,
-      password: password.text,
-    );
-    Get.offAll(Wrapper());
+  print("Successfully registered");
+    
   }
 
-  Future googleLogin() async {
-    final googleSignIn = GoogleSignIn();
 
-    // 1. Sign in user
-    final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return;
 
-    // 2. Get authentication (tokens)
-    final googleAuth = await googleUser.authentication;
-
-    // 3. Create credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // 4. Sign in to Firebase
-    await FirebaseAuth.instance.signInWithCredential(credential);
-    Get.offAll(() => Wrapper());
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +165,7 @@ class _RegisterState extends State<Register> {
                     ),
                     SizedBox(height: 150),
                     Text(
-                      "Or login with social account",
+                      "Or register with social account",
                       style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
@@ -199,7 +176,7 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              await googleLogin();
+                              // await googleLogin();
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }
@@ -226,7 +203,7 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              await googleLogin();
+                              print("FB login");
                             } catch (e) {
                               print("Facebook Sign-In Error: $e");
                             }

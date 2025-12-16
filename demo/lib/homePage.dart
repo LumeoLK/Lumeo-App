@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatefulWidget {
@@ -9,10 +8,10 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  final user = FirebaseAuth.instance.currentUser;
+  
 
   signout() async {
-    await FirebaseAuth.instance.signOut();
+    //await signOut();
   }
 
   @override
@@ -20,10 +19,10 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       appBar: AppBar(title: Text("Homepage")),
       body: Center(
-        child: Text(
-          user != null ? '${user!.email}' : 'Welcome',
-          style: TextStyle(fontSize: 20),
-        ),
+        // child: Text(
+        //   user != null ? '${user!.email}' : 'Welcome',
+        //   style: TextStyle(fontSize: 20),
+        // ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: signout,

@@ -1,14 +1,12 @@
 import 'package:demo/forgotPassword.dart';
 import 'package:demo/homePage.dart';
 import 'package:demo/register.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Login extends StatefulWidget {
-  Login({super.key});
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
@@ -21,37 +19,13 @@ class _LoginState extends State<Login> {
 
   signIn() async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email.text,
-        password: password.text,
-      );
+
       print("Login successful");
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
-  }
-
-  Future googleLogin() async {
-    final googleSignIn = GoogleSignIn();
-
-    // 1. Sign in user
-    final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return;
-
-    // 2. Get authentication (tokens)
-    final googleAuth = await googleUser.authentication;
-
-    // 3. Create credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // 4. Sign in to Firebase
-    await FirebaseAuth.instance.signInWithCredential(credential);
-    // Get.offAll(() => Homepage());
   }
 
   @override
@@ -221,7 +195,7 @@ class _LoginState extends State<Login> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              await googleLogin();
+                              print("Google Sign success");
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }
@@ -248,7 +222,7 @@ class _LoginState extends State<Login> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              await googleLogin();
+                               print("Facebook Sign success");
                             } catch (e) {
                               print("Facebook Sign-In Error: $e");
                             }
