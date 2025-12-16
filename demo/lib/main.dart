@@ -1,10 +1,18 @@
-import 'package:demo/login.dart';
+import 'package:demo/pages/login.dart';
+import 'package:demo/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -22,4 +30,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

@@ -1,30 +1,23 @@
+import 'package:demo/pages/forgotPassword.dart';
+import 'package:demo/pages/homePage.dart';
+import 'package:demo/pages/register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:demo/services/auth_service.dart';
 
-class Register extends StatefulWidget {
-  Register({super.key});
+class Login extends StatefulWidget {
+  const Login({super.key});
 
   @override
-  State<Register> createState() => _RegisterState();
+  State<Login> createState() => _LoginState();
 }
 
-class _RegisterState extends State<Register> {
+class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-
-  TextEditingController username = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  TextEditingController confirmPassword = TextEditingController();
-
-  register() async {
-  print("Successfully registered");
-    
-  }
-
-
-
- 
-
+  final AuthService authService = AuthService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,16 +33,18 @@ class _RegisterState extends State<Register> {
             ),
           ),
 
+          // 2. Login form scrollable
           SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(left: 30, top: 75, right: 30, bottom: 5),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      "Register",
+                      "Login",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -59,31 +54,12 @@ class _RegisterState extends State<Register> {
                     ),
                     SizedBox(height: 65),
                     TextFormField(
-                      controller: username,
-                      decoration: InputDecoration(
-                        hintText: "User name",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        fillColor: Colors.white,
-
-                        filled: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return "Username cannot be empty";
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
                       controller: email,
                       decoration: InputDecoration(
                         hintText: "Enter email",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-
                         fillColor: Colors.white,
 
                         filled: true,
@@ -98,7 +74,7 @@ class _RegisterState extends State<Register> {
                         return null; // valid
                       },
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 15),
                     TextFormField(
                       controller: password,
                       obscureText: true,
@@ -108,45 +84,69 @@ class _RegisterState extends State<Register> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         fillColor: Colors.white,
-
                         filled: true,
                       ),
-
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Password cannot be empty";
-                        return null;
+                        }
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
+                        }
+                        return null; // valid
                       },
                     ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: confirmPassword,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        hintText: 'Confirm password',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () => Get.to(() => Forgotpassword()),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Forgot your password?",
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: const Color.fromARGB(255, 255, 255, 255),
+                              ),
+                            ),
+
+                            SizedBox(width: 8),
+                            Transform.rotate(
+                              angle:
+                                  3 *
+                                  3.14 /
+                                  2, // rotates 90 degrees (in radians)
+                              child: Icon(
+                                FontAwesomeIcons.arrowDown,
+                                size: 20,
+                                color: Color.fromARGB(255, 224, 157, 59),
+                              ),
+                            ),
+                          ],
                         ),
-                        fillColor: Colors.white,
-
-                        filled: true,
                       ),
-
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return "Confirm password cannot be empty";
-                        if (value != password.text)
-                          return "Passwords do not match";
-                        return null;
-                      },
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 10),
+
                     Align(
                       alignment: Alignment.center,
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            register();
+                            try {
+                              authService.login(
+                                context: context,
+                                email: email.text,
+                                password: password.text,
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -158,14 +158,25 @@ class _RegisterState extends State<Register> {
                           minimumSize: Size(150, 40),
                         ),
                         child: Text(
-                          "REGISTER",
+                          "LOGIN",
                           style: TextStyle(color: Colors.black),
                         ),
                       ),
                     ),
-                    SizedBox(height: 150),
+
+                    TextButton(
+                      onPressed: () => Get.to(() => Register()),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Text(
+                          "Haven't Registered Yet?",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 170),
                     Text(
-                      "Or register with social account",
+                      "Or login with social account",
                       style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
@@ -176,7 +187,7 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              // await googleLogin();
+                              print("Google Sign success");
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }
@@ -203,7 +214,7 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              print("FB login");
+                              print("Facebook Sign success");
                             } catch (e) {
                               print("Facebook Sign-In Error: $e");
                             }
@@ -228,6 +239,17 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 45), // spacing for bottom button
+                    TextButton(
+                      onPressed: () => Get.to(() => Homepage()),
+                      child: Text(
+                        "Skip >>",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
                     ),
                   ],
                 ),

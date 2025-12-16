@@ -1,32 +1,22 @@
-import 'package:demo/forgotPassword.dart';
-import 'package:demo/homePage.dart';
-import 'package:demo/register.dart';
+import 'package:demo/pages/homePage.dart';
+import 'package:demo/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class Register extends StatefulWidget {
+  Register({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Register> createState() => _RegisterState();
 }
 
-class _LoginState extends State<Login> {
+class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
+  TextEditingController username = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-
-  signIn() async {
-    try {
-
-      print("Login successful");
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
+  TextEditingController confirmPassword = TextEditingController();
+  final AuthService authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -43,18 +33,16 @@ class _LoginState extends State<Login> {
             ),
           ),
 
-          // 2. Login form scrollable
           SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(left: 30, top: 75, right: 30, bottom: 5),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      "Login",
+                      "Register",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -64,12 +52,31 @@ class _LoginState extends State<Login> {
                     ),
                     SizedBox(height: 65),
                     TextFormField(
+                      controller: username,
+                      decoration: InputDecoration(
+                        hintText: "User name",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        fillColor: Colors.white,
+
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return "Username cannot be empty";
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
                       controller: email,
                       decoration: InputDecoration(
                         hintText: "Enter email",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+
                         fillColor: Colors.white,
 
                         filled: true,
@@ -84,7 +91,7 @@ class _LoginState extends State<Login> {
                         return null; // valid
                       },
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 20),
                     TextFormField(
                       controller: password,
                       obscureText: true,
@@ -94,68 +101,57 @@ class _LoginState extends State<Login> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         fillColor: Colors.white,
+
                         filled: true,
                       ),
+
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return "Password cannot be empty";
-                        }
-                        if (value.length < 6) {
-                          return "Password must be at least 6 characters";
-                        }
-                        return null; // valid
+                        return null;
                       },
                     ),
-                    SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Get.to(() => Forgotpassword()),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "Forgot your password?",
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: const Color.fromARGB(255, 255, 255, 255),
-                              ),
-                            ),
-
-                            SizedBox(width: 8),
-                            Transform.rotate(
-                              angle:
-                                  3 *
-                                  3.14 /
-                                  2, // rotates 90 degrees (in radians)
-                              child: Icon(
-                                FontAwesomeIcons.arrowDown,
-                                size: 20,
-                                color: Color.fromARGB(255, 224, 157, 59),
-                              ),
-                            ),
-                          ],
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: confirmPassword,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: 'Confirm password',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
+                        fillColor: Colors.white,
 
+                        filled: true,
+                      ),
+
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return "Confirm password cannot be empty";
+                        if (value != password.text)
+                          return "Passwords do not match";
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 30),
                     Align(
                       alignment: Alignment.center,
                       child: ElevatedButton(
-                        onPressed: () async {
+                        onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              await signIn();
+                              authService.signUpUser(
+                                context: context,
+                                email: email.text,
+                                name: username.text,
+                                password: password.text,
+                              );
                             } catch (e) {
-                              // Display Firebase errors
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(e.toString())),
                               );
                             }
                           }
-                          // If invalid, the error messages automatically show below each field
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFE09D3B),
@@ -166,25 +162,14 @@ class _LoginState extends State<Login> {
                           minimumSize: Size(150, 40),
                         ),
                         child: Text(
-                          "LOGIN",
+                          "REGISTER",
                           style: TextStyle(color: Colors.black),
                         ),
                       ),
                     ),
-
-                    TextButton(
-                      onPressed: () => Get.to(() => Register()),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Text(
-                          "Haven't Registered Yet?",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 170),
+                    SizedBox(height: 150),
                     Text(
-                      "Or login with social account",
+                      "Or register with social account",
                       style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
@@ -195,7 +180,7 @@ class _LoginState extends State<Login> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              print("Google Sign success");
+                              // await googleLogin();
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }
@@ -222,7 +207,7 @@ class _LoginState extends State<Login> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                               print("Facebook Sign success");
+                              print("FB login");
                             } catch (e) {
                               print("Facebook Sign-In Error: $e");
                             }
@@ -247,17 +232,6 @@ class _LoginState extends State<Login> {
                           ),
                         ),
                       ],
-                    ),
-                    SizedBox(height: 45), // spacing for bottom button
-                    TextButton(
-                      onPressed: () => Get.to(() => Homepage()),
-                      child: Text(
-                        "Skip >>",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                        ),
-                      ),
                     ),
                   ],
                 ),
