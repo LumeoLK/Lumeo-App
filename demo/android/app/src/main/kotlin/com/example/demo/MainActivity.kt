@@ -1,4 +1,4 @@
-package com.example.demo
+package com.lumeo.app
 
 import io.flutter.embedding.android.FlutterActivity
 

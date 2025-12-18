@@ -1,5 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+
+import 'package:demo/Constants.dart';
+import 'package:demo/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:http/http.dart' as http;
 
 class Forgotpassword extends StatefulWidget {
   Forgotpassword({super.key});
@@ -13,7 +18,15 @@ class _ForgotpasswordState extends State<Forgotpassword> {
   TextEditingController email = TextEditingController();
 
   resetPassword() async {
-    await FirebaseAuth.instance.sendPasswordResetEmail(email: email.text);
+    try {
+      final response = await http.post(
+        Uri.parse('${Constants.uri}/forgotPassword'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email.text.trim()}),
+      );
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
   }
 
   @override
@@ -87,10 +100,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
                         onPressed: () {
                           // Trigger form validation
                           if (_formKey.currentState!.validate()) {
-                            // If valid, send reset email
                             resetPassword();
-
-                            // Optional: Show confirmation
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Password reset email sent!'),
