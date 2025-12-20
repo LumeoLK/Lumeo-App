@@ -5,19 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:demo/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Login extends StatefulWidget {
+class Login extends ConsumerStatefulWidget {
   const Login({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  ConsumerState<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends ConsumerState<Login> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  final AuthService authService = AuthService();
+
+void signInWithGoogle(WidgetRef ref){
+  ref.watch(authProvider).signInWithGoogle();
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,11 +142,11 @@ class _LoginState extends State<Login> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              authService.login(
-                                context: context,
-                                email: email.text,
-                                password: password.text,
-                              );
+                              // authService.login(
+                              //   context: context,
+                              //   email: email.text,
+                              //   password: password.text,
+                              // );
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(e.toString())),
@@ -165,7 +170,7 @@ class _LoginState extends State<Login> {
                     ),
 
                     TextButton(
-                      onPressed: () => Get.to(() => Register()),
+                      onPressed: () => Get.to(() => signInWithGoogle(ref)),
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text(
@@ -187,6 +192,7 @@ class _LoginState extends State<Login> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
+                              signInWithGoogle(ref);
                               print("Google Sign success");
                             } catch (e) {
                               print("Google Sign-In Error: $e");

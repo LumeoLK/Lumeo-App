@@ -10,7 +10,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   void signout(BuildContext context) async {
-    AuthService().signout(context);
+    // AuthService().signout(context);
   }
 
   @override
