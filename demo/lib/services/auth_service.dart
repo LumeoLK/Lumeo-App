@@ -77,10 +77,11 @@ class AuthService {
         onSuccess: () async {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           final body = jsonDecode(res.body);
-          ref.read(currentUserProvider.notifier).state = User.fromJson(
-            body['user'],
-          );
-
+          if (body != null && body['user'] != null) {
+            ref.read(currentUserProvider.notifier).state = User.fromJson(
+              body['user'],
+            );
+          }
           await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
           navigator.pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const Homepage()),
@@ -147,6 +148,21 @@ class AuthService {
           },
         );
       }
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+
+  void resetPassword({
+    required BuildContext context,
+    required String email,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Constants.uri}/forgotPassword'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email.trim()}),
+      );
     } catch (e) {
       showSnackBar(context, e.toString());
     }
