@@ -20,11 +20,13 @@ class _LoginState extends ConsumerState<Login> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
-void signInWithGoogle(WidgetRef ref){
-  ref.watch(authProvider).signInWithGoogle();
-}
+  void signInWithGoogle(WidgetRef ref, BuildContext context) {
+    ref.read(authProvider).signInWithGoogle(context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authService = ref.read(authProvider);
     return Scaffold(
       body: Stack(
         children: [
@@ -142,11 +144,12 @@ void signInWithGoogle(WidgetRef ref){
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              // authService.login(
-                              //   context: context,
-                              //   email: email.text,
-                              //   password: password.text,
-                              // );
+                              authService.login(
+                                context: context,
+                                ref: ref,
+                                email: email.text,
+                                password: password.text,
+                              );
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(e.toString())),
@@ -170,7 +173,7 @@ void signInWithGoogle(WidgetRef ref){
                     ),
 
                     TextButton(
-                      onPressed: () => Get.to(() => signInWithGoogle(ref)),
+                      onPressed: () => Get.to(() => Register()),
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text(
@@ -190,14 +193,7 @@ void signInWithGoogle(WidgetRef ref){
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              signInWithGoogle(ref);
-                              print("Google Sign success");
-                            } catch (e) {
-                              print("Google Sign-In Error: $e");
-                            }
-                          },
+                          onPressed: () => signInWithGoogle(ref, context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                           ),

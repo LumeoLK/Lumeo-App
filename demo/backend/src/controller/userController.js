@@ -2,7 +2,6 @@ import User from "../models/User.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import { OAuth2Client } from "google-auth-library";
 
 export const register = async (req, res) => {
   try {
@@ -99,104 +98,23 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-const user = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 export const googleAuth = async (req, res) => {
   try {
-    const { tokenID } = req.body;
-
-    if (!tokenID) {
-      return res.status(400).json({ msg: "ID token is required" });
-    }
-    const verifiedToken = await user.verifiedIDToken({
-      tokenID,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = verifiedToken.getPayload();
-    if (!payload) {
-      return res.status(400).json({ msg: "Invalid google token" });
-    }
-    const { sub: googleId, email, name, picture, verified_email } = payload;
-
-    if (!verified_email) {
-      return res.status(400).json({ msg: "Google mail is not verified" });
-    }
-    const user = await User.findOne({ email });
-    if (user) {
-      if (!user.googleId) {
-        user.googleId = googleId;
-        user.profilePicture = picture || user.profilePicture;
-        await user.save();
-      }
-    }
-    user = new User({
-      email,
-      name,
-      googleId,
-      profilePicture: picture,
-      isEmailVerified: true,
-    });
-    await user.save();
-
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(200).json({
-      message: "Google authentication successful",
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        profilePicture: user.profilePicture,
-      },
-    });
-  } catch (error) {
-    console.error("Google Auth Error:", error);
-    return res.status(500).json({
-      msg: "Google authentication failed",
-      error: error.message,
-    });
-  }
-};
-
-export const authMiddleware = (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ msg: "No token, authorization denied" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ msg: "Token is not valid" });
-  }
-};
-
-export const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-
+    const { email, profilePicture } = req.body;
+    let user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res
+        .status(400)
+        .json({ msg: "Account does not exist. Please sign up first." });
     }
-
-    return res.status(200).json({
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      profilePicture: user.profilePicture,
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+    res.status(200).json({
+      token,
+      user,
     });
   } catch (error) {
-    return res.status(500).json({ msg: "Server error" });
+    return res.status(500).json({ msg: error.message });
   }
 };

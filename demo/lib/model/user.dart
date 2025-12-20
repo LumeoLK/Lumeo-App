@@ -1,34 +1,31 @@
-import 'dart:convert';
 
 class User{
   final String id;
   final String name;
   final String email;
   final String  token;
+  final String profilePicture;
 
-  User({required this.id, required this.name, required this.email, required this.token});
+  User({required this.id, required this.name, required this.email, required this.token, required this.profilePicture});
 
-Map<String,dynamic> toMap(){
+Map<String,dynamic> toJson(){
   return{
     'id':id,
     'name':name,
     'email':email,
     'token':token,
+    'profilePicture':profilePicture,
   };
 }
 
-factory User.fromMap(Map<String,dynamic> map){
+factory User.fromJson(Map<String,dynamic> json){
   return User(
-    id:map['_id']??'',
-    name:map['name']??'',
-    email:map['email']??'',
-    token:map['token']??'',
+    id:json['_id']??'',
+    name:json['name']??'',
+    email:json['email']??'',
+    token:json['token']??'',
+    profilePicture:json['profilePicture']??'',
 
   );
 }
- String toJson() => json.encode(toMap());
-
- factory User.fromJson(String source) {
-    return User.fromMap(json.decode(source));
-  }
 }
