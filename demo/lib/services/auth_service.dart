@@ -106,7 +106,10 @@ class AuthService {
   AuthService({required GoogleSignIn googleSignIn})
     : _googleSignIn = googleSignIn;
 
-  void signInWithGoogle(BuildContext context) async {
+  void signInWithGoogle({
+    required BuildContext context,
+    required String mode,
+  }) async {
     try {
       await _googleSignIn.signOut();
       final GoogleSignInAccount? user = await _googleSignIn.signIn();
@@ -121,7 +124,7 @@ class AuthService {
 
         http.Response res = await http.post(
           Uri.parse('${Constants.uri}/googleAuth'),
-          body: jsonEncode(userAcc.toJson()),
+          body: jsonEncode({...userAcc.toJson(), 'mode': mode}),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -145,7 +148,7 @@ class AuthService {
         );
       }
     } catch (e) {
-      print(e);
+      showSnackBar(context, e.toString());
     }
   }
 }

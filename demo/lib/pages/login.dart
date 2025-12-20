@@ -21,7 +21,7 @@ class _LoginState extends ConsumerState<Login> {
   TextEditingController password = TextEditingController();
 
   void signInWithGoogle(WidgetRef ref, BuildContext context) {
-    ref.read(authProvider).signInWithGoogle(context);
+    ref.read(authProvider).signInWithGoogle(context: context, mode: "login");
   }
 
   @override

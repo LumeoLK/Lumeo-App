@@ -100,13 +100,28 @@ export const resetPassword = async (req, res) => {
 
 export const googleAuth = async (req, res) => {
   try {
-    const { email, profilePicture } = req.body;
+    const { email, profilePicture, mode } = req.body;
     let user = await User.findOne({ email });
-    if (!user) {
+    if (mode === "login" && !user) {
       return res
         .status(400)
         .json({ msg: "Account does not exist. Please sign up first." });
     }
+    if (mode === "register") {
+      if (user) {
+        return res
+          .status(400)
+          .json({ msg: "Account already exists. Please log in." });
+      }
+
+      user = new User({
+        email,
+        profilePicture,
+      });
+
+      await user.save();
+    }
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });

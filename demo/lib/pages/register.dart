@@ -17,6 +17,9 @@ class _RegisterState extends ConsumerState<Register> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController confirmPassword = TextEditingController();
+  void signInWithGoogle(WidgetRef ref, BuildContext context) {
+    ref.read(authProvider).signInWithGoogle(context: context, mode: "register");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +185,7 @@ class _RegisterState extends ConsumerState<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              // await googleLogin();
+                              signInWithGoogle(ref, context);
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }
