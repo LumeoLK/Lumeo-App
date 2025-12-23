@@ -9,12 +9,15 @@ class MyOrders extends StatefulWidget {
 
 final TextStyle myOrderNormalStyle = const TextStyle(
   color: Colors.white,
-  fontSize: 20,
+  fontSize: 15,
 
   fontWeight: FontWeight.w300,
 );
 
 class MyOrdersState extends State<MyOrders> {
+  bool isClicked = false;
+  String selectedBtn = "Delivered";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,13 +39,44 @@ class MyOrdersState extends State<MyOrders> {
             SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ["Delivered", "Processing", "Cancelled"].map((
+                orderStatus,
+              ) {
+                bool isSelected = selectedBtn == orderStatus;
 
-              children: [
-                Text("Delivered", style: myOrderNormalStyle),
-                Text("Processing", style: myOrderNormalStyle),
-                Text("Cancelled", style: myOrderNormalStyle),
-              ],
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 1),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedBtn = orderStatus;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSelected
+                            ? Colors.white
+                            : Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        orderStatus,
+                        style: isSelected
+                            ? const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w300,
+                              )
+                            : myOrderNormalStyle,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
+
             SizedBox(height: 25),
             Container(
               child: Column(
