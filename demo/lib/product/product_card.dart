@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import '../model/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
 
-  ProductCard({required this.product});
+  const ProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +36,13 @@ class ProductCard extends StatelessWidget {
               children: [
                 Text(product.name, style: TextStyle(color: Colors.white)),
                 SizedBox(height: 4),
-                Text("\$${product.price}",
-                    style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold)),
+                Text(
+                  "\$${product.price}",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
