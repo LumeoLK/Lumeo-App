@@ -8,11 +8,8 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: Colors.black,
       elevation: 0,
-      title: const Text("Lumeo", style: TextStyle(fontSize: 20)),
-      actions: const [
-        Icon(Icons.person_outline),
-        SizedBox(width: 16),
-      ],
+      title: Image.asset('assets/icons/logo.png', height: 40),
+      actions: const [Icon(Icons.person_outline), SizedBox(width: 16)],
     );
   }
 
