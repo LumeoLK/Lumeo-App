@@ -28,6 +28,14 @@ android {
     }
 
     buildTypes {
+        signingConfigs {
+    debug {
+        storeFile =  file('keystore/test.jks')
+        storePassword = getenv("KEYSTORE_PASSWORD")
+        keyAlias ='androiddebugkey'
+        keyPassword = getenv("KEYSTORE_PASSWORD")
+    }
+}
         release {
             signingConfig = signingConfigs.getByName("debug")
         }
