@@ -5,21 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:demo/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Login extends StatefulWidget {
+class Login extends ConsumerStatefulWidget {
   const Login({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  ConsumerState<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends ConsumerState<Login> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  final AuthService authService = AuthService();
+
+  void signInWithGoogle(WidgetRef ref, BuildContext context) {
+    ref.read(authProvider).signInWithGoogle(context: context, mode: "login");
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authService = ref.read(authProvider);
     return Scaffold(
       body: Stack(
         children: [
@@ -139,6 +146,7 @@ class _LoginState extends State<Login> {
                             try {
                               authService.login(
                                 context: context,
+                                ref: ref,
                                 email: email.text,
                                 password: password.text,
                               );
@@ -185,13 +193,7 @@ class _LoginState extends State<Login> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              print("Google Sign success");
-                            } catch (e) {
-                              print("Google Sign-In Error: $e");
-                            }
-                          },
+                          onPressed: () => signInWithGoogle(ref, context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                           ),

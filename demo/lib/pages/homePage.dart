@@ -1,20 +1,24 @@
 import 'package:demo/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Homepage extends StatefulWidget {
+class Homepage extends ConsumerStatefulWidget {
   const Homepage({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  ConsumerState<Homepage> createState() => _HomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
-  void signout(BuildContext context) async {
-    AuthService().signout(context);
+class _HomepageState extends ConsumerState<Homepage> {
+  void signout(BuildContext context)  {
+    final authService = ref.read(authProvider); 
+    authService.signout(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider);
+
     return Scaffold(
       appBar: AppBar(title: Text("Homepage")),
       body: Center(

@@ -1,36 +1,27 @@
 import 'dart:convert';
 
 import 'package:demo/Constants.dart';
+import 'package:demo/services/auth_service.dart';
 import 'package:demo/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-class Forgotpassword extends StatefulWidget {
+class Forgotpassword extends ConsumerStatefulWidget {
   Forgotpassword({super.key});
 
   @override
-  State<Forgotpassword> createState() => _ForgotpasswordState();
+  ConsumerState<Forgotpassword> createState() => _ForgotpasswordState();
 }
 
-class _ForgotpasswordState extends State<Forgotpassword> {
+class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
 
-  resetPassword() async {
-    try {
-      final response = await http.post(
-        Uri.parse('${Constants.uri}/forgotPassword'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email.text.trim()}),
-      );
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final authService = ref.read(authProvider);
     return Scaffold(
       body: Stack(
         children: [
@@ -100,7 +91,10 @@ class _ForgotpasswordState extends State<Forgotpassword> {
                         onPressed: () {
                           // Trigger form validation
                           if (_formKey.currentState!.validate()) {
-                            resetPassword();
+                            authService.resetPassword(
+                              context: context,
+                              email: email.text,
+                            );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Password reset email sent!'),
