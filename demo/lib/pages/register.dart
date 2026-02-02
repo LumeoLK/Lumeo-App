@@ -1,25 +1,30 @@
 import 'package:demo/pages/home_page.dart';
 import 'package:demo/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 
-class Register extends StatefulWidget {
+class Register extends ConsumerStatefulWidget {
   Register({super.key});
 
   @override
-  State<Register> createState() => _RegisterState();
+  ConsumerState<Register> createState() => _RegisterState();
 }
 
-class _RegisterState extends State<Register> {
+class _RegisterState extends ConsumerState<Register> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController username = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController confirmPassword = TextEditingController();
-  final AuthService authService = AuthService();
+  void signInWithGoogle(WidgetRef ref, BuildContext context) {
+    ref.read(authProvider).signInWithGoogle(context: context, mode: "register");
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authService = ref.read(authProvider);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -180,7 +185,7 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              // await googleLogin();
+                              signInWithGoogle(ref, context);
                             } catch (e) {
                               print("Google Sign-In Error: $e");
                             }

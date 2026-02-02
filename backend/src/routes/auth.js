@@ -4,7 +4,7 @@ import {
   register,
   forgotPassword,
   resetPassword,
-  showResetPasswordPage,authMiddleware,googleAuth, getCurrentUser
+  showResetPasswordPage,googleAuth
 
 } from "../controller/userController.js";
 
@@ -25,6 +25,6 @@ authRouter.post("/resetPassword/:token", resetPassword);
 authRouter.get("/resetPassword/:token", showResetPasswordPage);
 
 
-authRouter.post('/google', googleAuth);
-authRouter.get('/me', authMiddleware, getCurrentUser);
+authRouter.post('/googleAuth', googleAuth);
+
 export default authRouter;
