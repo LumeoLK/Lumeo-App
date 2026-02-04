@@ -11,10 +11,10 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ msg: "Usesssr with same email already exist" });
+        .json({ msg: "User with same email already exist" });
     }
-    const hashedPassword = await bcryptjs.hash(password, 8);
-    let user = new User({ email, password: hashedPassword, name });
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    let user = new User({ email, password: hashedPassword, name,role:"user"});
     user = await user.save();
     res.json(user);
   } catch (error) {
@@ -22,23 +22,63 @@ export const register = async (req, res) => {
   }
 };
 
+
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ msg: "User with this email does not exists" });
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all fields (name, password)",
+      });
     }
+    if (!user) {
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
+
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Incorrect password" });
+      return res.status(400).json({ msg: "Invalid credentials" });
     }
-    const token = jwt.sign({ id: user._id }, "passwordKey");
-    res.json({ token, ...user._doc });
+
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const userDto = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
+    if (user.role === "admin") {
+      res.cookie("admin_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 30*24 * 60 * 60 * 1000, 
+      });
+
+      return res.json({
+        msg: "Admin login successful",
+        user: userDto,
+      });
+    }
+
+    return res.json({
+      token,
+      user: userDto,
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -133,3 +173,5 @@ export const googleAuth = async (req, res) => {
     return res.status(500).json({ msg: error.message });
   }
 };
+
+

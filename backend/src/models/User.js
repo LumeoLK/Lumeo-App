@@ -1,41 +1,48 @@
 import mongoose from "mongoose";
 
 const userSchema = mongoose.Schema({
-    name:{
-required:true,
-type:String,
-trim:true,
-    },
-     email:{
-required:true,
-type:String,
-trim:true,
-validate:{
-    validator:(value) =>{
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true, 
+    lowercase: true,
+    validate: {
+      validator: (value) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return value.match(regex);
+      },
+      message: "Please enter a valid email address",
     },
-    message: "Please enter a valid email address"
-}
-    },password:{
-        required:false,
-        type:String,
+  },
+  password: {
+    type: String,
+    required: function() { 
+       
+        return !this.googleId; 
+    }, 
+  },
 
-    },
-    name:{
-        type:String,
-        required:false,
+  role: {
+    type: String,
+    enum: ["user", "seller", "admin"], 
+    default: "user",
+  },
 
-    },googleId:{
-        type:String,
-        unique:true,
-        sparce:true,
-
-    },profilePicture:{
-        type:String,
-        default:null,
-
-    } ,isEmailVerified: {
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true, 
+  },
+  profilePicture: {
+    type: String,
+    default: "",
+  },
+  isEmailVerified: {
     type: Boolean,
     default: false,
   },
@@ -44,5 +51,6 @@ validate:{
     default: Date.now,
   },
 });
-const User = mongoose.model("User",userSchema);
+
+const User = mongoose.model("User", userSchema);
 export default User;
