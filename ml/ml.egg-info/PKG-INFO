@@ -4,6 +4,8 @@ Version: 0.1.0
 Summary: Add your description here
 Requires-Python: >=3.13
 Description-Content-Type: text/markdown
+Requires-Dist: scikit-learn
+Requires-Dist: opencv-python
 Requires-Dist: torch
 Requires-Dist: torchvision
 Requires-Dist: torchaudio

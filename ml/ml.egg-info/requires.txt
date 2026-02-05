@@ -1,3 +1,5 @@
+scikit-learn
+opencv-python
 torch
 torchvision
 torchaudio
