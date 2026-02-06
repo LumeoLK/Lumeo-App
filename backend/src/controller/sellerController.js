@@ -6,7 +6,7 @@ export const becomeSeller = async (req, res) => {
     if (existingSeller) {
       return res
         .status(400)
-        .json({ msg: "Seller with same Business Registration Number already exist" });
+        .json({success: false, msg: "Seller with same Business Registration Number already exist" });
     }
     const seller = new Seller({
       userId: req.user.id,

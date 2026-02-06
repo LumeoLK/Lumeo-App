@@ -22,8 +22,6 @@ export const register = async (req, res) => {
   }
 };
 
-
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -69,12 +67,14 @@ export const login = async (req, res) => {
       });
 
       return res.json({
+        success: true,
         msg: "Admin login successful",
         user: userDto,
       });
     }
 
     return res.json({
+      success: true,
       token,
       user: userDto,
     });
@@ -110,11 +110,12 @@ export const forgotPassword = async (req, res) => {
     };
     await transporter.sendMail(receiver);
     return res.send({
+      success: true,
       message: "Password reset sent successfully to your gmail account",
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "Internal server error" });
+    return res.status(500).json({success: false, msg: "Internal server error" });
   }
 };
 
@@ -134,9 +135,9 @@ export const resetPassword = async (req, res) => {
     const newhashPassword = await bcryptjs.hash(password, 10);
     user.password = newhashPassword;
     await user.save();
-    return res.status(200).send({ message: "Password reset successfully" });
+    return res.status(200).json({success: true, message: "Password reset successfully" });
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(500).json({success: false, msg: error.message });
   }
 };
 
@@ -168,6 +169,7 @@ export const googleAuth = async (req, res) => {
       expiresIn: "7d",
     });
     res.status(200).json({
+      success: true,
       token,
       user,
     });
