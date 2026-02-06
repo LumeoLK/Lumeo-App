@@ -21,8 +21,8 @@ export const becomeSeller = async (req, res) => {
     });
     
     await seller.save();
-    res.json(seller);
+    res.json({success: true, seller});
   } catch (error) {
-    
+    res.status(500).json({ msg: error.message });
   }
 }
