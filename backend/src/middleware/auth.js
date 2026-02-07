@@ -56,12 +56,19 @@ export const verifyAdmin = async (req, res, next) => {
 */
 export const verifySeller = async (req, res, next) => {
   try {
-    const role = req.user.role;
-    
-    if (role !== "seller" && role !== "admin") {
-       return res.status(403).json({ msg: "Access Denied: Sellers only" });
+    const user = await User.findById(req.user.id);
+    if (user.role !== "seller" && user.role !== "admin") {
+       return res.status(403).json({ msg: "Access Denied" });
     }
-    
+
+    // NEW: Find the shop and attach it
+    const shop = await Seller.findOne({ userId: req.user.id });
+    if(shop) {
+        req.user.sellerId = shop._id; // <--- This fixes the Order Controller
+    }else{
+      res.status(403).json({ success:false, msg: "Access Denied: No shop found for this user" });
+    }
+
     next();
   } catch (error) {
     res.status(500).json({ error: error.message });
