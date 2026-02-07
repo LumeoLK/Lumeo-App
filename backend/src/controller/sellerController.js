@@ -121,3 +121,76 @@ export const getAllProducts = async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 }; 
+
+
+
+export const searchProducts = async (req, res) => {
+  try {
+  
+    const { 
+      keyword, 
+      category, 
+      minPrice, 
+      maxPrice, 
+      sortBy, // 'newest', 'price-low', 'price-high'
+      page = 1, 
+      limit = 10 
+    } = req.query;
+
+    // 2. Build the Database Query Object
+    let query = {};
+
+    // A. Text Search (Case insensitive regex)
+    if (keyword) {
+      query.title = { $regex: keyword, $options: "i" };
+    }
+
+    // B. Category Filter
+    if (category) {
+      query.category = category;
+    }
+
+    // C. Price Range Filter
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice); // Greater than or equal
+      if (maxPrice) query.price.$lte = Number(maxPrice); // Less than or equal
+    }
+
+    // 3. Handle Sorting
+    let sortOptions = {};
+    if (sortBy === "price-low") {
+      sortOptions.price = 1; // Ascending
+    } else if (sortBy === "price-high") {
+      sortOptions.price = -1; // Descending
+    } else {
+      sortOptions.createdAt = -1; // Default: Newest first
+    }
+
+    // 4. Pagination (Skip & Limit)
+    // Page 1 = skip 0. Page 2 = skip 10.
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // 5. Execute Query
+    const products = await Product.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(Number(limit))
+      .select("title price images category"); // Optimization: Don't fetch description for list view
+
+    // 6. Get Total Count (For frontend pagination UI)
+    const total = await Product.countDocuments(query);
+
+    res.json({
+      success: true,
+      count: products.length,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit)),
+      data: products
+    });
+
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
