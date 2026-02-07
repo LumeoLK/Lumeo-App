@@ -11,10 +11,10 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ msg: "Usesssr with same email already exist" });
+        .json({ msg: "User with same email already exist" });
     }
-    const hashedPassword = await bcryptjs.hash(password, 8);
-    let user = new User({ email, password: hashedPassword, name });
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    let user = new User({ email, password: hashedPassword, name,role:"user"});
     user = await user.save();
     res.json(user);
   } catch (error) {
@@ -25,20 +25,62 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ msg: "User with this email does not exists" });
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all fields (name, password)",
+      });
     }
+    const user = await User.findOne({ email }).select("+password");
+
+    
+    if (!user) {
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
+
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Incorrect password" });
+      return res.status(400).json({ msg: "Invalid credentials" });
     }
-    const token = jwt.sign({ id: user._id }, "passwordKey");
-    res.json({ token, ...user._doc });
+
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    const userDto = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
+    if (user.role === "admin") {
+      res.cookie("admin_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 30*24 * 60 * 60 * 1000, 
+      });
+
+      return res.json({
+        success: true,
+        msg: "Admin login successful",
+        user: userDto,
+      });
+    }
+
+    return res.json({
+      success: true,
+      token,
+      user: userDto,
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -68,11 +110,12 @@ export const forgotPassword = async (req, res) => {
     };
     await transporter.sendMail(receiver);
     return res.send({
+      success: true,
       message: "Password reset sent successfully to your gmail account",
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "Internal server error" });
+    return res.status(500).json({success: false, msg: "Internal server error" });
   }
 };
 
@@ -92,9 +135,9 @@ export const resetPassword = async (req, res) => {
     const newhashPassword = await bcryptjs.hash(password, 10);
     user.password = newhashPassword;
     await user.save();
-    return res.status(200).send({ message: "Password reset successfully" });
+    return res.status(200).json({success: true, message: "Password reset successfully" });
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(500).json({success: false, msg: error.message });
   }
 };
 
@@ -126,6 +169,7 @@ export const googleAuth = async (req, res) => {
       expiresIn: "7d",
     });
     res.status(200).json({
+      success: true,
       token,
       user,
     });
@@ -133,3 +177,5 @@ export const googleAuth = async (req, res) => {
     return res.status(500).json({ msg: error.message });
   }
 };
+
+
