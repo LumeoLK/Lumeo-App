@@ -2,3 +2,5 @@
 lib/constants.dart
 /android/app/keystore/test.jks
 images/
+furniture_dataset_folder/
+*.csv

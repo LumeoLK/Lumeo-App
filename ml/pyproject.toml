@@ -14,5 +14,7 @@ dependencies = [
   "datasets",
   "numpy",
   "pandas",
-  "pillow"
+  "pillow",
+  "matplotlib",
+  "rembg"
 ]
