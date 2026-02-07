@@ -142,7 +142,7 @@ class AuthService {
             );
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (_) => const Homepage()),
+              MaterialPageRoute(builder: (_) => const HomePage()),
               (_) => false,
             );
           },

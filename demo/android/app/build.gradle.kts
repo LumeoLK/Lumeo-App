@@ -27,31 +27,23 @@ android {
     }
 
     signingConfigs {
-        // Shared debug keystore for all team members
-        getByName("debug") {
-            storeFile = file("keystore/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-        
-        // Release keystore
-        create("release") {
-            storeFile = file("keystore/test.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = "androiddebugkey"
-            keyPassword = System.getenv("KEYSTORE_PASSWORD")
-        }
+    // ONLY release signing
+    create("release") {
+        storeFile = file("keystore/test.jks")
+        storePassword = System.getenv("KEYSTORE_PASSWORD")
+        keyAlias = "androiddebugkey"
+        keyPassword = System.getenv("KEYSTORE_PASSWORD")
     }
+}
 
-    buildTypes {
-        getByName("debug") {
-            signingConfig = signingConfigs.getByName("debug")
-        }
-        getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
-        }
+buildTypes {
+    getByName("debug") {
+        // let Android auto-handle debug signing
     }
+    getByName("release") {
+        signingConfig = signingConfigs.getByName("release")
+    }
+}
 }
 
 flutter {
