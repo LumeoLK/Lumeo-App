@@ -51,12 +51,30 @@ const productSchema = mongoose.Schema({
 
  
   views: { type: Number, default: 0 },
+  
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+    set: val => Math.round(val * 10) / 10 // Round to 1 decimal place (e.g., 4.6)
+  },
+  numReviews: {
+    type: Number,
+    default: 0
+  },
 
 }, { timestamps: true });
 
 function arrayLimit(val) {
   return val.length <= 5;
 }
+
+// 1. Text Index for fast keyword search
+productSchema.index({ title: "text", description: "text" });
+
+// 2. Compound Index for filtering by category + price (very common query)
+productSchema.index({ category: 1, price: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 export default Product;
