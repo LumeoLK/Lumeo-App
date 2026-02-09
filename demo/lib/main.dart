@@ -19,13 +19,14 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+ 
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Lumeo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      darkTheme: ThemeData.dark(), // Uses default dark colors
+      themeMode: ThemeMode.dark, 
       home: Login(),
       debugShowCheckedModeBanner: false,
     );
