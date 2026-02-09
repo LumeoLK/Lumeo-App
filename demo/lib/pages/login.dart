@@ -1,5 +1,5 @@
 import 'package:demo/pages/forgotPassword.dart';
-import 'package:demo/pages/homePage.dart';
+import 'package:demo/pages/home_page.dart';
 import 'package:demo/pages/register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -244,7 +244,7 @@ class _LoginState extends ConsumerState<Login> {
                     ),
                     SizedBox(height: 45), // spacing for bottom button
                     TextButton(
-                      onPressed: () => Get.to(() => Homepage()),
+                      onPressed: () => Get.to(() => HomePage()),
                       child: Text(
                         "Skip >>",
                         style: TextStyle(
