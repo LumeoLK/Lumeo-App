@@ -2,6 +2,7 @@ import upload from "../lib/cloudinary.js";
 import { becomeSeller } from "../controller/sellerController.js";
 import express from "express";
 import { JWT } from "google-auth-library";
+import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 
 router.post(

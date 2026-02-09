@@ -1,4 +1,4 @@
-import Order from "../models/Order.js";
+import Order from "../models/order.js";
 import Product from "../models/Product.js";
 
 // A. CREATE ORDER (Checkout)
@@ -77,6 +77,29 @@ export const updateOrderStatus = async (req, res) => {
     await order.save();
 
     res.json({ success: true, msg: "Order status updated", status: order.status });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+// ... existing imports
+
+// 2. GET USER ORDERS (My Purchases)
+export const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ buyerId: req.user.id })
+      .populate({
+        path: "items.productId",
+        select: "title images price" // Only get necessary fields
+      })
+      .populate({
+        path: "items.customRequestId",
+        select: "title description" // Get details for custom jobs
+      })
+      .populate("sellerId", "shopName") // Show which shop they bought from
+      .sort({ createdAt: -1 }); // Newest orders first
+
+    res.json(orders);
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
