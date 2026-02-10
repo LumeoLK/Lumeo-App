@@ -19,9 +19,9 @@ class HomeContent extends StatelessWidget {
 
           const SearchBarWidget(hintText: "Search products"),
           const SizedBox(height: 25),
-          ProductSection(title: "Sale", products: dummyProducts),
-          ProductSection(title: "New Arrivals", products: dummyProducts),
-          ProductSection(title: "For You", products: dummyProducts),
+          ProductSection(title: "Sale", subTitle: "Super Summer sale", products: dummyProducts),
+          ProductSection(title: "New Arrivals", subTitle: "New arrivals this week", products: dummyProducts),
+          ProductSection(title: "For You", subTitle: "Recommended for you", products: dummyProducts),
         ],
       ),
     );
