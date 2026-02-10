@@ -2,6 +2,7 @@ import Seller from "../models/seller.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import jwt from "jsonwebtoken";
+
 export const becomeSeller = async (req, res) => {
   try {
     const { shopName, displayName, businessAddress, phoneNumber,businessRegNumber,password } = req.body;
@@ -58,7 +59,6 @@ export const becomeSeller = async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 }
-
 
 export const createProduct = async (req, res) => {
   try {
