@@ -1,8 +1,8 @@
-import 'package:demo/Constants.dart';
-import 'package:demo/model/user.dart';
-import 'package:demo/pages/home_page.dart';
-import 'package:demo/pages/login.dart';
-import 'package:demo/utils/utils.dart';
+import '../Constants.dart';
+import '../model/user.dart';
+import '../pages/home_page.dart';
+import '../pages/login.dart';
+import '../utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:google_sign_in/google_sign_in.dart';

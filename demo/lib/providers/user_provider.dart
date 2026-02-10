@@ -1,4 +1,4 @@
-import 'package:demo/model/user.dart';
+import '../model/user.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
