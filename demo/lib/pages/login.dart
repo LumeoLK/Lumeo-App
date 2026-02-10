@@ -1,10 +1,10 @@
-import 'package:demo/pages/forgotPassword.dart';
-import 'package:demo/pages/home_page.dart';
-import 'package:demo/pages/register.dart';
+import '../pages/forgotPassword.dart';
+import '../pages/home_page.dart';
+import '../pages/register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:demo/services/auth_service.dart';
+import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

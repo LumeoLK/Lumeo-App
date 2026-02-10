@@ -1,5 +1,5 @@
-import 'package:demo/pages/home_page.dart';
-import 'package:demo/services/auth_service.dart';
+import '../pages/home_page.dart';
+import '../services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';

@@ -1,8 +1,8 @@
 // import 'dart:convert';
 
-import 'package:demo/Constants.dart';
-import 'package:demo/services/auth_service.dart';
-import 'package:demo/utils/utils.dart';
+import '../Constants.dart';
+import '../services/auth_service.dart';
+import '../utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
