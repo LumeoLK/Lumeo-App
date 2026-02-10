@@ -9,7 +9,8 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 140,
+      width: 155,
+      height: 150,
       margin: EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.grey[900],
@@ -23,24 +24,30 @@ class ProductCard extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.asset(
               product.image,
-              height: 100,
+              height: 130,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name, style: TextStyle(color: Colors.white)),
-                SizedBox(height: 4),
+                Text(
+                  product.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                SizedBox(height: 2),
                 Text(
                   "\$${product.price}",
                   style: TextStyle(
                     color: Colors.white70,
                     fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
               ],
