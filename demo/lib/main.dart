@@ -1,12 +1,6 @@
-<<<<<<< HEAD
 import 'dart:async';
 
 import '../providers/user_provider.dart';
-=======
-import 'package:demo/pages/login.dart';
-import 'package:demo/pages/my_orders.dart';
-import 'package:demo/providers/user_provider.dart';
->>>>>>> my-orders
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/home_page.dart';
@@ -30,16 +24,7 @@ class MyApp extends StatelessWidget {
       
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     return MaterialApp(
-=======
-    return GetMaterialApp(
-      title: 'Lumeo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: MyOrders(),
->>>>>>> my-orders
       debugShowCheckedModeBanner: false,
       title: 'Lumeo',
       darkTheme: ThemeData.dark(), 
