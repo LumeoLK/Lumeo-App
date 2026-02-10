@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lumeo_v2/pages/register.dart';
 import 'package:video_player/video_player.dart';
 
 class OnboardingPage2 extends StatefulWidget {
@@ -118,8 +119,12 @@ class _OnboardingPage2State extends State<OnboardingPage2> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Navigate to home or next page
-                        print("Get Started pressed");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Register(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
