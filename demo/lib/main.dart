@@ -1,3 +1,4 @@
+import 'package:demo/pages/customFurniture.dart';
 import 'package:demo/pages/login.dart';
 import 'package:demo/pages/userProfile.dart';
 import 'package:demo/providers/user_provider.dart';
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Userprofile(),
+      home: CustomFurniturePage(),
       debugShowCheckedModeBanner: false,
     );
   }
