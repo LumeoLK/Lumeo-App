@@ -17,6 +17,7 @@ import customRequestRoutes from "./routes/customreqRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import adminRoutes from ('./routes/admin.js');
 
 app.use(express.json()); //middleware
 app.use(express.static("public"));
@@ -28,6 +29,7 @@ app.use("/api/requests", customRequestRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(cookieParser());
 

@@ -1,4 +1,7 @@
 import Seller from "../models/seller.js"
+const User = require('../models/User');
+const Order = require('../models/Order');
+
 export async function adminRegister() {
     const existingAdmin = await User.findOne({ email: "admin@lumeo.com" });
         if (existingAdmin) {
@@ -19,7 +22,7 @@ export async function adminRegister() {
         console.log("Admin created successfully!");
 }
 
-const approveSeller = async (req, res) => {
+export const approveSeller = async (req, res) => {
   try {
    
     const { id } = req.params;
@@ -48,4 +51,10 @@ const approveSeller = async (req, res) => {
     });
   }
 };
-   
+  
+export const dashboardStat = async (req,res) =>{
+  try {
+  } catch (error) {
+    
+  }
+}
