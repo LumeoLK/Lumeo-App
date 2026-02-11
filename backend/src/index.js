@@ -17,7 +17,7 @@ import customRequestRoutes from "./routes/customreqRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
-import adminRoutes from ('./routes/admin.js');
+import adminRoutes from './routes/adminRoutes.js';
 
 app.use(express.json()); //middleware
 app.use(express.static("public"));

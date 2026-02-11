@@ -1,6 +1,6 @@
 import Seller from "../models/seller.js"
-const User = require('../models/User');
-const Order = require('../models/Order');
+import User from '../models/User.js';
+import Order from '../models/Order.js';
 
 export async function adminRegister() {
     const existingAdmin = await User.findOne({ email: "admin@lumeo.com" });
@@ -54,7 +54,26 @@ export const approveSeller = async (req, res) => {
   
 export const dashboardStat = async (req,res) =>{
   try {
+    const usersCountPromise = User.countDocuments();
+    const sellersCountPromise = User.countDocuments({ role: 'seller' });
+    const ordersCountPromise = Order.countDocuments();
+
+    const [totalUsers, totalSellers, totalOrders] = await Promise.all([
+            usersCountPromise,
+            sellersCountPromise,
+            ordersCountPromise
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                totalUsers,
+                totalSellers,
+                totalOrders,
+                timestamp: new Date() 
+            }
+        });
   } catch (error) {
-    
+    res.status(500).json({ success: false, message: error.message });
   }
 }
