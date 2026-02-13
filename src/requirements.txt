@@ -1,0 +1,4 @@
+numpy
+opencv-python  #read blueprint images
+shapely  #geometry (lines, curves, shapes)
+trimesh   #create/export 3D models
