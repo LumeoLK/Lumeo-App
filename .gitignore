@@ -4,3 +4,4 @@ lib/constants.dart
 images/
 furniture_dataset_folder/
 *.csv
+.venv/
