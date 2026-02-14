@@ -94,3 +94,132 @@ class BlueprintModel:
         y_max = max([y + h for y, h in zip(all_y, all_h)])
 
         return x_min, y_min, x_max, y_max
+    
+    def get_all_contours(self, view_name):
+        view = self.views[view_name]
+
+        contours, _ = cv2.findContours(
+            view, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        if not contours:
+            raise ValueError(f"No contours found in {view_name}")
+
+        return contours
+    
+    def segment_front_parts(self):
+        contours = self.get_all_contours("front")
+        h, _ = self.views["front"].shape
+        seat_top, seat_bottom = self.detect_seat_band()
+
+        # clamp thickness
+        if seat_bottom - seat_top > 50:
+            seat_bottom = seat_top + 50
+
+
+        seat_top, seat_bottom = self.detect_seat_band()
+
+        parts = {
+            "backrest": [],
+            "seat": [],
+            "legs": []
+        }
+
+        for cnt in contours:
+            x, y, w, h_cnt = cv2.boundingRect(cnt)
+            cy = y + h_cnt // 2
+
+            if cy < seat_top:
+                parts["backrest"].append(cnt)
+            elif cy <= seat_bottom:
+                parts["seat"].append(cnt)
+            else:
+                parts["legs"].append(cnt)
+
+        return parts
+
+    
+    def bounding_box_from_contours(self, contours):
+        xs, ys, xe, ye = [], [], [], []
+
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            xs.append(x)
+            ys.append(y)
+            xe.append(x + w)
+            ye.append(y + h)
+
+        return min(xs), min(ys), max(xe), max(ye)
+
+    def extract_front_part_dimensions(self):
+        parts = self.segment_front_parts()
+
+        dims = {}
+
+        for part, contours in parts.items():
+            if not contours:
+                continue
+
+            x1, y1, x2, y2 = self.bounding_box_from_contours(contours)
+
+            dims[part] = {
+                "width": x2 - x1,
+                "height": y2 - y1,
+                "bbox": (x1, y1, x2, y2)
+            }
+
+        return dims
+    
+    def detect_seat_band(self):
+        front = self.views["front"]
+        h, w = front.shape
+
+        row_density = front.sum(axis=1)
+        row_density = row_density / row_density.max()
+
+        # seat = densest horizontal band
+        seat_rows = [i for i, v in enumerate(row_density) if v > 0.6]
+
+        if not seat_rows:
+            raise ValueError("Seat band not detected")
+
+        seat_top = min(seat_rows)
+        seat_bottom = max(seat_rows)
+
+        return seat_top, seat_bottom
+    
+    def detect_seat_band(self):
+        front = self.views["front"]
+        h, w = front.shape
+
+        row_edges = (front > 0).sum(axis=1)
+
+        # Normalize
+        row_edges = row_edges / row_edges.max()
+
+        # Candidate rows (moderate density, not extreme)
+        candidates = [i for i, v in enumerate(row_edges) if 0.15 < v < 0.45]
+
+        if not candidates:
+            raise ValueError("Seat candidates not found")
+
+        # Group continuous rows
+        bands = []
+        band = [candidates[0]]
+
+        for r in candidates[1:]:
+            if r == band[-1] + 1:
+                band.append(r)
+            else:
+                bands.append(band)
+                band = [r]
+        bands.append(band)
+
+        # Seat = widest thin band
+        seat_band = min(bands, key=lambda b: abs(len(b) - 15))
+
+        return min(seat_band), max(seat_band)
+
+
+
+
