@@ -1,4 +1,4 @@
-# lumeo_v2
+# lumeo
 
 A new Flutter project.
 

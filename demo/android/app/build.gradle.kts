@@ -1,11 +1,12 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.lumeo_v2"
+    namespace = "com.example.lumeo"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +20,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.lumeo_v2"
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.lumeo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -28,24 +30,13 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-    // ONLY release signing
-    create("release") {
-        storeFile = file("keystore/test.jks")
-        storePassword = System.getenv("KEYSTORE_PASSWORD")
-        keyAlias = "androiddebugkey"
-        keyPassword = System.getenv("KEYSTORE_PASSWORD")
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
-}
-
-buildTypes {
-    getByName("debug") {
-        // let Android auto-handle debug signing
-    }
-    getByName("release") {
-        signingConfig = signingConfigs.getByName("release")
-    }
-}
 }
 
 flutter {

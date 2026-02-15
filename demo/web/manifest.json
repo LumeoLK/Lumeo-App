@@ -1,6 +1,6 @@
 {
-    "name": "lumeo_v2",
-    "short_name": "lumeo_v2",
+    "name": "lumeo",
+    "short_name": "lumeo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

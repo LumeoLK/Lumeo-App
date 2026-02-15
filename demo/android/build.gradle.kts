@@ -1,14 +1,5 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    
-}
-
 allprojects {
-    repositories {      
+    repositories {
         google()
         mavenCentral()
     }

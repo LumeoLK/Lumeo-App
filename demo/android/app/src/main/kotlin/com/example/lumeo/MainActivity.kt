@@ -1,4 +1,4 @@
-package com.example.lumeo_v2
+package com.example.lumeo
 
 import io.flutter.embedding.android.FlutterActivity
 
