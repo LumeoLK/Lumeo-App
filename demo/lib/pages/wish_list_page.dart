@@ -9,7 +9,7 @@ class WishListPage extends StatefulWidget {
 
 class _WishListPageState extends State<WishListPage> {
   String selectedCategory = '';
-  String sortBy = 'Price: lowest to high';
+  String sortBy = 'low_to_high';
 
   // sample data for testing
   final List<Map<String, dynamic>> wishListItems = [
@@ -156,11 +156,11 @@ class _WishListPageState extends State<WishListPage> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: Row(
-                    children: const [
+                    children: [
                       Icon(Icons.swap_vert, color: Colors.white, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Price: lowest to high',
+                        _getSortText(),
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ],
@@ -202,12 +202,38 @@ class _WishListPageState extends State<WishListPage> {
             }
 
             List<Map<String, dynamic>> _getFilteredItems() {
+              List<Map<String, dynamic>> filtered;
+              
+              // filter by category
               if (selectedCategory.isEmpty) {
-                return wishListItems;  // show all items when no category selected
+                filtered = List.from(wishListItems);
+              } else {
+                filtered = wishListItems.where((item) {
+                  return item['category'] == selectedCategory;
+                }).toList();
               }
-              return wishListItems.where((item) {
-                return item['category'] == selectedCategory;
-              }).toList();
+              
+              // apply sorting
+              if (sortBy == 'low_to_high') {
+                filtered.sort((a, b) => a['price'].compareTo(b['price']));
+              } else if (sortBy == 'high_to_low') {
+                filtered.sort((a, b) => b['price'].compareTo(a['price']));
+              } else if (sortBy == 'available') {
+                filtered = filtered.where((item) => !item['soldOut']).toList();
+              }
+              
+              return filtered;
+            }
+
+            String _getSortText() {
+              if (sortBy == 'low_to_high') {
+                return 'Price: lowest to high';
+              } else if (sortBy == 'high_to_low') {
+                return 'Price: highest to low';
+              } else if (sortBy == 'available') {
+                return 'Available only';
+              }
+              return 'Price: lowest to high';
             }
 
   Widget _buildCategoryChip(String category) {
