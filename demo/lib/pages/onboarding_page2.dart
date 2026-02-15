@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo_v2/pages/register.dart';
+import '../pages/login.dart';
 import 'package:video_player/video_player.dart';
 
 class OnboardingPage2 extends StatefulWidget {
@@ -122,7 +122,7 @@ class _OnboardingPage2State extends State<OnboardingPage2> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Register(),
+                            builder: (context) => Login(),
                           ),
                         );
                       },
