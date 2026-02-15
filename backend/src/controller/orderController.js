@@ -1,17 +1,20 @@
 import Order from "../models/order.js";
 import Product from "../models/Product.js";
+import Cart from "../models/cart.js";
+import mongoose from "mongoose";
+import { populate } from "dotenv";
 
 // A. CREATE ORDER (Checkout)
-// This is called when User clicks "Place Order" in the App
 export const createOrder = async (req, res) => {
   try {
-    const { sellerId, items, totalAmount, shippingAddress, paymentMethod } = req.body;
-
-    // Basic Validation
-    if (!items || items.length === 0) {
-      return res.status(400).json({ msg: "No items in order" });
+    const {shippingAddress, paymentMethod } = req.body;
+    const cart = await Cart.findOne({ userId: req.user.id }).populate("items.productId");
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ msg: "Cart is empty" });
     }
-
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
     const newOrder = new Order({
       buyerId: req.user.id,
       sellerId,
@@ -30,13 +33,105 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// B. GET MY ORDERS (User History)
+export const placeOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const userId = req.user.id;
+    const { shippingAddress, paymentMethod } = req.body;
+
+    
+    if (!["cod", "card"].includes(paymentMethod)) {
+      return res.status(400).json({ msg: "Invalid payment method" });
+    }
+
+   
+    const cart = await Cart.findOne({ userId }).session(session);
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ msg: "Cart is empty" });
+    }
+
+    let orderItems = [];
+    let totalAmount = 0;
+
+    for (const item of cart.items) {
+      if (item.quantity <= 0) {
+        throw new Error("Invalid quantity");
+      }
+
+      const product = await Product.findOneAndUpdate(
+        { _id: item.productId, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } },
+        { new: true, session }
+      );
+
+      if (!product) {
+        throw new Error(`Insufficient stock for product ${item.productId}`);
+      }
+
+      const subtotal = product.price * item.quantity;
+      totalAmount += subtotal;
+
+      orderItems.push({
+        productId: product._id,
+        sellerId: product.sellerId,
+        title: product.title,
+        priceAtPurchase: product.price,
+        quantity: item.quantity,
+        subtotal
+      });
+    }
+
+    const [order] = await Order.create([{
+      buyerId: userId,
+      items: orderItems,
+      totalAmount,
+      shippingAddress,
+      paymentMethod,
+      paymentStatus: "pending",
+      orderStatus: paymentMethod === "COD" ? "confirmed" : "pending"
+    }], { session });
+
+   
+    await Cart.deleteOne({ userId }).session(session);
+
+    
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(201).json({
+      success: true,
+      message: "Order placed successfully",
+      order
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    return res.status(400).json({
+      success: false,
+      msg: error.message
+    });
+  }
+};
+
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })
-      .populate("items.productId", "title images") // Show product name & image
+      .populate({
+        path: "items.productId", 
+        select: "title price images sellerId", 
+        populate: { 
+          path: "sellerId", // 2. Inside that Product, go populate the Seller
+          model: "Seller",    // (Optional) Explicitly state the model if generic
+          select: "shopName phoneNumber" // Select fields from Seller
+      }
+  })
       .populate("items.customRequestId", "title")  // Show custom request title
-      .populate("sellerId", "shopName")            // Show Shop Name
+                // Show Shop Name
       .sort({ createdAt: -1 });
 
     res.json(orders);
@@ -45,7 +140,7 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-// C. GET SHOP ORDERS (Seller Dashboard)
+// GET SHOP ORDERS (Seller Dashboard)
 export const getSellerOrders = async (req, res) => {
   try {
     // Note: req.user.sellerId comes from the updated verifySeller middleware
@@ -82,9 +177,8 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-// ... existing imports
 
-// 2. GET USER ORDERS (My Purchases)
+
 export const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })

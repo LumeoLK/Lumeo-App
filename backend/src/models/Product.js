@@ -46,6 +46,21 @@ const productSchema = mongoose.Schema({
   }
 },
 
+model3D: {
+    url: { 
+      type: String, 
+      default: "" 
+    },
+    placement: {
+      type: String,
+      enum: ["floor", "wall", "ceiling", "table"], // Critical for AR placement logic
+      default: "floor"
+    },
+    scale: {
+      type: Number,
+      default: 1.0 // 1.0 = Real World Scale
+    }
+  },
  
   dimensions: {
     length: { type: Number, required: true }, 
