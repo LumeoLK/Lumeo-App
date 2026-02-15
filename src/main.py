@@ -68,10 +68,34 @@ def main():
     # ==========================================================
     part_dims = blueprint.extract_front_part_dimensions()
 
+    # ---- SCALE CALCULATION ----
+    seat_px_height = part_dims["seat"]["height"]
+
+    REAL_SEAT_HEIGHT_CM = 45  # industry standard
+
+    scale = blueprint.compute_scale(seat_px_height, REAL_SEAT_HEIGHT_CM)
+
+    print("\n=== REAL WORLD DIMENSIONS (CM) ===")
+    print(f"Chair Width  : {front_w * scale:.1f} cm")
+    print(f"Chair Height : {front_h * scale:.1f} cm")
+    print(f"Chair Depth  : {side_w * scale:.1f} cm")
+
+
     print("\n=== FRONT VIEW PART DIMENSIONS (PIXELS) ===")
     for part, d in part_dims.items():
         if d["width"] > 0 and d["height"] > 0:
             print(f"{part.upper():10s} | width={d['width']}  height={d['height']}")
+
+    
+    front_curve = blueprint.extract_contour("front")
+    side_curve = blueprint.extract_contour("side")
+
+    front_real = blueprint.contour_to_real_coords(front_curve, scale)
+    side_real = blueprint.contour_to_real_coords(side_curve, scale)
+
+    print(f"\nFront curve real points: {len(front_real)}")
+    print(f"Side curve real points : {len(side_real)}")
+
 
     # ==========================================================
     # SIDE CONTOUR
