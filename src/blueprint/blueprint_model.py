@@ -193,4 +193,27 @@ class BlueprintModel:
             }
 
         return dims
+    
+    # -------------------------------------------------
+    # SCALE COMPUTIN G- pixel units to centimeters
+    # -------------------------------------------------
+    
+    def compute_scale(self, pixel_height, real_height_cm):
+        scale = real_height_cm / pixel_height
+        print(f"Scale factor: 1 px = {scale:.4f} cm")
+        return scale
+    
+    # -------------------------------------------------
+    # Convert contour points from pixels to real-world cm
+    # -------------------------------------------------    
+    def contour_to_real_coords(self, contour, scale):
+        points = []
+
+        for p in contour:
+            x, y = p[0]
+            points.append((x * scale, y * scale))
+
+        return points
+
+
 
