@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ignore Unity build artifacts in the Flutter project
+**/android/unityLibrary/build/
+**/ios/UnityFramework/
