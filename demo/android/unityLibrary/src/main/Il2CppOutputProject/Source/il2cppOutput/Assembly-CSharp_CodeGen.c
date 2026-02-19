@@ -27,10 +27,17 @@ extern void SendToFlutter_Send_mC3EEBDA79530F83C75829EFC506B20AF3C9B16AE (void);
 extern void SendToFlutter__ctor_mC1E72A3BCF91ABFED2B53D4D12E5D43091965061 (void);
 extern void PlaceFurniture_Awake_mCDCDFD10AEABE26C16A9431E0350E24BCBA54889 (void);
 extern void PlaceFurniture_Start_m4E404AA893DC7DFC101DEE5561DB3EEA267CF4BC (void);
+extern void PlaceFurniture_InitializeAR_m3414FF69F879F864D9D0B9B22A17D74DDBB73407 (void);
 extern void PlaceFurniture_OnTapFromFlutter_m3A0708965FFC58C2574C4ED35EA9BE0404FBE54F (void);
 extern void PlaceFurniture_PlaceObjectAt_mC711BE26AEF55DC3A9BCEF2B13EA9AE0102040BB (void);
 extern void PlaceFurniture__ctor_m0203C3DD30EFC49775E315BE7D19712399DF594C (void);
 extern void PlaceFurniture__cctor_m9E88C92435E9A384FCA9F5A816D8F03F951C4F50 (void);
+extern void U3CInitializeARU3Ed__7__ctor_mA2C9CAB2C3CFA849B1E8314B6FFFE3AE21BF0C1E (void);
+extern void U3CInitializeARU3Ed__7_System_IDisposable_Dispose_m80099682791BB2BE99F17DF8481ADCB48569DC74 (void);
+extern void U3CInitializeARU3Ed__7_MoveNext_m7B9FAA3B2615A45D7522D0EED8D5A3A7FA96F990 (void);
+extern void U3CInitializeARU3Ed__7_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m093E5B0A2AC7C2809235F3505A88D47A3CE7DA39 (void);
+extern void U3CInitializeARU3Ed__7_System_Collections_IEnumerator_Reset_m18A54F918E117C0F2A68144FB71B171D60EB111C (void);
+extern void U3CInitializeARU3Ed__7_System_Collections_IEnumerator_get_Current_m6C199FC5D8712D4A0373E9B068F08E1C781EB783 (void);
 extern void Readme__ctor_m69C325C4C171DCB0312B646A9034AA91EA8C39C6 (void);
 extern void Section__ctor_m5F732533E4DFC0167D965E5F5DB332E46055399B (void);
 extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mBEB95BEB954BB63E9710BBC7AD5E78C4CB0A0033 (void);
@@ -44,7 +51,7 @@ extern void U3CCheckAvailabilityCoroutineU3Ed__2_MoveNext_m046C6671F163EC0521B8D
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m53E52F5C1BCA051A78FDD3B675472236A872061D (void);
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_Reset_mE77DE6A74009B8FF9B0A7D295EC0692430D2927A (void);
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_get_Current_mCBBCC5B0B317EFD8CDEFA90DAE36CAB1C171E37F (void);
-static Il2CppMethodPointer s_methodPointers[37] = 
+static Il2CppMethodPointer s_methodPointers[44] = 
 {
 	ARLogoPinner_Update_mC5A953C770C621C5C51A14EDD5CEFCCC1542F923,
 	ARLogoPinner__ctor_mDA1146BE9EC91485564D917F29228012021E061F,
@@ -66,10 +73,17 @@ static Il2CppMethodPointer s_methodPointers[37] =
 	SendToFlutter__ctor_mC1E72A3BCF91ABFED2B53D4D12E5D43091965061,
 	PlaceFurniture_Awake_mCDCDFD10AEABE26C16A9431E0350E24BCBA54889,
 	PlaceFurniture_Start_m4E404AA893DC7DFC101DEE5561DB3EEA267CF4BC,
+	PlaceFurniture_InitializeAR_m3414FF69F879F864D9D0B9B22A17D74DDBB73407,
 	PlaceFurniture_OnTapFromFlutter_m3A0708965FFC58C2574C4ED35EA9BE0404FBE54F,
 	PlaceFurniture_PlaceObjectAt_mC711BE26AEF55DC3A9BCEF2B13EA9AE0102040BB,
 	PlaceFurniture__ctor_m0203C3DD30EFC49775E315BE7D19712399DF594C,
 	PlaceFurniture__cctor_m9E88C92435E9A384FCA9F5A816D8F03F951C4F50,
+	U3CInitializeARU3Ed__7__ctor_mA2C9CAB2C3CFA849B1E8314B6FFFE3AE21BF0C1E,
+	U3CInitializeARU3Ed__7_System_IDisposable_Dispose_m80099682791BB2BE99F17DF8481ADCB48569DC74,
+	U3CInitializeARU3Ed__7_MoveNext_m7B9FAA3B2615A45D7522D0EED8D5A3A7FA96F990,
+	U3CInitializeARU3Ed__7_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m093E5B0A2AC7C2809235F3505A88D47A3CE7DA39,
+	U3CInitializeARU3Ed__7_System_Collections_IEnumerator_Reset_m18A54F918E117C0F2A68144FB71B171D60EB111C,
+	U3CInitializeARU3Ed__7_System_Collections_IEnumerator_get_Current_m6C199FC5D8712D4A0373E9B068F08E1C781EB783,
 	Readme__ctor_m69C325C4C171DCB0312B646A9034AA91EA8C39C6,
 	Section__ctor_m5F732533E4DFC0167D965E5F5DB332E46055399B,
 	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mBEB95BEB954BB63E9710BBC7AD5E78C4CB0A0033,
@@ -84,7 +98,7 @@ static Il2CppMethodPointer s_methodPointers[37] =
 	U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_Reset_mE77DE6A74009B8FF9B0A7D295EC0692430D2927A,
 	U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_get_Current_mCBBCC5B0B317EFD8CDEFA90DAE36CAB1C171E37F,
 };
-static const int32_t s_InvokerIndices[37] = 
+static const int32_t s_InvokerIndices[44] = 
 {
 	15960,
 	15960,
@@ -106,10 +120,17 @@ static const int32_t s_InvokerIndices[37] =
 	15960,
 	15960,
 	15960,
+	15756,
 	12121,
 	12300,
 	15960,
 	27654,
+	12060,
+	15960,
+	15564,
+	15756,
+	15960,
+	15756,
 	15960,
 	15960,
 	27695,
@@ -128,7 +149,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	37,
+	44,
 	s_methodPointers,
 	0,
 	NULL,

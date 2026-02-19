@@ -50,12 +50,15 @@ class UnityScreen extends StatefulWidget {
 class _UnityScreenState extends State<UnityScreen> {
   bool _isUnityLoaded = false;
 
-  void _onTap(TapDownDetails details, BuildContext context) {
+ void _onTap(TapDownDetails details, BuildContext context) {
   final size = MediaQuery.of(context).size;
   final x = details.globalPosition.dx / size.width;
   final y = details.globalPosition.dy / size.height;
 
-  print('Flutter: Sending tap to Unity: $x, $y');
+  print('Flutter: Sending tap at normalized ($x, $y)');
+  print('Flutter: Screen size: ${size.width}x${size.height}');
+  print('Flutter: Absolute position: ${details.globalPosition}');
+  
   sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
 }
 
