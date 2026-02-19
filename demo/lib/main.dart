@@ -51,13 +51,13 @@ class _UnityScreenState extends State<UnityScreen> {
   bool _isUnityLoaded = false;
 
   void _onTap(TapDownDetails details, BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final x = details.globalPosition.dx / size.width;
-    final y = details.globalPosition.dy / size.height;
-    
-    print('Flutter: Sending tap to Unity: $x, $y');
-    sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
-  }
+  final size = MediaQuery.of(context).size;
+  final x = details.globalPosition.dx / size.width;
+  final y = details.globalPosition.dy / size.height;
+
+  print('Flutter: Sending tap to Unity: $x, $y');
+  sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
+}
 
   @override
   Widget build(BuildContext context) {
