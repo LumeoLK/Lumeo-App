@@ -1,23 +1,26 @@
 import axios from "axios";
 import FormData from "form-data";
-import Product from "../models/Product";
+import Product from "../models/Product.js";
 import { v2 as cloudinary } from "cloudinary";
 
-exports.processNewProduct = async (req, res) => {
+export const processNewProduct = async (req, res) => {
   try {
-    // Check if files exist 
+    // Check if files exist
     const files = req.files;
     if (!files || files.length === 0) {
       return res.status(400).json({ message: "No images provided" });
     }
 
-    const mainImage = files[0]; 
+    const mainImage = files[0];
 
-    // Call AI and Upload to Cloudinary simultaneously 
+    // Call AI and Upload to Cloudinary simultaneously
     const [mlResponse, cloudinaryResult] = await Promise.all([
       // Call AI Service
       (async () => {
         const form = new FormData();
+
+        if (!mainImage.buffer) throw new Error("File buffer is empty");
+
         form.append("file", mainImage.buffer, {
           filename: mainImage.originalname,
           contentType: mainImage.mimetype,
@@ -33,7 +36,7 @@ exports.processNewProduct = async (req, res) => {
       new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "lumeo_products" },
-          (error, result) => (error ? reject(error) : resolve(result))
+          (error, result) => (error ? reject(error) : resolve(result)),
         );
         stream.end(mainImage.buffer);
       }),
@@ -44,9 +47,13 @@ exports.processNewProduct = async (req, res) => {
 
     //Create Product
     const newProduct = new Product({
-      ...req.body, // Spread other fields (title, price, etc.)
-      dimensions: JSON.parse(req.body.dimensions),
-      images: [cloudinaryResult.secure_url], // URL from Cloudinary
+      ...req.body,
+      // Safety check for dimensions parsing
+      dimensions:
+        typeof req.body.dimensions === "string"
+          ? JSON.parse(req.body.dimensions)
+          : req.body.dimensions,
+      images: [cloudinaryResult.secure_url],
       dominantColor: rgb,
       imageEmbedding: vector,
     });

@@ -37,14 +37,18 @@ def extract_ml_features(image_bytes):
         raise Exception(f"Processing Error: {str(e)}")
 
 @app.post("/api/v1/product-metadata")
-async def process_product(file: UploadFile = File(...)):
-    contents = await file.read()
-    rgb, vector = extract_ml_features(contents)
-    
-    return {
-        "status": "success",
-        "data": {
-            "rgb": rgb,    
-            "vector": vector
-        }
-    }
+async def process_product(file: UploadFile = File(...)): # Name MUST be 'file' to match Node
+    try:
+        # Read the file contents
+        contents = await file.read()
+        
+        # LOGGING: Add this to debug in your terminal
+        print(f"Received file: {file.filename}, Size: {len(contents)} bytes")
+
+        # Pass contents to your feature extractor
+        rgb, vector = extract_ml_features(contents)
+        
+        return {"success": True, "data": {"rgb": rgb, "vector": vector}}
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"success": False, "error": str(e)}
