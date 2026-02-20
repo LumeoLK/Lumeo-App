@@ -1,5 +1,4 @@
 import express from "express";
-import { createProduct, getAllProducts } from "../controller/product.controller.js";
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 import upload from "../lib/cloudinary.js";
 import { createProduct, getAllProducts, searchProducts } from "../controller/sellerController.js";

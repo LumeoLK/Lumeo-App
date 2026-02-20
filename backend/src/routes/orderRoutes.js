@@ -1,11 +1,11 @@
 import express from "express";
-import { getUserOrders, getSellerOrders, updateOrderStatus } from "../controllers/order.controller.js";
-import { verifyToken, verifySeller } from "../middleware/auth.middleware.js";
+import { getMyOrders, getSellerOrders, updateOrderStatus } from "../controller/orderController.js";
+import { verifyToken, verifySeller } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // USER: See my purchases
-router.get("/my-orders", verifyToken, getUserOrders);
+router.get("/my-orders", verifyToken, getMyOrders);
 
 // SELLER: See my sales
 // Note: You might need to update your verifySeller middleware to attach `req.user.sellerId`

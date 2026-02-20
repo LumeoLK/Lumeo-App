@@ -1,7 +1,7 @@
 import express from "express";
-import { createRequest, getOpenRequests, placeBid } from "../controllers/customRequest.controller.js";
-import { verifyToken, verifySeller } from "../middleware/auth.middleware.js";
-import upload from "../middleware/upload.middleware.js";
+import { createRequest, getOpenRequests, placeBid } from "../controller/bidController.js";
+import { verifyToken, verifySeller } from "../middleware/auth.js";
+import upload from "../lib/cloudinary.js";
 
 const router = express.Router();
 

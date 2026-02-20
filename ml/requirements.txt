@@ -1,0 +1,11 @@
+fastapi>=0.129.0
+uvicorn
+python-multipart>=0.0.22
+# This installs the small CPU version of Torch
+torch --index-url https://download.pytorch.org/whl/cpu
+numpy
+pillow
+scikit-learn
+ftfy
+regex
+clip @ git+https://github.com/openai/CLIP.git

@@ -48,8 +48,15 @@ const productSchema = mongoose.Schema({
     height: { type: Number, required: true }, 
     unit: { type: String, default: "cm" }
   },
-
- 
+  dominantColor: {
+        type: [Number], // Stored as [R, G, B]
+        default: [0, 0, 0]
+    },
+  
+    imageEmbedding: {
+        type: [Number], 
+        select: false   
+    },
   views: { type: Number, default: 0 },
   
   averageRating: {
@@ -70,10 +77,10 @@ function arrayLimit(val) {
   return val.length <= 5;
 }
 
-// 1. Text Index for fast keyword search
+// Text Index for fast keyword search
 productSchema.index({ title: "text", description: "text" });
 
-// 2. Compound Index for filtering by category + price (very common query)
+//Compound Index for filtering by category + price 
 productSchema.index({ category: 1, price: 1 });
 
 const Product = mongoose.model("Product", productSchema);
