@@ -37,10 +37,10 @@ const productSchema = mongoose.Schema(
     images: {
       type: [String],
       validate: {
-        validator: function (val) {
-          return val.length <= 5;
+        validator: function (arr) {
+          return arr.length <= 5;
         },
-        message: "{PATH} exceeds the limit of 5 images",
+        message: "You can upload up to 5 images only",
       },
     },
 
