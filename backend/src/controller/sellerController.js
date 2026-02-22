@@ -31,7 +31,7 @@ export const becomeSeller = async (req, res) => {
     const user = await User.findOne({ _id: req.user.id }).select("+password");
     user.role = "seller";
     await user.save();
-
+    console.log(user)
 
     const seller = new Seller({
       userId: req.user.id,
