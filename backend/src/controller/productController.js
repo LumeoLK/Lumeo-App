@@ -2,47 +2,58 @@ import axios from "axios";
 import FormData from "form-data";
 import Product from "../models/Product.js";
 import Seller from "../models/seller.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock, length, width, height } = req.body;
 
-    // 1. Authenticate Seller (Your code)
+    // 1. Authenticate Seller
     const seller = await Seller.findOne({ userId: req.user.id });
     if (!seller) {
       return res.status(404).json({ success: false, msg: "Seller profile not found." });
     }
 
-    // 2. Check for uploaded files (Your code)
+    // 2. File Validation 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, msg: "Please upload at least one image." });
     }
 
-    // 3. Get Cloudinary URLs from your middleware
-    const imageUrls = req.files.map((file) => file.path);
-    const mainImageUrl = imageUrls[0]; // We'll send the first image to the AI
+    // We now know for a fact this contains our buffer!
+    const mainImage = req.files[0]; 
 
-    // 4. ML Integration (Adapted ML Engineer code)
-    // Since we don't have a buffer from Multer, we fetch the image from Cloudinary to create one
-    const imageResponse = await axios.get(mainImageUrl, { responseType: "arraybuffer" });
-    const imageBuffer = Buffer.from(imageResponse.data, "binary");
+    // 3. Process Upload & ML in Parallel
+    const [mlResponse, cloudinaryResult] = await Promise.all([
+      
+      // Task A: Send the Buffer straight to Python ML Service
+      (async () => {
+        const form = new FormData();
+        form.append("file", mainImage.buffer, {
+          filename: mainImage.originalname,
+          contentType: mainImage.mimetype,
+        });
 
-    const form = new FormData();
-    form.append("file", imageBuffer, {
-      filename: "main_image.jpg", 
-      contentType: imageResponse.headers["content-type"] || "image/jpeg",
-    });
+        const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
+        return axios.post(`${mlUrl}/api/v1/product-metadata`, form, {
+          headers: { ...form.getHeaders() },
+        });
+      })(),
 
-    // Call AI Service
-    const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
-    const mlResponse = await axios.post(`${mlUrl}/api/v1/product-metadata`, form, {
-      headers: { ...form.getHeaders() },
-    });
+      // Task B: Stream the Buffer straight to Cloudinary
+      new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "lumeo_products" },
+          (error, result) => (error ? reject(error) : resolve(result))
+        );
+        stream.end(mainImage.buffer);
+      }),
+    ]);
 
-    // Extract AI Data
+    // 4. Extract Data from both successful tasks
     const { rgb, vector } = mlResponse.data.data;
+    const finalCloudinaryUrl = cloudinaryResult.secure_url;
 
-    // 5. Create Product (Merged logic)
+    // 5. Create Product
     const newProduct = new Product({
       sellerId: seller._id,
       title,
@@ -50,10 +61,10 @@ export const createProduct = async (req, res) => {
       price,
       category,
       stock,
-      images: imageUrls,
-      dimensions: { length, width, height }, // Your dimensions logic
-      dominantColor: rgb,                      // ML Engineer's AI data
-      imageEmbedding: vector,                  // ML Engineer's AI data
+      images: [finalCloudinaryUrl], // The actual URL from Task B
+      dimensions: { length, width, height },
+      dominantColor: rgb,           // The AI data from Task A
+      imageEmbedding: vector,       // The AI data from Task A
     });
 
     await newProduct.save();

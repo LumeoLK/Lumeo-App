@@ -5,12 +5,16 @@ from PIL import Image
 from sklearn.cluster import KMeans
 import numpy as np
 import io
-
+import traceback
 app = FastAPI(title="Lumeo ML Service")
 
 # Load CLIP Model once when server starts
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
+
+@app.get("/")
+def greet():
+    return {"message": "Welcome to the Lumeo ML Services!! by Mayura"}
 
 def extract_ml_features(image_bytes):
     try:
@@ -50,5 +54,8 @@ async def process_product(file: UploadFile = File(...)): # Name MUST be 'file' t
         
         return {"success": True, "data": {"rgb": rgb, "vector": vector}}
     except Exception as e:
-        print(f"Error: {e}")
-        return {"success": False, "error": str(e)}
+        # Print the full error trace in the Python terminal for easier debugging
+        print(traceback.format_exc())
+        
+        # FIX 2: Send a proper 500 status code so Node.js Axios catches the error
+        raise HTTPException(status_code=500, detail=str(e))
