@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-
+import Seller from "../models/seller.js";
 /* 1. VERIFY TOKEN 
   Checks if the user is logged in. 
   Decodes the token and attaches the user info to 'req.user'

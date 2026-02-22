@@ -8,12 +8,14 @@ import {
 } from "../controller/sellerController.js";
 const router = express.Router();
 import * as productController from "../controller/productController.js";
+
+
 router.post(
   "/create",
   verifyToken,
   verifySeller,
   upload.array("images", 5),
-  productController.processNewProduct,
+  createProduct,
 );
 
 router.get("/", getAllProducts);

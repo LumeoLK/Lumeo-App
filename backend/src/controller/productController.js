@@ -1,71 +1,71 @@
 import axios from "axios";
 import FormData from "form-data";
 import Product from "../models/Product.js";
-import { v2 as cloudinary } from "cloudinary";
+import Seller from "../models/seller.js";
 
-export const processNewProduct = async (req, res) => {
+export const createProduct = async (req, res) => {
   try {
-    // Check if files exist
-    const files = req.files;
-    if (!files || files.length === 0) {
-      return res.status(400).json({ message: "No images provided" });
+    const { title, description, price, category, stock, length, width, height } = req.body;
+
+    // 1. Authenticate Seller (Your code)
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller) {
+      return res.status(404).json({ success: false, msg: "Seller profile not found." });
     }
 
-    const mainImage = files[0];
+    // 2. Check for uploaded files (Your code)
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, msg: "Please upload at least one image." });
+    }
 
-    // Call AI and Upload to Cloudinary simultaneously
-    const [mlResponse, cloudinaryResult] = await Promise.all([
-      // Call AI Service
-      (async () => {
-        const form = new FormData();
+    // 3. Get Cloudinary URLs from your middleware
+    const imageUrls = req.files.map((file) => file.path);
+    const mainImageUrl = imageUrls[0]; // We'll send the first image to the AI
 
-        if (!mainImage.buffer) throw new Error("File buffer is empty");
+    // 4. ML Integration (Adapted ML Engineer code)
+    // Since we don't have a buffer from Multer, we fetch the image from Cloudinary to create one
+    const imageResponse = await axios.get(mainImageUrl, { responseType: "arraybuffer" });
+    const imageBuffer = Buffer.from(imageResponse.data, "binary");
 
-        form.append("file", mainImage.buffer, {
-          filename: mainImage.originalname,
-          contentType: mainImage.mimetype,
-        });
+    const form = new FormData();
+    form.append("file", imageBuffer, {
+      filename: "main_image.jpg", 
+      contentType: imageResponse.headers["content-type"] || "image/jpeg",
+    });
 
-        const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
-        return axios.post(`${mlUrl}/api/v1/product-metadata`, form, {
-          headers: { ...form.getHeaders() },
-        });
-      })(),
-
-      // Upload to Cloudinary
-      new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "lumeo_products" },
-          (error, result) => (error ? reject(error) : resolve(result)),
-        );
-        stream.end(mainImage.buffer);
-      }),
-    ]);
+    // Call AI Service
+    const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
+    const mlResponse = await axios.post(`${mlUrl}/api/v1/product-metadata`, form, {
+      headers: { ...form.getHeaders() },
+    });
 
     // Extract AI Data
     const { rgb, vector } = mlResponse.data.data;
 
-    //Create Product
+    // 5. Create Product (Merged logic)
     const newProduct = new Product({
-      ...req.body,
-      // Safety check for dimensions parsing
-      dimensions:
-        typeof req.body.dimensions === "string"
-          ? JSON.parse(req.body.dimensions)
-          : req.body.dimensions,
-      images: [cloudinaryResult.secure_url],
-      dominantColor: rgb,
-      imageEmbedding: vector,
+      sellerId: seller._id,
+      title,
+      description,
+      price,
+      category,
+      stock,
+      images: imageUrls,
+      dimensions: { length, width, height }, // Your dimensions logic
+      dominantColor: rgb,                      // ML Engineer's AI data
+      imageEmbedding: vector,                  // ML Engineer's AI data
     });
 
     await newProduct.save();
 
-    res.status(201).json({
-      success: true,
-      product: newProduct,
+    res.status(201).json({ 
+      success: true, 
+      msg: "Product created successfully!", 
+      product: newProduct 
     });
+
   } catch (error) {
-    console.error("Pipeline Error:", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Product Creation Error:", error);
+    res.status(500).json({ success: false, msg: error.message });
   }
 };
