@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 import 'dart:async';
+=======
+import 'package:flutter/material.dart';
+import 'package:lumeo/pages/cart_page.dart';
+//import 'pages/wish_list_page.dart';
+>>>>>>> cart-page
 
 import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +75,11 @@ class _SplashScreenState extends State<SplashScreen> {
           height: 150,
         ),
       ),
+<<<<<<< HEAD
+=======
+      home: const CartPage(),
+      debugShowCheckedModeBanner: false,
+>>>>>>> cart-page
     );
   }
 }
