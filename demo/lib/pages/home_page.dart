@@ -6,7 +6,7 @@ import 'home_content.dart';
 import 'wishlist_page.dart';
 import 'ar_view_page.dart';
 import 'cart_page.dart';
-import 'custom_page.dart';
+import 'customFurniture.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
     WishListPage(),
     ARViewPage(),
     CartPage(),
-    CustomPage(),
+    CustomFurniturePage(),
   ];
 
   @override
