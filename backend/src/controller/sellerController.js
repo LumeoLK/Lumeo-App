@@ -2,18 +2,7 @@ import Seller from "../models/seller.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import jwt from "jsonwebtoken";
-import { cloudinary } from "../lib/cloudinary.js"; // ← NEW
 
-// Helper to upload buffer to Cloudinary
-const uploadToCloudinary = (buffer, folder) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder },
-      (error, result) => (error ? reject(error) : resolve(result))
-    );
-    stream.end(buffer);
-  });
-};
 
 export const becomeSeller = async (req, res) => {
   try {
@@ -74,7 +63,9 @@ export const becomeSeller = async (req, res) => {
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
+
 };
+
 
 export const createProduct = async (req, res) => {
   try {

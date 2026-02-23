@@ -1,8 +1,8 @@
-import 'package:demo/Constants.dart';
-import 'package:demo/model/user.dart';
-import 'package:demo/pages/homePage.dart';
-import 'package:demo/pages/login.dart';
-import 'package:demo/utils/utils.dart';
+import '../Constants.dart';
+import '../model/user.dart';
+import '../pages/home_page.dart';
+import '../pages/login.dart';
+import '../utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -45,7 +45,7 @@ class AuthService {
         onSuccess: () {
           showSnackBar(context, 'Registered successfully!');
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const Homepage()),
+            MaterialPageRoute(builder: (context) => const HomePage()),
             (route) => false,
           );
         },
@@ -84,7 +84,7 @@ class AuthService {
           }
           await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
           navigator.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const Homepage()),
+            MaterialPageRoute(builder: (context) => const HomePage()),
             (route) => false,
           );
         },
@@ -142,7 +142,7 @@ class AuthService {
             );
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (_) => const Homepage()),
+              MaterialPageRoute(builder: (_) => const HomePage()),
               (_) => false,
             );
           },

@@ -1,10 +1,12 @@
 *.env
 lib/constants.dart
 /android/app/keystore/test.jks
+
 images/
 furniture_dataset_folder/
 *.csv
 .venv/
+
 # Miscellaneous
 *.class
 *.log
@@ -53,4 +55,7 @@ app.*.map.json
 
 # Ignore Unity build artifacts in the Flutter project
 **/android/unityLibrary/build/
+
 **/ios/UnityFramework/
+
+

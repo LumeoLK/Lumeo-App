@@ -61,6 +61,34 @@ const productSchema = mongoose.Schema(
     },
     views: { type: Number, default: 0 },
 
+ 
+  images: {
+  type: [String],
+  validate: {
+    validator: function (arr) {
+      return arr.length <= 5;
+    },
+    message: "You can upload up to 5 images only"
+  }
+},
+
+model3D: {
+    url: { 
+      type: String, 
+      default: "" 
+    },
+    placement: {
+      type: String,
+      enum: ["floor", "wall", "ceiling", "table"], // Critical for AR placement logic
+      default: "floor"
+    },
+    scale: {
+      type: Number,
+      default: 1.0 // 1.0 = Real World Scale
+    }
+  },
+
+
     averageRating: {
       type: Number,
       default: 0,

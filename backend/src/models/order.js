@@ -8,13 +8,7 @@ const orderSchema = mongoose.Schema({
     required: true,
   },
 
-  // 2. The Shop (Seller)
-  // Note: If a user buys from 2 different shops, you should create 2 separate Order documents.
-  sellerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Seller",
-    required: true,
-  },
+  
 
   // 3. The Products
   items: [
@@ -47,5 +41,7 @@ const orderSchema = mongoose.Schema({
   }
 }, { timestamps: true });
 
-const Order = mongoose.model("Order", orderSchema);
+
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+
 export default Order;
