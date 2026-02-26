@@ -5,9 +5,12 @@ import {
   getAllProducts,
   searchProducts,
 } from "../controller/sellerController.js";
-const router = express.Router();
-import {createProduct} from "../controller/productController.js";
+import { createProduct } from "../controller/productController.js";
 import { generate3DModel } from "../controller/productController.js";
+
+import { handleMeshyWebhook } from "../controller/productController.js";
+
+const router = express.Router();
 
 router.post(
   "/create",
@@ -18,6 +21,7 @@ router.post(
 );
 router.post("/generate3d", generate3DModel);
 
+router.post("/webhook/meshy-success", handleMeshyWebhook);
 
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
