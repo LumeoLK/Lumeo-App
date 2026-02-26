@@ -17,7 +17,8 @@ const worker = new Worker("meshy-3d-queue", async (job) => {
     
     // 1. Simulate Meshy AI Generation (Takes 5 seconds)
     await new Promise(resolve => setTimeout(resolve, 5000));
-    const generatedModelUrl = "https://mock-s3-url.com/model.glb"; 
+    const generatedModelUrl =
+      "https://www.lumeo.ltd/models/poppy_playtime_chapter_5__baby_long_legs.glb"; 
     
     // 2. The Webhook: Send the result BACK to the Main Backend
     try {
