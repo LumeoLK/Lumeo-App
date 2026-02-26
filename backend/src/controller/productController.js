@@ -3,8 +3,7 @@ import FormData from "form-data";
 import Product from "../models/Product.js";
 import Seller from "../models/seller.js";
 import { v2 as cloudinary } from "cloudinary";
-import { meshyQueue } from "../lib/queue.js";
-
+import { generate3DModel } from "../services/meshyservices.js";
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -38,7 +37,6 @@ export const createProduct = async (req, res) => {
 
     // 3. Process Upload & ML in Parallel
     const [mlResponse, cloudinaryResult] = await Promise.all([
-      // Task A: Send the Buffer straight to Python ML Service
       (async () => {
         const form = new FormData();
         form.append("file", mainImage.buffer, {
@@ -82,6 +80,8 @@ export const createProduct = async (req, res) => {
 
     await newProduct.save();
 
+    generate3DModel(newProduct._id, finalCloudinaryUrl); 
+
     res.status(201).json({
       success: true,
       msg: "Product created successfully!",
@@ -93,49 +93,29 @@ export const createProduct = async (req, res) => {
   }
 };
 
-export const generate3DModel = async (req, res) => {
-  try {
-    const { productId, imageUrl } = req.body;
 
-    if (!productId || !imageUrl) {
-      return res
-        .status(400)
-        .json({ msg: "Product ID and Image URL are required." });
-    }
-
-    // 1. Update the product status in MongoDB to show it's working
-    // await Product.findByIdAndUpdate(productId, {
-    //   "model3D.status": "generating" // We will need to add this status field to your model later
-    // });
-
-    // 2. Add the Job to the Redis Queue!
-    // We pass the data the Worker will need: the image to process, and the product ID to update later.
-    const job = await meshyQueue.add("generate-3d", {
-      productId: productId,
-      imageUrl: imageUrl,
-    });
-    console.log("generate3DModel - Job added to queue with ID:", job.id);
-    // 3. Immediately respond to the Flutter app (Do not wait for Meshy!)
-    res.status(200).json({
-      msg: "3D Generation started successfully!",
-      jobId: job.id,
-      status: "pending",
-    });
-  } catch (error) {
-    console.error("Queue Error:", error);
-    res.status(500).json({ msg: "Failed to start 3D generation." });
-  }
-};
 
 export const handleMeshyWebhook = async (req, res) => {
   try {
     const { productId, model3DUrl } = req.body;
+    const product = await Product.findById(productId);
 
-    // Find the product and update it with the new 3D model URL
-    await Product.findByIdAndUpdate(productId, {
-      "model3D.url": model3DUrl,
-      "model3D.status": "active",
-    });
+    if (!product || product.model3D.status === "approved") {
+      return res.status(200).json({ msg: "Already processed." });
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      productId,
+      {
+        "model3D.url": model3DUrl,
+        "model3D.status": "active",
+      },
+      { new: true },
+    );
+
+    if (!updated) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
 
     console.log(`🎉 Product ${productId} successfully updated with 3D model!`);
     res.status(200).json({ msg: "Webhook received and database updated." });

@@ -30,7 +30,7 @@ const worker = new Worker("meshy-3d-queue", async (job) => {
         console.log(`✅ Webhook sent successfully for Job ${job.id}`);
     } catch (error) {
         console.error(`❌ Failed to send webhook:`, error.message);
-        throw error; // This tells BullMQ the job failed so it can retry
+        throw error; 
     }
 
     return { status: "success" };
