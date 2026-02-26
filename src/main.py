@@ -1,117 +1,140 @@
 import os
 import cv2
+import numpy as np
 from blueprint.blueprint_model import BlueprintModel
 
 
 def main():
-    # ---- path setup ----
+    # -------------------------------------------------
+    # PATH SETUP
+    # -------------------------------------------------
     base_dir = os.path.dirname(os.path.dirname(__file__))
-    image_path = os.path.join(base_dir, "assets", "blueprints", "chairblueprint1.jpg")
+    image_path = os.path.join(
+        base_dir,
+        "assets",
+        "blueprints",
+        "chairblueprint1.jpg"
+    )
 
-    blueprint = BlueprintModel(image_path)
+    # -------------------------------------------------
+    # INITIALIZE MODEL
+    # -------------------------------------------------
+    model = BlueprintModel(image_path)
 
-    # ---- pipeline ----
-    blueprint.load_image()
-    blueprint.preprocess()
-    blueprint.split_views()
+    model.load_image()
+    model.preprocess()
+    model.split_views()
 
-    # ---- basic dimensions ----
-    front_w, front_h = blueprint.extract_dimensions("front")
-    side_w, side_h = blueprint.extract_dimensions("side")
-    top_w, top_h = blueprint.extract_dimensions("top")
-
-    print("\n=== BASIC FURNITURE DIMENSIONS (PIXELS) ===")
-    print(f"Width  : {front_w}")
-    print(f"Height : {front_h}")
-    print(f"Depth  : {side_w}")
-
-    # ==========================================================
-    # FRONT CONTOUR (SAFE)
-    # ==========================================================
-    front_curve = blueprint.extract_contour("front")
-
-    if front_curve is not None and len(front_curve) > 0:
-        front_view = blueprint.views["front"]
-        front_canvas = cv2.cvtColor(front_view, cv2.COLOR_GRAY2BGR)
-
-        cv2.drawContours(front_canvas, [front_curve], -1, (0, 255, 0), 2)
-        cv2.imshow("Front Curve", front_canvas)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        print("⚠️ Front contour not detected")
-
-    # ==========================================================
-    # FRONT PART SEGMENTATION (ONCE)
-    # ==========================================================
-    parts = blueprint.segment_front_parts()
-
-    front_view = blueprint.views["front"]
-    canvas = cv2.cvtColor(front_view, cv2.COLOR_GRAY2BGR)
-
-    colors = {
-        "backrest": (255, 0, 0),  # Blue
-        "seat": (0, 255, 0),      # Green
-        "legs": (0, 0, 255)       # Red
-    }
-
-    for part, contours in parts.items():
-        if contours:
-            cv2.drawContours(canvas, contours, -1, colors[part], 2)
-
-    cv2.imshow("Front Segmentation", canvas)
+    # -------------------------------------------------
+    # SHOW ORIGINAL IMAGE
+    # -------------------------------------------------
+    original = cv2.resize(model.image, (800, 800))
+    cv2.imshow("1. ORIGINAL BLUEPRINT", original)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # ==========================================================
-    # FRONT PART DIMENSIONS (FILTERED)
-    # ==========================================================
-    part_dims = blueprint.extract_front_part_dimensions()
+    # -------------------------------------------------
+    # SHOW FRONT & SIDE VIEWS
+    # -------------------------------------------------
+    front = cv2.resize(model.views["front"], (350, 350))
+    side = cv2.resize(model.views["side"], (350, 350))
+    combined = np.hstack([front, side])
 
-    # ---- SCALE CALCULATION ----
-    seat_px_height = part_dims["seat"]["height"]
+    cv2.imshow("2. FRONT (left) | SIDE (right)", combined)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    REAL_SEAT_HEIGHT_CM = 45  # industry standard
+    # -------------------------------------------------
+    # EXTRACT DIMENSIONS
+    # -------------------------------------------------
+    front_w, front_h = model.extract_dimensions("front")
+    side_w, _ = model.extract_dimensions("side")
 
-    scale = blueprint.compute_scale(seat_px_height, REAL_SEAT_HEIGHT_CM)
+    # -------------------------------------------------
+    # COMPUTE SCALE
+    # (Assume real chair height = 90 cm)
+    # -------------------------------------------------
+    model.compute_scale(front_h, real_height_cm=90.0)
 
-    print("\n=== REAL WORLD DIMENSIONS (CM) ===")
-    print(f"Chair Width  : {front_w * scale:.1f} cm")
-    print(f"Chair Height : {front_h * scale:.1f} cm")
-    print(f"Chair Depth  : {side_w * scale:.1f} cm")
+    # -------------------------------------------------
+    # DRAW FRONT CONTOUR
+    # -------------------------------------------------
+    front_contour = model.extract_contour("front")
+    front_canvas = cv2.cvtColor(model.views["front"], cv2.COLOR_GRAY2BGR)
 
+    cv2.drawContours(front_canvas, [front_contour], -1, (0, 255, 0), 2)
+    cv2.putText(
+        front_canvas,
+        f"FRONT CONTOUR: {len(front_contour)} pts",
+        (10, 25),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        2
+    )
 
-    print("\n=== FRONT VIEW PART DIMENSIONS (PIXELS) ===")
-    for part, d in part_dims.items():
-        if d["width"] > 0 and d["height"] > 0:
-            print(f"{part.upper():10s} | width={d['width']}  height={d['height']}")
+    cv2.imshow("3. FRONT CONTOUR", front_canvas)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    
-    front_curve = blueprint.extract_contour("front")
-    side_curve = blueprint.extract_contour("side")
+    # -------------------------------------------------
+    # DRAW SIDE CONTOUR
+    # -------------------------------------------------
+    side_contour = model.extract_contour("side")
+    side_canvas = cv2.cvtColor(model.views["side"], cv2.COLOR_GRAY2BGR)
 
-    front_real = blueprint.contour_to_real_coords(front_curve, scale)
-    side_real = blueprint.contour_to_real_coords(side_curve, scale)
+    cv2.drawContours(side_canvas, [side_contour], -1, (255, 255, 0), 2)
+    cv2.putText(
+        side_canvas,
+        f"SIDE CONTOUR: {len(side_contour)} pts",
+        (10, 25),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        2
+    )
 
-    print(f"\nFront curve real points: {len(front_real)}")
-    print(f"Side curve real points : {len(side_real)}")
+    cv2.imshow("4. SIDE CONTOUR", side_canvas)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
+    # -------------------------------------------------
+    # GENERATE 2.5D POINT CLOUD
+    # -------------------------------------------------
+    point_cloud = model.generate_2_5d_point_cloud()
 
-    # ==========================================================
-    # SIDE CONTOUR
-    # ==========================================================
-    side_curve = blueprint.extract_contour("side")
+    print("\nSample 3D points (cm):")
+    for p in point_cloud[:10]:
+        print(p)
 
-    if side_curve is not None and len(side_curve) > 0:
-        side_view = blueprint.views["side"]
-        side_canvas = cv2.cvtColor(side_view, cv2.COLOR_GRAY2BGR)
+    # -------------------------------------------------
+    # SIMPLE VISUAL DEPTH CHECK (2D projection)
+    # -------------------------------------------------
+    h, w = model.views["front"].shape
+    cloud_vis = np.zeros((h, w, 3), dtype=np.uint8)
 
-        cv2.drawContours(side_canvas, [side_curve], -1, (255, 255, 0), 2)
-        cv2.imshow("Side Curve", side_canvas)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        print("⚠️ Side contour not detected")
+    z_vals = point_cloud[:, 2]
+    z_norm = (z_vals - z_vals.min()) / (np.ptp(z_vals) + 1e-6)
+
+    for (x, y, z), zn in zip(point_cloud, z_norm):
+        px = int(x / model.scale_factor)
+        py = int(y / model.scale_factor)
+
+        if 0 <= px < w and 0 <= py < h:
+            color = int(zn * 255)
+            cloud_vis[py, px] = (255 - color, color, 50)
+
+    cv2.imshow("5. 2.5D DEPTH MAP (COLOR = DEPTH)", cloud_vis)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # -------------------------------------------------
+    # SAVE OUTPUT
+    # -------------------------------------------------
+    model.save_point_cloud("stage1_chair_pointcloud.txt")
+
+    print("\n STAGE-1 COMPLETE")
+    print("You now have a clean, scaled 2.5D point cloud.")
 
 
 if __name__ == "__main__":
