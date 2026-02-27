@@ -6,7 +6,7 @@ import {
   searchProducts,
 } from "../controller/sellerController.js";
 import { createProduct } from "../controller/productController.js";
-import { generate3DModel } from "../controller/productController.js";
+
 
 import { handleMeshyWebhook } from "../controller/productController.js";
 
@@ -19,7 +19,7 @@ router.post(
   upload.array("images", 5),
   createProduct,
 );
-router.post("/generate3d", generate3DModel);
+
 
 router.post("/webhook/meshy-success", handleMeshyWebhook);
 

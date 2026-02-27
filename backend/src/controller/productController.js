@@ -79,13 +79,14 @@ export const createProduct = async (req, res) => {
     });
 
     await newProduct.save();
-
-    generate3DModel(newProduct._id, finalCloudinaryUrl); 
+    console.log("data saved")
+    const result= await generate3DModel(newProduct._id, finalCloudinaryUrl); 
 
     res.status(201).json({
       success: true,
       msg: "Product created successfully!",
       product: newProduct,
+      jobid: result.jobId,
     });
   } catch (error) {
     console.error("Product Creation Error:", error);

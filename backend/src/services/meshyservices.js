@@ -1,5 +1,5 @@
 import Product from "../models/Product.js";
-
+import {meshyQueue} from "../lib/queue.js"; // Import the queue instance
 export const generate3DModel = async (productId, imageUrl) => {
   try {
     if (!productId || !imageUrl) {
@@ -24,11 +24,11 @@ export const generate3DModel = async (productId, imageUrl) => {
     });
     console.log("generate3DModel - Job added to queue with ID:", job.id);
     // 3. Immediately respond to the Flutter app (Do not wait for Meshy!)
-    res.status(200).json({
+    return {
       msg: "3D Generation started successfully!",
       jobId: job.id,
       status: "pending",
-    });
+    }
   } catch (error) {
     console.error("Queue Error:", error);
     res.status(500).json({ msg: "Failed to start 3D generation." });

@@ -23,7 +23,7 @@ const worker = new Worker("meshy-3d-queue", async (job) => {
     // 2. The Webhook: Send the result BACK to the Main Backend
     try {
         // Change localhost to your Render URL later for production
-        await axios.post("http://localhost:5000/api/products/webhook/meshy-success", {
+        await axios.post("http://localhost:3000/api/products/webhook/meshy-success", {
             productId: job.data.productId,
             model3DUrl: generatedModelUrl
         });
