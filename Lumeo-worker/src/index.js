@@ -2,8 +2,8 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 import axios from "axios";
 import dotenv from "dotenv";
-import { createMeshyTask, pollMeshyTask } from "./services/meshy.service.js"; // Import the new service
-
+// import { createMeshyTask, pollMeshyTask } from "./services/meshy.service.js"; // Import the new service
+import { runMeshyProcess } from "./services/testAPI.js"; // For testing purposes
 dotenv.config();
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
@@ -12,7 +12,8 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 });
 
 console.log("👷 Lumeo Meshy Worker is listening for jobs...");
-
+const testResult = await runMeshyProcess(); // Run the test function to verify Meshy integration (optional)
+console.log("🧪 Test Result:", testResult);
 const worker = new Worker(
   "meshy-3d-queue",
   async (job) => {
