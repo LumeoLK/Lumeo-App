@@ -1,9 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import axios from "axios";
+import dotenv from "dotenv";
+import { createMeshyTask, pollMeshyTask } from "./services/meshy.service.js"; // Import the new service
+
+dotenv.config();
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -12,26 +13,38 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 
 console.log("👷 Lumeo Meshy Worker is listening for jobs...");
 
-const worker = new Worker("meshy-3d-queue", async (job) => {
+const worker = new Worker(
+  "meshy-3d-queue",
+  async (job) => {
     console.log(`\n📦 Processing Product ID: ${job.data.productId}`);
-    
-    // 1. Simulate Meshy AI Generation (Takes 5 seconds)
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    const generatedModelUrl =
-      "https://www.lumeo.ltd/models/poppy_playtime_chapter_5__baby_long_legs.glb"; 
-    
-    // 2. The Webhook: Send the result BACK to the Main Backend
-    try {
-        // Change localhost to your Render URL later for production
-        await axios.post("http://localhost:3000/api/products/webhook/meshy-success", {
-            productId: job.data.productId,
-            model3DUrl: generatedModelUrl
-        });
-        console.log(`✅ Webhook sent successfully for Job ${job.id}`);
-    } catch (error) {
-        console.error(`❌ Failed to send webhook:`, error.message);
-        throw error; 
-    }
+    console.log(`🖼️ Image URL: ${job.data.imageUrl}`);
 
-    return { status: "success" };
-}, { connection: redisConnection });
+    try {
+      // 1. Send image to Meshy AI
+      const taskId = await createMeshyTask(job.data.imageUrl);
+      console.log(`✅ Meshy Task Created! ID: ${taskId}`);
+
+      // 2. Wait for Meshy to finish generating the 3D model
+      const generatedModelUrl = await pollMeshyTask(taskId);
+      console.log(`🎉 3D Model Generated! URL: ${generatedModelUrl}`);
+
+      // 3. The Webhook: Send the result BACK to the Main Backend
+      await axios.post(
+        "http://localhost:5000/api/products/webhook/meshy-success",
+        {
+          productId: job.data.productId,
+          model3DUrl: generatedModelUrl,
+        },
+      );
+      console.log(
+        `✅ Webhook sent successfully for Product ${job.data.productId}`,
+      );
+
+      return { status: "success", modelUrl: generatedModelUrl };
+    } catch (error) {
+      console.error(`❌ Job Failed:`, error.message);
+      throw error; // Let BullMQ handle the retry logic
+    }
+  },
+  { connection: redisConnection },
+);
