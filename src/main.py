@@ -4,7 +4,8 @@ import numpy as np
 
 from blueprint.blueprint_model import BlueprintModel
 from mesh_builder import MeshBuilder
-
+from geometry.region_splitter import split_front_regions, region_bbox
+from geometry.leg_splitter import split_legs_by_x
 
 def main():
     # -------------------------------------------------
@@ -79,6 +80,41 @@ def main():
 
     print("\nSTAGE-2 COMPLETE")
     print("Solid 3D chair mesh exported")
+
+    # -------------------------------------------------
+    # STAGE 3 – FRONT VIEW REGION SPLIT (SEMANTIC STEP)
+    # -------------------------------------------------
+
+    front_pts = front_contour.reshape(-1, 2)
+
+    regions = split_front_regions(front_pts)
+
+    print("\n=== REGION SPLIT (FRONT VIEW) ===")
+
+    for name, pts in regions.items():
+        bbox = region_bbox(pts)
+        if bbox:
+            print(f"{name.upper()} bbox (px): {bbox}")
+        else:
+            print(f"{name.upper()} region empty")
+
+    # -------------------------------
+    # STAGE 3B – LEG CLUSTERING
+    # -------------------------------
+    leg_pts = regions["legs"]
+
+    leg_clusters = split_legs_by_x(leg_pts)
+
+    print("\n=== LEG CLUSTERS ===")
+    for name, pts in leg_clusters.items():
+        xs = pts[:,0]
+        ys = pts[:,1]
+        print(
+            f"{name.upper():<12} "
+            f"x:[{xs.min():.0f}-{xs.max():.0f}] "
+            f"y:[{ys.min():.0f}-{ys.max():.0f}] "
+            f"pts={len(pts)}"
+        )
 
 
 if __name__ == "__main__":
