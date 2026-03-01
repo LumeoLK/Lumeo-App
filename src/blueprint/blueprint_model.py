@@ -95,8 +95,9 @@ class BlueprintModel:
     # SCALE
     # -------------------------------------------------
     def compute_scale(self, pixel_height, real_height_cm):
-        self.scale = real_height_cm / pixel_height
-        return self.scale
+        self.scale_factor = real_height_cm / pixel_height
+        print(f"Scale factor: 1 px = {self.scale_factor:.4f} cm")
+        return self.scale_factor
 
     # -------------------------------------------------
     # PIXEL → REAL
@@ -116,10 +117,8 @@ class BlueprintModel:
     # 2.5D POINT CLOUD (CORE OUTPUT)
     # -------------------------------------------------
     def generate_2_5d_point_cloud(self):
-        if not hasattr(self, "scale"):
-            raise ValueError(
-                "Scale not computed. Call compute_scale() before generating point cloud."
-        )
+        if self.scale_factor is None:
+            raise ValueError("Scale not computed. Call compute_scale() first.")
         self.front_contour = self.extract_contour("front")
         self.side_contour  = self.extract_contour("side")
 
