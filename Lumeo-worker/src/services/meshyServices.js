@@ -1,7 +1,4 @@
 import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const MESHY_API_KEY = process.env.MESHY_API_KEY;
 const MESHY_BASE_URL = "https://api.meshy.ai/openapi/v1/image-to-3d"; //
@@ -14,7 +11,7 @@ const headers = {
 /**
  * Step 1: Sends the image to Meshy and gets a Task ID
  */
-export const createMeshyTask = async (imageUrl) => {
+export const createMeshyTask = async (imageUrl,productId) => {
   try {
     const response = await axios.post(
       MESHY_BASE_URL,
@@ -26,6 +23,13 @@ export const createMeshyTask = async (imageUrl) => {
     );
 
     // Meshy returns the task ID in the 'result' field
+    const result = await axios.post(
+      `http://localhost:3000/api/products/webhook/meshy-success/${productId}`,
+      {
+        meshyTaskId: response.data.result,
+        status: "generating",
+      },
+    );
     return response.data.result;
   } catch (error) {
     console.error(
@@ -54,13 +58,10 @@ export const pollMeshyTask = async (taskId) => {
         console.log(`📊 Meshy Task Progress: ${progress}%`);
 
         if (taskStatus === "SUCCEEDED") {
-          //
           clearInterval(intervalId);
-          // Meshy provides multiple formats; we need the GLB for Unity/AR
           const glbUrl = response.data.model_urls.glb;
           resolve(glbUrl);
         } else if (taskStatus === "FAILED" || taskStatus === "CANCELED") {
-          //
           clearInterval(intervalId);
           reject(
             new Error(

@@ -22,7 +22,7 @@ export const generate3DModel = async (productId, imageUrl) => {
       productId: productId,
       imageUrl: imageUrl,
     });
-    console.log("generate3DModel - Job added to queue with ID:", job.id);
+    console.log("generate3DModel - Job added to queue with ID:", job);
     // 3. Immediately respond to the Flutter app (Do not wait for Meshy!)
     return {
       msg: "3D Generation started successfully!",

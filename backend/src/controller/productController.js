@@ -4,6 +4,7 @@ import Product from "../models/Product.js";
 import Seller from "../models/seller.js";
 import { v2 as cloudinary } from "cloudinary";
 import { generate3DModel } from "../services/meshyservices.js";
+import { tryCatch } from "bullmq";
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -75,7 +76,8 @@ export const createProduct = async (req, res) => {
       images: [finalCloudinaryUrl], // The actual URL from Task B
       dimensions: { length, width, height },
       dominantColor: rgb, // The AI data from Task A
-      imageEmbedding: vector, // The AI data from Task A
+      imageEmbedding: vector,
+      model3D: { status: "pending" }
     });
 
     await newProduct.save();
@@ -109,7 +111,7 @@ export const handleMeshyWebhook = async (req, res) => {
       productId,
       {
         "model3D.url": model3DUrl,
-        "model3D.status": "active",
+        "model3D.status": "success",
       },
       { new: true },
     );
@@ -125,3 +127,22 @@ export const handleMeshyWebhook = async (req, res) => {
     res.status(500).json({ msg: "Failed to process webhook." });
   }
 };
+
+export const updateStatus = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { meshyTaskId,status} = req.body;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
+    await Product.findByIdAndUpdate(productId, {
+      "model3D.meshyTaskId": meshyTaskId,
+      "model3D.status": status,
+    });
+  } catch (error) {
+    console.error("Error updating product status:", error);
+    res.status(500).json({ msg: "Failed to update product status." });
+  }
+}

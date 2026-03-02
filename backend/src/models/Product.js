@@ -76,20 +76,19 @@ const productSchema = mongoose.Schema(
         type: String,
         default: "",
       },
-      placement: {
+      meshyTaskId: {
         type: String,
-        enum: ["floor", "wall", "ceiling", "table"], // Critical for AR placement logic
-        default: "floor",
+        default: "",
       },
       scale: {
         type: Number,
         default: 1.0, // 1.0 = Real World Scale
       },
-      status:{
+      status: {
         type: String,
-        enum: ["pending", "approved", "failed", "generating"],
+        enum: ["pending", "approved", "failed", "generating","success"],
         default: "pending",
-      }
+      },
     },
 
     averageRating: {

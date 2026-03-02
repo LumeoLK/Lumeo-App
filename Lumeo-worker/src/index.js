@@ -1,10 +1,12 @@
+
+import dotenv from "dotenv";
+dotenv.config();
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import axios from "axios";
-import dotenv from "dotenv";
-// import { createMeshyTask, pollMeshyTask } from "./services/meshy.service.js"; // Import the new service
+import { createMeshyTask, pollMeshyTask } from "./services/meshyServices.js"; 
 import { runMeshyProcess } from "./services/testAPI.js"; // For testing purposes
-dotenv.config();
+
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -22,7 +24,10 @@ const worker = new Worker(
 
     try {
       // 1. Send image to Meshy AI
-      const taskId = await createMeshyTask(job.data.imageUrl);
+      const taskId = await createMeshyTask(
+        job.data.imageUrl,
+        job.data.productId,
+      );
       console.log(`✅ Meshy Task Created! ID: ${taskId}`);
 
       // 2. Wait for Meshy to finish generating the 3D model
@@ -31,7 +36,7 @@ const worker = new Worker(
 
       // 3. The Webhook: Send the result BACK to the Main Backend
       await axios.post(
-        "http://localhost:5000/api/products/webhook/meshy-success",
+        "http://localhost:3000/api/products/webhook/meshy-success",
         {
           productId: job.data.productId,
           model3DUrl: generatedModelUrl,
@@ -47,5 +52,5 @@ const worker = new Worker(
       throw error; // Let BullMQ handle the retry logic
     }
   },
-  { connection: redisConnection },
+  { connection: redisConnection, concurrency: 5 },
 );

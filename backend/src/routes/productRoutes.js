@@ -8,7 +8,10 @@ import {
 import { createProduct } from "../controller/productController.js";
 
 
-import { handleMeshyWebhook } from "../controller/productController.js";
+import {
+  handleMeshyWebhook,
+  updateStatus,
+} from "../controller/productController.js";
 
 const router = express.Router();
 
@@ -20,10 +23,11 @@ router.post(
   createProduct,
 );
 
-
+//webhooks
 router.post("/webhook/meshy-success", handleMeshyWebhook);
 
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 
+router.post("/webhook/meshy-success/:productId", updateStatus);
 export default router;
