@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SearchInput } from '../components/ui/Input';
 import { DataTable, Column } from '../components/ui/DataTable';
 import { StatusBadge, StatusType } from '../components/ui/StatusBadge';

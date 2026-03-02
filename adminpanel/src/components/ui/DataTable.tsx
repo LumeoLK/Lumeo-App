@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 export interface Column<T> {
   header: string;
   accessorKey?: keyof T;
-  cell?: (item: T) => React.ReactNode;
+  cell?: (item: T) => ReactNode;
   className?: string;
 }
 interface DataTableProps<T> {
@@ -76,7 +76,7 @@ export function DataTable<
 
                       {col.cell ?
                 col.cell(item) :
-                item[col.accessorKey as keyof T] as React.ReactNode}
+                item[col.accessorKey as keyof T] as ReactNode}
                     </td>
               )}
                 </motion.tr>

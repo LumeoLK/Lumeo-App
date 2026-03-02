@@ -1,8 +1,8 @@
-import React from 'react';
 import { cn } from '../../lib/utils';
 import { Search } from 'lucide-react';
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon?: React.ReactNode;
+import type { InputHTMLAttributes, ReactNode } from 'react';
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  icon?: ReactNode;
   label?: string;
   error?: string;
 }

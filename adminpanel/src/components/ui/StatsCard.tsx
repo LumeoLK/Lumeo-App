@@ -1,6 +1,6 @@
-import React from 'react';
+import type { ComponentType, SVGProps } from 'react';
 import { Card } from './Card';
-import { ArrowUpRight, ArrowDownRight, BoxIcon } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 interface StatsCardProps {
@@ -8,7 +8,7 @@ interface StatsCardProps {
   value: string;
   change?: string;
   changeType?: 'up' | 'down';
-  icon: BoxIcon;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   delay?: number;
 }
 export function StatsCard({

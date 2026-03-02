@@ -1,7 +1,5 @@
-import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Bell, Menu, Search } from 'lucide-react';
-import { Input } from '../ui/Input';
 interface TopBarProps {
   onMenuClick: () => void;
 }

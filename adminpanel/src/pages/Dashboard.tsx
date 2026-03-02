@@ -1,27 +1,16 @@
-import React from 'react';
-import {
-  DollarSign,
-  Users,
-  Store,
-  ShieldCheck,
-  TrendingUp,
-  Clock,
-  ShoppingBag } from
-'lucide-react';
+import { DollarSign, Users, Store, ShieldCheck, Clock, ShoppingBag } from 'lucide-react';
 import { StatsCard } from '../components/ui/StatsCard';
 import { Card } from '../components/ui/Card';
+import { motion } from 'framer-motion';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  ResponsiveContainer,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart } from
-'recharts';
-import { motion } from 'framer-motion';
+  Area
+} from 'recharts';
 const chartData = [
 {
   name: 'Mon',
@@ -237,7 +226,7 @@ export function Dashboard() {
               Recent Activity
             </h3>
             <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar max-h-[350px]">
-              {activityData.map((item, i) =>
+              {activityData.map((item) =>
               <div key={item.id} className="flex gap-4">
                   <div
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.color}`}>

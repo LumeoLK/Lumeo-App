@@ -1,12 +1,14 @@
-import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+import type { ReactNode } from 'react';
+
+type MotionButtonProps = React.ComponentProps<typeof motion.button>;
+interface ButtonProps extends MotionButtonProps {
   variant?: 'primary' | 'secondary' | 'destructive' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 export function Button({
   className,
@@ -48,7 +50,7 @@ export function Button({
 
       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {!loading && icon && <span className="mr-2">{icon}</span>}
-      {children}
+      {(children as ReactNode)}
     </motion.button>);
 
 }

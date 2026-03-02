@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Store } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -6,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { StatusBadge } from '../components/ui/StatusBadge';
 export function ProductDetail() {
   const { id } = useParams();
+  void id; // using id temporarily to satisfy linter
   const navigate = useNavigate();
   return (
     <div className="space-y-6">

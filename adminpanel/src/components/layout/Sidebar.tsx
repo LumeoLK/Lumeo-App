@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -8,9 +7,7 @@ import {
   ShoppingCart,
   Palette,
   Settings,
-  LogOut,
-  Menu,
-  X } from
+  LogOut } from
 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';

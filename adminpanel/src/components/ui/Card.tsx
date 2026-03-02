@@ -1,8 +1,8 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 interface CardProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg';
   hover?: boolean;

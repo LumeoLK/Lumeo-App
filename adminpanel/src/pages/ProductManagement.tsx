@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SearchInput } from '../components/ui/Input';
 import { DataTable, Column } from '../components/ui/DataTable';
 import { StatusBadge, StatusType } from '../components/ui/StatusBadge';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Edit, Trash2, RefreshCw, Eye } from 'lucide-react';
+import { Trash2, RefreshCw, Eye } from 'lucide-react';
 interface Product {
   id: number;
   title: string;

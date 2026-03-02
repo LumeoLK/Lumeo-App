@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SearchInput } from '../components/ui/Input';
 import { DataTable, Column } from '../components/ui/DataTable';
 import { StatusBadge, StatusType } from '../components/ui/StatusBadge';
 import { Modal } from '../components/ui/Modal';
 import { Card } from '../components/ui/Card';
-import { CheckCircle, Clock, Truck, Package } from 'lucide-react';
+import { CheckCircle, Truck, Package } from 'lucide-react';
 import { cn } from '../lib/utils';
 interface Order {
   id: string;

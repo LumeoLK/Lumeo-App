@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { FileImage, ZoomIn, Check, X, ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 interface Applicant {
   id: number;
