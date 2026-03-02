@@ -56,10 +56,15 @@ class _RegisterState extends ConsumerState<Register> {
                       textAlign: TextAlign.left,
                     ),
                     SizedBox(height: 65),
+
                     TextFormField(
                       controller: username,
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "User name",
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -76,8 +81,12 @@ class _RegisterState extends ConsumerState<Register> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: email,
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "Enter email",
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -99,9 +108,13 @@ class _RegisterState extends ConsumerState<Register> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: password,
+                      style: const TextStyle(color: Colors.black),
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Enter password',
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -119,9 +132,13 @@ class _RegisterState extends ConsumerState<Register> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: confirmPassword,
+                      style: const TextStyle(color: Colors.black),
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Confirm password',
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
