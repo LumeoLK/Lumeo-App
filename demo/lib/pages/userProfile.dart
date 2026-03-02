@@ -1,22 +1,4 @@
-// import 'package:flutter/material.dart';
-
-// class Userprofile extends StatefulWidget {
-//   const Userprofile({super.key});
-
-//   @override
-//   State<Userprofile> createState() => _UserprofileState();
-// }
-
-// class _UserprofileState extends State<Userprofile> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-// }
-
 import 'package:flutter/material.dart';
-
-//void main() => runApp(const MaterialApp(home: ProfilePage()));
 
 class Userprofile extends StatefulWidget {
   const Userprofile({super.key});
@@ -100,6 +82,8 @@ class _UserprofileState extends State<Userprofile> {
             _buildMenuTile('My orders', 'Already have 12 orders'),
             _buildMenuTile('Shipping addresses', '3 addresses'),
             _buildMenuTile('Payment methods', 'Visa **34'),
+            _buildMenuTile('Settings', 'Account and privacy'),
+            _buildMenuTile('Custom Furniture', 'Create your own design'),
 
             const SizedBox(height: 30),
 
