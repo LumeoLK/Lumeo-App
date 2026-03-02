@@ -89,7 +89,7 @@ class _LoginState extends ConsumerState<Login> {
                     TextFormField(
                       controller: password,
                       obscureText: true,
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'Enter password',
                         hintStyle: TextStyle(

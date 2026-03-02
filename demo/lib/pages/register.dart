@@ -23,8 +23,6 @@ class _RegisterState extends ConsumerState<Register> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = ref.read(authProvider);
-
     return Scaffold(
       body: Stack(
         children: [
@@ -162,12 +160,15 @@ class _RegisterState extends ConsumerState<Register> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              authService.signUpUser(
-                                context: context,
-                                email: email.text,
-                                name: username.text,
-                                password: password.text,
-                              );
+                              ref
+                                  .read(authProvider)
+                                  .signUpUser(
+                                    context: context,
+                                    email: email.text,
+                                    name: username.text,
+                                    password: password.text,
+                                    ref: ref,
+                                  );
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(e.toString())),

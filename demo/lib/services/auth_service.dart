@@ -23,6 +23,7 @@ class AuthService {
     required String email,
     required String name,
     required String password,
+    required WidgetRef ref,
   }) async {
     try {
       final Map<String, dynamic> userData = {
@@ -42,7 +43,21 @@ class AuthService {
       httpErrorHandle(
         response: res,
         context: context,
-        onSuccess: () {
+        onSuccess: () async {
+          final body = jsonDecode(res.body);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+
+          if (body['token'] != null) {
+            await prefs.setString('x-auth-token', body['token']);
+          }
+          if (body['user'] != null) {
+            ref.read(currentUserProvider.notifier).state = User.fromJson(
+              body['user'],
+            );
+          } else {
+            // Fallback if your backend sends the user object directly without the 'user' key
+            ref.read(currentUserProvider.notifier).state = User.fromJson(body);
+          }
           showSnackBar(context, 'Registered successfully!');
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const HomePage()),
