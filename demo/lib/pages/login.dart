@@ -55,15 +55,19 @@ class _LoginState extends ConsumerState<Login> {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color.fromARGB(255, 255, 255, 255),
                       ), // text over image
                       textAlign: TextAlign.left,
                     ),
                     SizedBox(height: 65),
                     TextFormField(
                       controller: email,
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "Enter email",
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -85,8 +89,12 @@ class _LoginState extends ConsumerState<Login> {
                     TextFormField(
                       controller: password,
                       obscureText: true,
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: 'Enter password',
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
