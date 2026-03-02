@@ -15,18 +15,19 @@
 // }
 
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/auth_service.dart';
 //void main() => runApp(const MaterialApp(home: ProfilePage()));
 
-class Userprofile extends StatefulWidget {
+class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
 
   // StatefulWidgets create a 'State' object that persists
   @override
-  State<Userprofile> createState() => _UserprofileState();
+  ConsumerState<Userprofile> createState() => _UserprofileState();
 }
 
-class _UserprofileState extends State<Userprofile> {
+class _UserprofileState extends ConsumerState<Userprofile> {
   // 1. Define the variables that will change (the "State")
   bool isSeller = false;
 
@@ -39,6 +40,7 @@ class _UserprofileState extends State<Userprofile> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -70,27 +72,27 @@ class _UserprofileState extends State<Userprofile> {
               ),
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 40,
                   backgroundImage: NetworkImage('https://placeholder.com/150'),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Matilda Brown',
-                      style: TextStyle(
+                      user?.name ?? 'Matilda Brown',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      'matildabrown@mail.com',
-                      style: TextStyle(color: Colors.grey),
+                      user?.email ?? 'matildabrown@mail.com',
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
