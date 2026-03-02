@@ -1,95 +1,69 @@
 import os
-import cv2
 import numpy as np
-
 from blueprint.blueprint_model import BlueprintModel
-from mesh_builder import MeshBuilder
-from geometry.region_splitter import split_front_regions, region_bbox
-from geometry.leg_splitter import split_legs_by_x
+from chair_builder import ChairBuilder
 
 
 def main():
     # -------------------------------------------------
-    # PATH SETUP
+    # ALWAYS RESOLVE PATH FROM THIS FILE LOCATION
     # -------------------------------------------------
-    base_dir = os.path.dirname(os.path.dirname(__file__))
+    SRC_DIR = os.path.dirname(os.path.abspath(__file__))          # /src
+    PROJECT_ROOT = os.path.dirname(SRC_DIR)                       # /LumeoApp
+
     image_path = os.path.join(
-        base_dir,
+        PROJECT_ROOT,
         "assets",
         "blueprints",
         "chairblueprint1.jpg"
     )
 
     if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Blueprint not found: {image_path}")
+        raise FileNotFoundError(f"Blueprint not found at: {image_path}")
+
+    print("Using blueprint:", image_path)
 
     # -------------------------------------------------
-    # STAGE 1 – BLUEPRINT → POINT CLOUD
+    # PIPELINE
     # -------------------------------------------------
     model = BlueprintModel(image_path)
-
     model.load_image()
     model.preprocess()
     model.split_views()
 
-    # Dimensions
-    front_w, front_h = model.extract_dimensions("front")
+    _, front_h = model.extract_dimensions("front")
     model.extract_dimensions("side")
 
-    # SCALE MUST COME HERE
-    model.compute_scale(front_h, real_height_cm=90.0)
+    model.compute_scale(front_h, real_height_cm=90)
 
-    # THEN contours
-    front_contour = model.extract_contour("front")
-    side_contour = model.extract_contour("side")
-
-    # THEN point cloud
-    point_cloud = model.generate_2_5d_point_cloud()
-
+    model.generate_2_5d_point_cloud()
     model.save_point_cloud("stage1_chair_pointcloud.txt")
 
-    print("\nSTAGE-1 COMPLETE")
+    dims = model.get_real_dimensions_cm()
 
-    # -------------------------------------------------
-    # STAGE 2 – POINT CLOUD → DEBUG MESH
-    # -------------------------------------------------
-    points = np.loadtxt("stage1_chair_pointcloud.txt")
+    chair_params = {
+        "seat": {
+            "width": dims["width"],
+            "depth": dims["depth"],
+            "thickness": 3,
+            "height": dims["height"] * 0.45
+        },
+        "back": {
+            "width": dims["width"],
+            "height": dims["height"] * 0.55,
+            "thickness": 3
+        },
+        "legs": {
+            "size": 4,
+            "height": dims["height"] * 0.45
+        }
+    }
 
-    mesh = MeshBuilder(points)
-    mesh.build_front_surface()
-    mesh.add_thickness(thickness_cm=2.5)
-    mesh.export_obj("chair_stage2_debug.obj")
+    builder = ChairBuilder(scale_cm=model.scale_factor)
+    chair = builder.build_from_params(chair_params)
 
-    print("STAGE-2 COMPLETE (debug mesh)")
-
-    # -------------------------------------------------
-    # STAGE 3 – FRONT VIEW REGION SPLIT
-    # -------------------------------------------------
-    front_pts = front_contour.reshape(-1, 2)
-    regions = split_front_regions(front_pts)
-
-    print("\n=== REGION SPLIT (FRONT VIEW) ===")
-    for name, pts in regions.items():
-        bbox = region_bbox(pts)
-        print(f"{name.upper()} bbox (px): {bbox}")
-
-    # -------------------------------------------------
-    # STAGE 3B – LEG CLUSTERING
-    # -------------------------------------------------
-    leg_pts = regions["legs"]
-    leg_clusters = split_legs_by_x(leg_pts)
-
-    print("\n=== LEG CLUSTERS ===")
-    for name, pts in leg_clusters.items():
-        xs, ys = pts[:, 0], pts[:, 1]
-        print(
-            f"{name.upper():<12} "
-            f"x:[{xs.min():.0f}-{xs.max():.0f}] "
-            f"y:[{ys.min():.0f}-{ys.max():.0f}] "
-            f"pts={len(pts)}"
-        )
-
-    print("\nPIPELINE OK — READY FOR STAGE 4 (LEG GEOMETRY)")
+    chair.export("final_chair.obj")
+    print("✅ FULL FEATURE COMPLETE — final_chair.obj created")
 
 
 if __name__ == "__main__":
