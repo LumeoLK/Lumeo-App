@@ -6,6 +6,7 @@ import Redis from "ioredis";
 import axios from "axios";
 import { createMeshyTask, pollMeshyTask } from "./services/meshyServices.js"; 
 import { runMeshyProcess } from "./services/testAPI.js"; // For testing purposes
+import { meshyQueue } from "../../backend/src/lib/queue.js";
 
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
@@ -54,3 +55,26 @@ const worker = new Worker(
   },
   { connection: redisConnection, concurrency: 5 },
 );
+
+
+//failure listener to catch errors after all retries are exhausted
+worker.on("failed", async (job, err) => {
+  console.error(`Job ${job.id} failed: ${err.message}`);
+
+  if (job.attemptsMade === job.opts.attempts) {
+    try {
+      await axios.post(
+        `${process.env.BACKEND_URL}/api/products/webhook/meshy-success/${job.data.productId}`,
+        {
+          meshyTaskId: null,
+          status: "failed",
+        },
+      );
+    } catch (webhookError) {
+      console.error(
+        "Failed to notify backend of permanent failure:",
+        webhookError.message,
+      );
+    }
+  }
+});

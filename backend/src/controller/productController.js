@@ -137,12 +137,42 @@ export const updateStatus = async (req, res) => {
     if (!product) {
       return res.status(404).json({ msg: "Product not found." });
     }
+    if(meshyTaskId){
+      await Product.findByIdAndUpdate(productId, {
+        "model3D.meshyTaskId": meshyTaskId,
+        "model3D.status": status,
+      });
+    }
     await Product.findByIdAndUpdate(productId, {
-      "model3D.meshyTaskId": meshyTaskId,
       "model3D.status": status,
     });
+    
   } catch (error) {
     console.error("Error updating product status:", error);
     res.status(500).json({ msg: "Failed to update product status." });
   }
 }
+
+export const approve3DModel = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
+
+    if (product.model3D.status !== "success") {
+      return res.status(400).json({ msg: "3D model is not ready for approval." });
+    }
+
+    await Product.findByIdAndUpdate(productId, {
+      "model3D.status": "approved",
+    });
+
+    res.status(200).json({success:true, msg: "3D model approved successfully." });
+  } catch (error) {
+    console.error("Error approving 3D model:", error);
+    res.status(500).json({ msg: "Failed to approve 3D model." });
+  }
+};
