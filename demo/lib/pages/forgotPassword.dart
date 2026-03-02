@@ -65,8 +65,12 @@ class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
                     SizedBox(height: 50),
                     TextFormField(
                       controller: email,
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "Enter email",
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
