@@ -4,7 +4,7 @@ import Product from "../models/Product.js";
 import Seller from "../models/seller.js";
 import { v2 as cloudinary } from "cloudinary";
 import { generate3DModel } from "../services/meshyservices.js";
-import { tryCatch } from "bullmq";
+import { uploadToCloudinary } from "../lib/cloudinary.js";
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -51,14 +51,7 @@ export const createProduct = async (req, res) => {
         });
       })(),
 
-      // Task B: Stream the Buffer straight to Cloudinary
-      new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "lumeo_products" },
-          (error, result) => (error ? reject(error) : resolve(result)),
-        );
-        stream.end(mainImage.buffer);
-      }),
+      uploadToCloudinary(mainImage.buffer, "lumeo_products"),
     ]);
 
     // 4. Extract Data from both successful tasks

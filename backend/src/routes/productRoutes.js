@@ -19,7 +19,7 @@ router.post(
   "/create",
   verifyToken,
   verifySeller,
-  upload.array("images", 5),
+  upload.array("images", 4),
   createProduct,
 );
 

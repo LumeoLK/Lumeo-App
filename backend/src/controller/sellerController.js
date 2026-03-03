@@ -2,7 +2,7 @@ import Seller from "../models/seller.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import jwt from "jsonwebtoken";
-
+import { uploadToCloudinary } from "../lib/cloudinary.js";
 
 export const becomeSeller = async (req, res) => {
   try {
