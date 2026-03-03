@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
-import {meshyQueue} from "../lib/queue.js"; // Import the queue instance
+import {meshyQueue} from "../lib/queue.js"; 
+import axios from "axios";
 export const generate3DModel = async (productId, imageUrl) => {
   try {
     if (!productId || !imageUrl) {
@@ -22,7 +23,7 @@ export const generate3DModel = async (productId, imageUrl) => {
       productId: productId,
       imageUrl: imageUrl,
     });
-    console.log("generate3DModel - Job added to queue with ID:", job);
+    // console.log("generate3DModel - Job added to queue with ID:", job);
     // 3. Immediately respond to the Flutter app (Do not wait for Meshy!)
     return {
       msg: "3D Generation started successfully!",
@@ -34,3 +35,23 @@ export const generate3DModel = async (productId, imageUrl) => {
     res.status(500).json({ msg: "Failed to start 3D generation." });
   }
 };
+
+const getHeaders = () => ({
+  Authorization: `Bearer msy_mZeWkFFHjCtmAMKLlBLbSiGwi8sLZkJTXMg4`,
+  "Content-Type": "application/json",
+});
+export const checkMeshyTaskStatus = async (req, res) => {
+    const {taskId}= req.body;
+    try {
+      const response = await axios.get(
+        `https://api.meshy.ai/openapi/v1/multi-image-to-3d/${taskId}`,
+        {
+          headers: getHeaders(),
+        },
+      ); //
+      res.json(response.data);
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).json({ msg: "Failed to check task status." });
+    }
+}

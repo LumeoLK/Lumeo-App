@@ -6,7 +6,7 @@ import {
   searchProducts,
 } from "../controller/sellerController.js";
 import { createProduct } from "../controller/productController.js";
-
+import { checkMeshyTaskStatus } from "../services/meshyservices.js";
 
 import {
   handleMeshyWebhook,
@@ -30,4 +30,6 @@ router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 
 router.post("/webhook/meshy-success/:productId", updateStatus);
+
+router.post("/check-meshy-status", checkMeshyTaskStatus);
 export default router;

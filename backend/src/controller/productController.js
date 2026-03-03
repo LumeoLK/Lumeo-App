@@ -37,26 +37,42 @@ export const createProduct = async (req, res) => {
     const mainImage = req.files[0];
 
     // 3. Process Upload & ML in Parallel
-    const [mlResponse, cloudinaryResult] = await Promise.all([
+    const [mlResponse, cloudinaryResults] = await Promise.all([
+      // TASK A: ML Service (Using only the main image)
       (async () => {
-        const form = new FormData();
-        form.append("file", mainImage.buffer, {
-          filename: mainImage.originalname,
-          contentType: mainImage.mimetype,
-        });
-
-        const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
-        return axios.post(`${mlUrl}/api/v1/product-metadata`, form, {
-          headers: { ...form.getHeaders() },
-        });
+        try {
+          const form = new FormData();
+          form.append("file", mainImage.buffer, {
+            filename: mainImage.originalname,
+            contentType: mainImage.mimetype,
+          });
+          const mlUrl = process.env.ML_SERVICE_URL || "http://127.0.0.1:8000";
+          const res = await axios.post(
+            `${mlUrl}/api/v1/product-metadata`,
+            form,
+            {
+              headers: { ...form.getHeaders() },
+            },
+          );
+          return res.data;
+        } catch (err) {
+          console.error("ML Service unreachable, using defaults.");
+          return null;
+        }
       })(),
 
-      uploadToCloudinary(mainImage.buffer, "lumeo_products"),
+      // Upload ALL images to Cloudinary
+      // We map through req.files and call our utility for each one
+      Promise.all(
+        req.files.map((file) =>
+          uploadToCloudinary(file.buffer, "lumeo_products"),
+        ),
+      ),
     ]);
 
     // 4. Extract Data from both successful tasks
-    const { rgb, vector } = mlResponse.data.data;
-    const finalCloudinaryUrl = cloudinaryResult.secure_url;
+    const { rgb, vector } = mlResponse.data;
+    const imageUrls = cloudinaryResults.map((result) => result.secure_url);
 
     // 5. Create Product
     const newProduct = new Product({
@@ -66,16 +82,16 @@ export const createProduct = async (req, res) => {
       price,
       category,
       stock,
-      images: [finalCloudinaryUrl], // The actual URL from Task B
+      images: imageUrls, 
       dimensions: { length, width, height },
       dominantColor: rgb, // The AI data from Task A
       imageEmbedding: vector,
-      model3D: { status: "pending" }
+      model3D: { status: "pending" },
     });
-
+    console.log(imageUrls);
     await newProduct.save();
     console.log("data saved")
-    const result= await generate3DModel(newProduct._id, finalCloudinaryUrl); 
+    const result = await generate3DModel(newProduct._id, imageUrls); 
 
     res.status(201).json({
       success: true,
