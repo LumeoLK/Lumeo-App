@@ -25,27 +25,27 @@ const worker = new Worker(
         job.data.imageUrl,
         job.data.productId,
       );
-      console.log(`✅ Meshy Task Created! ID: ${taskId}`);
+      console.log(`Meshy Task Created! ID: ${taskId}`);
 
       // 2. Wait for Meshy to finish generating the 3D model
-      const generatedModelUrl = await pollMeshyTask(taskId);
-      console.log(`🎉 3D Model Generated! URL: ${generatedModelUrl}`);
+      // const generatedModelUrl = await pollMeshyTask(taskId);
+      // console.log(`🎉 3D Model Generated! URL: ${generatedModelUrl}`);
 
       // 3. The Webhook: Send the result BACK to the Main Backend
-      await axios.post(
-        "http://localhost:3000/api/products/webhook/meshy-success",
-        {
-          productId: job.data.productId,
-          model3DUrl: generatedModelUrl,
-        },
-      );
+      // await axios.post(
+      //   "http://localhost:3000/api/products/webhook/meshy-success",
+      //   {
+      //     productId: job.data.productId,
+      //     model3DUrl: generatedModelUrl,
+      //   },
+      // );
       console.log(
-        `✅ Webhook sent successfully for Product ${job.data.productId}`,
+        `meshy task added for ${job.data.productId} successfully, waiting for webhook to update the product with the 3D model URL...`,
       );
 
       return { status: "success", modelUrl: generatedModelUrl };
     } catch (error) {
-      console.error(`❌ Job Failed:`, error.message);
+      console.error(`Job Failed:`, error.message);
       throw error; // Let BullMQ handle the retry logic
     }
   },

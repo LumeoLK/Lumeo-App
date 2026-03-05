@@ -2,7 +2,6 @@ import axios from "axios";
 import FormData from "form-data";
 import Product from "../models/Product.js";
 import Seller from "../models/seller.js";
-import { v2 as cloudinary } from "cloudinary";
 import { generate3DModel } from "../services/meshyservices.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js";
 export const createProduct = async (req, res) => {
@@ -104,63 +103,6 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
-
-
-
-export const handleMeshyWebhook = async (req, res) => {
-  try {
-    const { productId, model3DUrl } = req.body;
-    const product = await Product.findById(productId);
-
-    if (!product || product.model3D.status === "approved") {
-      return res.status(200).json({ msg: "Already processed." });
-    }
-
-    const updated = await Product.findByIdAndUpdate(
-      productId,
-      {
-        "model3D.url": model3DUrl,
-        "model3D.status": "success",
-      },
-      { new: true },
-    );
-
-    if (!updated) {
-      return res.status(404).json({ msg: "Product not found." });
-    }
-
-    console.log(`🎉 Product ${productId} successfully updated with 3D model!`);
-    res.status(200).json({ msg: "Webhook received and database updated." });
-  } catch (error) {
-    console.error("Webhook Error:", error);
-    res.status(500).json({ msg: "Failed to process webhook." });
-  }
-};
-
-export const updateStatus = async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const { meshyTaskId,status} = req.body;
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({ msg: "Product not found." });
-    }
-    if(meshyTaskId){
-      await Product.findByIdAndUpdate(productId, {
-        "model3D.meshyTaskId": meshyTaskId,
-        "model3D.status": status,
-      });
-    }
-    await Product.findByIdAndUpdate(productId, {
-      "model3D.status": status,
-    });
-    
-  } catch (error) {
-    console.error("Error updating product status:", error);
-    res.status(500).json({ msg: "Failed to update product status." });
-  }
-}
 
 export const approve3DModel = async (req, res) => {
   try {

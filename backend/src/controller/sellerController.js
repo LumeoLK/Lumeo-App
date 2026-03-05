@@ -66,7 +66,6 @@ export const becomeSeller = async (req, res) => {
 
 };
 
-
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock, length, width, height } = req.body;

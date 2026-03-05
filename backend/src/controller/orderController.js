@@ -177,8 +177,6 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-
-
 export const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })

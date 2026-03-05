@@ -23,6 +23,7 @@ export const createMeshyTask = async (imageUrls, productId) => {
 
     // 2. Fix the typo in the third URL if it exists (your log showed "hhttps")
     const cleanedArray = imageArray.map((url) => url.replace(/^hhttp/, "http"));
+    const webhookUrl = `${process.env.BACKEND_URL}/api/webhooks/meshy?productId=${productId}`;
     const response = await axios.post(
       MESHY_BASE_URL,
       {
@@ -35,12 +36,12 @@ export const createMeshyTask = async (imageUrls, productId) => {
         enable_pbr: true,
         moderation: true,
         image_enhancement: false,
+        webhook_url: webhookUrl,
       },
       { headers: getHeaders() },
     );
 
-    console.log(response)
-    // Meshy returns the task ID in the 'result' field
+  
     const result = await axios.post(
       `http://localhost:3000/api/products/webhook/meshy-success/${productId}`,
       {
@@ -58,9 +59,7 @@ export const createMeshyTask = async (imageUrls, productId) => {
   }
 };
 
-/**
- * Step 2: Polls the Meshy API every 10 seconds until the model is ready
- */
+
 export const pollMeshyTask = async (taskId) => {
   return new Promise((resolve, reject) => {
     console.log(`⏳ Starting polling for Task ID: ${taskId}`);
@@ -114,7 +113,3 @@ export const retry3DGeneration = async (req, res) => {
   }
 };
 
-export const checkMeshyTaskStatus = async (req, res) => {
-  const { taskId } = req.params;  
-
-}

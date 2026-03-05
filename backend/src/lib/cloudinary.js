@@ -8,14 +8,22 @@ cloudinary.config({
 });
 
 // Create a single, reusable helper function
-export const uploadToCloudinary = (fileBuffer, folder) => {
+// lib/cloudinary.js
+
+export const uploadToCloudinary = (fileBuffer, folder, resourceType = "auto") => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: folder },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
+      { 
+        folder: folder,
+        resource_type: resourceType 
       },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Upload Error:", error);
+          return reject(error);
+        }
+        resolve(result);
+      }
     );
     stream.end(fileBuffer);
   });

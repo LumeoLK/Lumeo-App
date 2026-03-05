@@ -80,13 +80,13 @@ const productSchema = mongoose.Schema(
         type: String,
         default: "",
       },
-      scale: {
-        type: Number,
-        default: 1.0, // 1.0 = Real World Scale
+      message: {
+        type: String,
+        default: "",
       },
       status: {
         type: String,
-        enum: ["pending", "approved", "failed", "generating","success"],
+        enum: ["approved", "failed", "generating","success"],
         default: "pending",
       },
     },
