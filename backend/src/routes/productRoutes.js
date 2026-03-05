@@ -6,11 +6,7 @@ import {
   searchProducts,
 } from "../controller/sellerController.js";
 import { createProduct } from "../controller/productController.js";
-import { checkMeshyTaskStatus } from "../services/meshyservices.js";
 
-import {
-  updateStatus,
-} from "../controller/productController.js";
 
 const router = express.Router();
 
