@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const MESHY_API_KEY = process.env.MESHY_API_KEY;
-console.log(MESHY_API_KEY);
+
 const MESHY_BASE_URL = "https://api.meshy.ai/openapi/v1/multi-image-to-3d"; //
 
 const getHeaders = () => ({
@@ -24,24 +23,18 @@ export const createMeshyTask = async (imageUrls, productId) => {
     // 2. Fix the typo in the third URL if it exists (your log showed "hhttps")
     const cleanedArray = imageArray.map((url) => url.replace(/^hhttp/, "http"));
     const webhookUrl = `${process.env.BACKEND_URL}/api/webhooks/meshy?productId=${productId}`;
-    const response = await axios.post(
-      MESHY_BASE_URL,
-      {
-        image_urls: cleanedArray, //
-        topology: "triangle",
-        target_polycount: 30000,
-        symmetry_mode: "auto",
-        should_remesh: true,
-        should_texture: true,
-        enable_pbr: true,
-        moderation: true,
-        image_enhancement: false,
-        webhook_url: webhookUrl,
-      },
-      { headers: getHeaders() },
-    );
-    
-    return response.data.result;
+    console.log(webhookUrl)
+    // const response = await axios.post(
+    //   MESHY_BASE_URL,
+    //   {
+    //     image_urls: cleanedArray, 
+    //     enable_pbr: true,
+    //     webhook_url: webhookUrl,
+    //   },
+    //   { headers: getHeaders() },
+    // );
+    // console.log(response)
+    // return response.data.result;
   } catch (error) {
     console.error(
       "Failed to create Meshy task:",

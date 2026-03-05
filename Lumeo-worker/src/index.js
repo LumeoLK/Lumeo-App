@@ -4,7 +4,7 @@ dotenv.config();
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import axios from "axios";
-import { createMeshyTask, pollMeshyTask } from "./services/meshyServices.js"; 
+import { createMeshyTask} from "./services/meshyServices.js"; 
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -12,6 +12,7 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 });
 
 console.log("👷 Lumeo Meshy Worker is listening for jobs...");
+ await createMeshyTask("wdwd","cscsc")
 
 const worker = new Worker(
   "meshy-3d-queue",
@@ -30,10 +31,10 @@ const worker = new Worker(
         `meshy task added for ${job.data.productId} successfully, waiting for webhook to update the product with the 3D model URL...`,
       );
 
-      return { status: "success", modelUrl: generatedModelUrl };
+      return { status: "success"};
     } catch (error) {
       console.error(`Job Failed:`, error.message);
-      throw error; // Let BullMQ handle the retry logic
+      throw error; 
     }
   },
   { connection: redisConnection, concurrency: 5 },

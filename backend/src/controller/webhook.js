@@ -2,6 +2,7 @@ import axios from "axios";
 import Product from "../models/Product.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js"; 
 
+
 export const handleMeshyWebhook = async (req, res) => {
   const { productId } = req.query;
   const payload = req.body;
@@ -63,3 +64,23 @@ export const handleMeshyWebhook = async (req, res) => {
   }
 };
 
+export const checkMeshyTaskStatus = async (req, res) => {
+  const { meshyTaskId } = req.body;
+
+  try {
+    const response = await axios.get(
+      `https://api.meshy.ai/openapi/v1/multi-image-to-3d/${meshyTaskId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MESHY_API_KEY}`,
+        },
+      },
+    );
+    console.log("hi")
+    console.log(response.data)
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error checking Meshy task status:", error);
+    return res.status(500).send("Internal Server Error");
+  }
+};

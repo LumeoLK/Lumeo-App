@@ -21,7 +21,4 @@ router.post(
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 
-// router.post("/webhook/meshy-success/:productId", updateStatus);
-
-// router.post("/check-meshy-status", checkMeshyTaskStatus);
 export default router;
