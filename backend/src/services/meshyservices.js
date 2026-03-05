@@ -1,6 +1,6 @@
 import Product from "../models/Product.js";
 import {meshyQueue} from "../lib/queue.js"; 
-import axios from "axios";
+
 export const generate3DModel = async (productId, imageUrl) => {
   try {
     if (!productId || !imageUrl) {
@@ -12,19 +12,11 @@ export const generate3DModel = async (productId, imageUrl) => {
     if (!product) {
       return res.status(404).json({ msg: "Product not found." });
     }
-    // 1. Update the product status in MongoDB to show it's working
-    await Product.findByIdAndUpdate(productId, {
-      "model3D.status": "generating", // We will need to add this status field to your model later
-    });
-
-    // 2. Add the Job to the Redis Queue!
-    // We pass the data the Worker will need: the image to process, and the product ID to update later.
+    // Add the Job to the Redis Queue
     const job = await meshyQueue.add("generate-3d", {
       productId: productId,
       imageUrl: imageUrl,
     });
-    // console.log("generate3DModel - Job added to queue with ID:", job);
-    // 3. Immediately respond to the Flutter app (Do not wait for Meshy!)
     return {
       msg: "3D Generation started successfully!",
       jobId: job.id,
@@ -36,22 +28,3 @@ export const generate3DModel = async (productId, imageUrl) => {
   }
 };
 
-const getHeaders = () => ({
-  Authorization: `Bearer msy_mZeWkFFHjCtmAMKLlBLbSiGwi8sLZkJTXMg4`,
-  "Content-Type": "application/json",
-});
-export const checkMeshyTaskStatus = async (req, res) => {
-    const {taskId}= req.body;
-    try {
-      const response = await axios.get(
-        `https://api.meshy.ai/openapi/v1/multi-image-to-3d/${taskId}`,
-        {
-          headers: getHeaders(),
-        },
-      ); //
-      res.json(response.data);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ msg: "Failed to check task status." });
-    }
-}

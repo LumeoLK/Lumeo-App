@@ -9,7 +9,6 @@ import { createProduct } from "../controller/productController.js";
 import { checkMeshyTaskStatus } from "../services/meshyservices.js";
 
 import {
-  handleMeshyWebhook,
   updateStatus,
 } from "../controller/productController.js";
 
@@ -23,13 +22,10 @@ router.post(
   createProduct,
 );
 
-//webhooks
-router.post("/webhook/meshy-success", handleMeshyWebhook);
-
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 
-router.post("/webhook/meshy-success/:productId", updateStatus);
+// router.post("/webhook/meshy-success/:productId", updateStatus);
 
-router.post("/check-meshy-status", checkMeshyTaskStatus);
+// router.post("/check-meshy-status", checkMeshyTaskStatus);
 export default router;

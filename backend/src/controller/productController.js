@@ -25,19 +25,19 @@ export const createProduct = async (req, res) => {
         .json({ success: false, msg: "Seller profile not found." });
     }
 
-    // 2. File Validation
+    // File Validation
     if (!req.files || req.files.length === 0) {
       return res
         .status(400)
         .json({ success: false, msg: "Please upload at least one image." });
     }
 
-    // We now know for a fact this contains our buffer!
+    // takes the first image to feed the ML model
     const mainImage = req.files[0];
 
     // 3. Process Upload & ML in Parallel
     const [mlResponse, cloudinaryResults] = await Promise.all([
-      // TASK A: ML Service (Using only the main image)
+      // ML Service (Using only the main image)
       (async () => {
         try {
           const form = new FormData();
@@ -61,7 +61,6 @@ export const createProduct = async (req, res) => {
       })(),
 
       // Upload ALL images to Cloudinary
-      // We map through req.files and call our utility for each one
       Promise.all(
         req.files.map((file) =>
           uploadToCloudinary(file.buffer, "lumeo_products"),
@@ -83,15 +82,15 @@ export const createProduct = async (req, res) => {
       stock,
       images: imageUrls, 
       dimensions: { length, width, height },
-      dominantColor: rgb, // The AI data from Task A
+      dominantColor: rgb, 
       imageEmbedding: vector,
       model3D: { status: "pending" },
     });
-    console.log(imageUrls);
+    
     await newProduct.save();
     console.log("data saved")
     const result = await generate3DModel(newProduct._id, imageUrls); 
-
+    
     res.status(201).json({
       success: true,
       msg: "Product created successfully!",

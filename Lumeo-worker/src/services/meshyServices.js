@@ -40,15 +40,7 @@ export const createMeshyTask = async (imageUrls, productId) => {
       },
       { headers: getHeaders() },
     );
-
-  
-    const result = await axios.post(
-      `http://localhost:3000/api/products/webhook/meshy-success/${productId}`,
-      {
-        meshyTaskId: response.data.result,
-        status: "generating",
-      },
-    );
+    
     return response.data.result;
   } catch (error) {
     console.error(
@@ -59,57 +51,4 @@ export const createMeshyTask = async (imageUrls, productId) => {
   }
 };
 
-
-export const pollMeshyTask = async (taskId) => {
-  return new Promise((resolve, reject) => {
-    console.log(`⏳ Starting polling for Task ID: ${taskId}`);
-
-    const intervalId = setInterval(async () => {
-      try {
-        const response = await axios.get(`${MESHY_BASE_URL}/${taskId}`, {
-          headers:getHeaders(),
-        }); //
-        const taskStatus = response.data.status; 
-        const progress = response.data.progress; 
-
-        console.log(`📊 Meshy Task Progress: ${progress}%`);
-
-        if (taskStatus === "SUCCEEDED") {
-          clearInterval(intervalId);
-          const glbUrl = response.data.model_urls.glb;
-          resolve(glbUrl);
-        } else if (taskStatus === "FAILED" || taskStatus === "CANCELED") {
-          clearInterval(intervalId);
-          reject(
-            new Error(
-              response.data.task_error?.message || "Meshy task failed.",
-            ),
-          ); //
-        }
-        // If status is PENDING or IN_PROGRESS, the loop just continues
-      } catch (error) {
-        clearInterval(intervalId);
-        reject(error);
-      }
-    }, 10000); // Poll every 10 seconds to avoid hitting rate limits
-  });
-};
-
-export const retry3DGeneration = async (req, res) => {
-  const { productId } = req.params;
-  const product = await Product.findById(productId);
-
-  if (!product) return res.status(404).json({ msg: "Product not found" });
-
-  try {
-    const taskId = await createMeshyTask(product.images[0], product._id);
-    product.model3D.taskId = taskId;
-    product.model3D.status = "generating";
-    await product.save();
-
-    res.json({ success: true, msg: "Retry started", taskId });
-  } catch (error) {
-    res.status(500).json({ msg: "Retry failed again" });
-  }
-};
 

@@ -86,7 +86,7 @@ const productSchema = mongoose.Schema(
       },
       status: {
         type: String,
-        enum: ["approved", "failed", "generating","success"],
+        enum: ["pending", "approved", "failed", "generating","success"],
         default: "pending",
       },
     },
@@ -96,7 +96,7 @@ const productSchema = mongoose.Schema(
       default: 0,
       min: 0,
       max: 5,
-      set: (val) => Math.round(val * 10) / 10, // Round to 1 decimal place (e.g., 4.6)
+      set: (val) => Math.round(val * 10) / 10,
     },
     numReviews: {
       type: Number,

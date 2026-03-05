@@ -45,7 +45,7 @@ export const handleMeshyWebhook = async (req, res) => {
         "raw",
       );
 
-
+      product.model3D.meshyTaskId=payload.id;
       product.model3D.url = cloudinaryResult.secure_url;
       product.model3D.status = "success";
       await product.save();
