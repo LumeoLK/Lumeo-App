@@ -1,3 +1,9 @@
 class Constants {
-  static String uri = 'http://10.0.2.2:3000/api/auth';
+  // The base address of the server
+  static String baseUrl = 'http://10.0.2.2:3000';
+
+  // Specific API routes
+  static String authUri = '$baseUrl/api/auth';
+  static String cartUri = '$baseUrl/api/cart';
+ 
 }
