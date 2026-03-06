@@ -48,9 +48,9 @@ worker.on("failed", async (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     try {
       await axios.post(
-        `${process.env.BACKEND_URL}/api/products/webhook/meshy-success/${job.data.productId}`,
+        `${process.env.BACKEND_URL}/api/products/webhook/meshy-update}`,
         {
-          meshyTaskId: null,
+          meshyTaskId: "",
           status: "failed",
         },
       );
