@@ -1,40 +1,35 @@
 import axios from "axios";
 import Product from "../models/Product.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js"; 
-import crypto from "crypto";
+
 
 export const handleMeshyWebhook = async (req, res) => {
-  console.log("🕵️ INCOMING HEADERS:", req.headers);
-  const meshySignature = req.headers["x-meshy-signature"]; 
-  const webhookSecret = process.env.MESHY_WEBHOOK_SECRET;
+  const incomingSecret = req.headers["x-meshy-api-webhook-secret-key"];
+  const mySecret = process.env.MESHY_WEBHOOK_SECRET;
 
-  if (meshySignature && webhookSecret) {
-
-    const generatedSignature = crypto
-      .createHmac("sha256", webhookSecret)
-      .update(JSON.stringify(req.body))
-      .digest("hex");
-
-    if (generatedSignature !== meshySignature) {
-      console.error("🚨 SECURITY ALERT: Invalid Webhook Signature!");
-      return res.status(401).send("Unauthorized");
-    }
-    console.log("🔐 Webhook signature verified successfully.");
-  } else {
-    console.warn(
-      "Warning: No signature or secret provided, bypassing security check.",
-    );
+  if (incomingSecret !== mySecret) {
+    console.error("SECURITY ALERT: Unauthorized webhook attempt!");
+    return res.status(401).send("Unauthorized");
   }
 
   const payload = req.body;
     console.log(payload)
-    console.log(productId)
   try {
     // 2. Find the product in the database
-    const product = await Product.findById(productId);
+    const product = await Product.findOne({
+      "model3D.meshyTaskId": meshyTaskId,
+    });
     if (!product) {
+      const productId=product._id;
       console.error(`Webhook Error: Product ${productId} not found.`);
       return res.status(404).send("Product not found");
+    }
+    if (payload.status === "PENDING" || payload.status === "IN_PROGRESS") {
+      console.log(
+        `Meshy is working on product ${product._id}... Status: ${payload.status}`,
+      );
+      product.model3D.status = payload.status.toLowerCase();
+      return res.status(200).send("Status Ignored");
     }
 
     // 3. Handle a FAILED generation
@@ -50,11 +45,10 @@ export const handleMeshyWebhook = async (req, res) => {
 
     // 4. Handle a SUCCESSFUL generation
     if (payload.status === "SUCCEEDED") {
-      console.log(`Meshy succeeded for Product ${productId}. Downloading GLB...`,);
 
       const temporaryGlbUrl = payload.model_urls.glb;
 
-        // Download the GLB file as a buffer
+
       const response = await axios.get(temporaryGlbUrl, {
         responseType: "arraybuffer",
       });
@@ -68,7 +62,7 @@ export const handleMeshyWebhook = async (req, res) => {
         "raw",
       );
 
-      product.model3D.meshyTaskId=payload.id;
+      // product.model3D.meshyTaskId=payload.id;
       product.model3D.url = cloudinaryResult.secure_url;
       product.model3D.status = "success";
       await product.save();
@@ -106,3 +100,20 @@ export const checkMeshyTaskStatus = async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 };
+
+export const updateMeshyTask= async(req,res)=>{
+  const { productId,meshyTaskId,status } = req.body;
+  try {
+    const product= await Product.findById(productId);
+    if(!product){
+      return res.status(404).send("Product not found");
+    }
+    product.model3D.meshyTaskId=meshyTaskId;
+    product.model3D.status=status;
+    await product.save();
+    return res.status(200).send("Meshy Task ID updated successfully");
+  } catch (error) {
+    console.log(error.message)
+    return res.status(500).send("Internal Server Error");
+  }
+}
