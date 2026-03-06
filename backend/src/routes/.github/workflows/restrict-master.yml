@@ -1,0 +1,16 @@
+name: Restrict Merges to Master
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  enforce-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        if: github.head_ref != 'dev'
+        run: |
+          echo "Error: You can only merge into master from the 'dev' branch. Your branch is '${{ github.head_ref }}'."
+          exit 1
