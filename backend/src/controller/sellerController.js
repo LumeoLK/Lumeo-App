@@ -97,6 +97,18 @@ export const createProduct = async (req, res) => {
   }
 };
 
+//Returns all the products with newest addded items first
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 }); 
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+}; 
+
+
+
 export const searchProducts = async (req, res) => {
   try {
     const { keyword, category, minPrice, maxPrice, sortBy, page = 1, limit = 10 } = req.query;
@@ -128,5 +140,20 @@ export const searchProducts = async (req, res) => {
     res.json({ success: true, count: products.length, total, page: Number(page), pages: Math.ceil(total / Number(limit)), data: products });
   } catch (error) {
     res.status(500).json({ msg: error.message });
+  }
+};
+
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id).populate("sellerId", "shopName displayName");
+    
+    if (!product) {
+      return res.status(404).json({ success: false, msg: "Product not found" });
+    }
+    
+    res.json({ success: true, product });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: error.message });
   }
 };

@@ -9,10 +9,10 @@ class ProductDetailsPage extends StatefulWidget {
 }
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
-  // Exact colors from your design
+  
   final Color backgroundColor = const Color(0xFF1E1E1E);
   final Color cardColor = const Color(0xFF2A2A2A);
-  final Color accentColor = const Color(0xFFFDB04B); // The Orange/Yellow
+  final Color accentColor = const Color(0xFFFDB04B); 
   final Color secondaryTextColor = Colors.white70;
 
   @override
@@ -26,7 +26,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context), // Practice pop here!
         ),
-        title: Text(widget.product.name, style: TextStyle(color: Colors.white)),
+        title: Text(widget.product.title, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -43,10 +43,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             Container(
               height: 350,
               width: double.infinity,
-              color: Colors.grey[800], // PLACEHOLDER FOR IMAGE
-              child: const Center(
-                child: Icon(Icons.image, size: 50, color: Colors.white24),
-              ),
+              color: Colors.grey[800],
+              child: widget.product.images.isNotEmpty
+                  ? Image.network(
+                      widget.product.images[0],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.image, size: 50, color: Colors.white24),
+                        );
+                      },
+                    )
+                  : const Center(
+                      child: Icon(Icons.image, size: 50, color: Colors.white24),
+                    ),
             ),
 
             Padding(
@@ -71,7 +81,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.product.name,
+                        widget.product.title,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -79,8 +89,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ),
                       ),
                       Text(
-                        widget.product.price.toString(),
-                        style: TextStyle(
+                        "\$${widget.product.price.toStringAsFixed(2)}",
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -89,14 +99,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     ],
                   ),
                   Text(
-                    "Nathon James",
+                    widget.product.category,
                     style: TextStyle(color: secondaryTextColor),
                   ),
                   const SizedBox(height: 15),
 
                   // 4. Description
                   Text(
-                    "Nathan James dining chair featuring a modern, elegant design with comfortable cushioning, sturdy wooden legs and a sleek silhouette perfect for...",
+                    widget.product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),

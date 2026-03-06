@@ -6,10 +6,12 @@ import connectDB from "./config.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors({
+  origin: "*"
+}));
 
 import authRouter from "./routes/auth.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
@@ -32,19 +34,21 @@ app.use("/api/reviews", reviewRoutes);
 
 app.use(cookieParser());
 
-try {
-  connectDB();
-  app.get("/", (req, res) => {
-  res.send("Welcome to the Lumeo backend API 🚀");
-});
-    app.on('error', err => {
-      console.error("Error in app:", err);
+(async () => {
+  try {
+    await connectDB();
+    console.log("Database connected successfully");
+    
+    app.get("/", (req, res) => {
+      res.send("Welcome to the Lumeo backend API");
     });
 
-  app.listen(PORT, () => {
-    console.log(`Connected to port ${PORT}`);
-  });
-} catch (error) {
-  console.error("Error starting server:", error); 
-}
+    app.listen(PORT, () => {
+      console.log(`Connected to port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
+})();
 
