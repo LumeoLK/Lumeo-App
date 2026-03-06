@@ -6,22 +6,22 @@ import { uploadToCloudinary } from "../lib/cloudinary.js";
 export const handleMeshyWebhook = async (req, res) => {
   const incomingSecret = req.headers["x-meshy-api-webhook-secret-key"];
   const mySecret = process.env.MESHY_WEBHOOK_SECRET;
-
+console.log("HI")
   if (incomingSecret !== mySecret) {
     console.error("SECURITY ALERT: Unauthorized webhook attempt!");
     return res.status(401).send("Unauthorized");
   }
 
   const payload = req.body;
-    console.log(payload)
+  const meshyTaskId = payload.id;
+  console.log(payload)
   try {
-    // 2. Find the product in the database
     const product = await Product.findOne({
       "model3D.meshyTaskId": meshyTaskId,
     });
     if (!product) {
-      const productId=product._id;
-      console.error(`Webhook Error: Product ${productId} not found.`);
+      
+      console.error(`Webhook Error: Product ${meshyTaskId} not found.`);
       return res.status(404).send("Product not found");
     }
     if (payload.status === "PENDING" || payload.status === "IN_PROGRESS") {
@@ -29,6 +29,7 @@ export const handleMeshyWebhook = async (req, res) => {
         `Meshy is working on product ${product._id}... Status: ${payload.status}`,
       );
       product.model3D.status = payload.status.toLowerCase();
+      await product.save();
       return res.status(200).send("Status Ignored");
     }
 

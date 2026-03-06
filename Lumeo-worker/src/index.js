@@ -11,7 +11,7 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
   enableReadyCheck: false,
 });
 
-console.log("👷 Lumeo Meshy Worker is listening for jobs...");
+console.log("Lumeo Meshy Worker is listening for jobs...");
 
 
 const worker = new Worker(
