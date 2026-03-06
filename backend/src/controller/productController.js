@@ -103,6 +103,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
+
 export const approve3DModel = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -124,5 +125,13 @@ export const approve3DModel = async (req, res) => {
   } catch (error) {
     console.error("Error approving 3D model:", error);
     res.status(500).json({ msg: "Failed to approve 3D model." });
+
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+
   }
 };
