@@ -97,15 +97,6 @@ export const createProduct = async (req, res) => {
   }
 };
 
-export const getAllProducts = async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ msg: error.message });
-  }
-};
-
 export const searchProducts = async (req, res) => {
   try {
     const { keyword, category, minPrice, maxPrice, sortBy, page = 1, limit = 10 } = req.query;

@@ -1,13 +1,12 @@
 import express from "express";
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 import upload from "../lib/cloudinary.js";
+import { searchProducts } from "../controller/sellerController.js";
+const router = express.Router();
 import {
   getAllProducts,
-  searchProducts,
-} from "../controller/sellerController.js";
-const router = express.Router();
-import {createProduct} from "../controller/productController.js";
-
+  createProduct,
+} from "../controller/productController.js";
 
 router.post(
   "/create",

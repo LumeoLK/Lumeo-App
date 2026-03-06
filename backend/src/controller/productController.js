@@ -80,3 +80,12 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
+
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
