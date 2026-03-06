@@ -4,6 +4,7 @@ import { uploadToCloudinary } from "../lib/cloudinary.js";
 import crypto from "crypto";
 
 export const handleMeshyWebhook = async (req, res) => {
+  console.log("🕵️ INCOMING HEADERS:", req.headers);
   const meshySignature = req.headers["x-meshy-signature"]; 
   const webhookSecret = process.env.MESHY_WEBHOOK_SECRET;
 
