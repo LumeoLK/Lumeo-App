@@ -24,7 +24,7 @@ export const generate3DModel = async (productId, imageUrl) => {
     }
   } catch (error) {
     console.error("Queue Error:", error);
-    res.status(500).json({ msg: "Failed to start 3D generation." });
+    return({msg:"Failed to start 3D generation."});
   }
 };
 
