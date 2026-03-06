@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lumeo_v2/pages/chat_application.dart';
 import '../model/product.dart';
 
 class ProductDetailsPage extends StatefulWidget {
@@ -126,9 +127,19 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   const SizedBox(height: 30),
 
                   // 6. List tiles for Shop Info/Customization
-                  _buildListTile("Shop Information"),
+                  
                   const Divider(color: Colors.white24),
-                  _buildListTile("Ask For Customizations"),
+
+                  _buildListTile("Ask For Customizations", () {
+                    // Navigation code to the chat application page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const ChatApplication(), 
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 30),
 
                   // 7. "You can also like this" Section
@@ -177,12 +188,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  Widget _buildListTile(String title) {
+  Widget _buildListTile(String title, VoidCallback onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: () {},
+      onTap: onTap, // Triggers the navigation
     );
   }
 
