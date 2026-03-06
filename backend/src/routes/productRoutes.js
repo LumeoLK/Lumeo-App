@@ -1,8 +1,8 @@
 import express from "express";
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 import upload from "../lib/cloudinary.js";
-import { searchProducts,getAllProducts } from "../controller/sellerController.js";
-import { createProduct } from "../controller/productController.js";
+import { searchProducts} from "../controller/sellerController.js";
+import { createProduct ,getAllProducts } from "../controller/productController.js";
 
 
 const router = express.Router();
