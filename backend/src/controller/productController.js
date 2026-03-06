@@ -126,6 +126,7 @@ export const approve3DModel = async (req, res) => {
     console.error("Error approving 3D model:", error);
     res.status(500).json({ msg: "Failed to approve 3D model." });
   }
+}
 
 export const getAllProducts = async (req, res) => {
   try {
