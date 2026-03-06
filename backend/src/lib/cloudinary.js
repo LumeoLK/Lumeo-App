@@ -10,21 +10,35 @@ cloudinary.config({
 // Create a single, reusable helper function
 // lib/cloudinary.js
 
-export const uploadToCloudinary = (fileBuffer, folder, resourceType = "auto") => {
+export const uploadToCloudinary = (
+  fileBuffer,
+  folder,
+  resourceType = "auto",
+  customFilename = null,
+) => {
   return new Promise((resolve, reject) => {
+    // Set up the base options
+    const options = {
+      folder: folder,
+      resource_type: resourceType,
+    };
+
+    // If we pass a custom filename (like "model.glb"), add it to options
+    if (customFilename) {
+      options.public_id = customFilename;
+    }
+
     const stream = cloudinary.uploader.upload_stream(
-      { 
-        folder: folder,
-        resource_type: resourceType 
-      },
+      options,
       (error, result) => {
         if (error) {
           console.error("Cloudinary Upload Error:", error);
           return reject(error);
         }
         resolve(result);
-      }
+      },
     );
+
     stream.end(fileBuffer);
   });
 };

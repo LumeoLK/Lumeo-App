@@ -28,7 +28,7 @@ console.log("HI")
       console.log(
         `Meshy is working on product ${product._id}... Status: ${payload.status}`,
       );
-      product.model3D.status = payload.status.toLowerCase();
+      product.model3D.status = 'pending';
       await product.save();
       return res.status(200).send("Status Ignored");
     }
@@ -57,10 +57,14 @@ console.log("HI")
 
 
       console.log("Uploading 3D model to Cloudinary...");
+      const fileName = `product_${product._id}.glb`;
+
+    
       const cloudinaryResult = await uploadToCloudinary(
         fileBuffer,
         "lumeo_3d_models",
         "raw",
+        fileName,
       );
 
       // product.model3D.meshyTaskId=payload.id;

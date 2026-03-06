@@ -28,6 +28,10 @@ export const createMeshyTask = async (imageUrls, productId) => {
       {
         image_urls: cleanedArray,
         enable_pbr: true,
+        target_polycount: 10000,
+        symmetry_mode: "auto",
+        should_remesh: true,
+        should_texture: true,
       },
       { headers: getHeaders() },
     );
