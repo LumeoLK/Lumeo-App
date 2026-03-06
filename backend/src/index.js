@@ -7,7 +7,7 @@ import cors from "cors";
 import http from "http";
 
 import { Server } from "socket.io";
-
+import setupSocket from "./socket/socketHandler.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -18,7 +18,8 @@ import customRequestRoutes from "./routes/customreqRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
-
+import chatRoutes from "./routes/chatRoutes.js";
+app.use(cookieParser());
 app.use(express.json()); //middleware
 app.use(express.static("public"));
 
@@ -29,8 +30,7 @@ app.use("/api/requests", customRequestRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
-
-app.use(cookieParser());
+app.use("/api/chat", chatRoutes);
 
 // Create HTTP server for Socket.io
 const server = http.createServer(app);
@@ -43,13 +43,7 @@ const io = new Server(server, {
 });
 
 // Socket.io
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
+setupSocket(io);
 
 try {
   connectDB();
