@@ -1,12 +1,33 @@
 import axios from "axios";
 import Product from "../models/Product.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js"; 
-
+import crypto from "crypto";
 
 export const handleMeshyWebhook = async (req, res) => {
-  const { productId } = req.query;
+  const meshySignature = req.headers["x-meshy-signature"]; 
+  const webhookSecret = process.env.MESHY_WEBHOOK_SECRET;
+
+  if (meshySignature && webhookSecret) {
+
+    const generatedSignature = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
+
+    if (generatedSignature !== meshySignature) {
+      console.error("🚨 SECURITY ALERT: Invalid Webhook Signature!");
+      return res.status(401).send("Unauthorized");
+    }
+    console.log("🔐 Webhook signature verified successfully.");
+  } else {
+    console.warn(
+      "Warning: No signature or secret provided, bypassing security check.",
+    );
+  }
+
   const payload = req.body;
     console.log(payload)
+    console.log(productId)
   try {
     // 2. Find the product in the database
     const product = await Product.findById(productId);

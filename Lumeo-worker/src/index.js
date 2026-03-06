@@ -12,7 +12,7 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 });
 
 console.log("👷 Lumeo Meshy Worker is listening for jobs...");
- await createMeshyTask("wdwd","cscsc")
+
 
 const worker = new Worker(
   "meshy-3d-queue",
