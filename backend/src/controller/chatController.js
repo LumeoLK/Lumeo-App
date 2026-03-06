@@ -1,11 +1,11 @@
 import Conversation from "../models/conversation.js";
-import Message from "../models/messge.js";
+import Message from "../models/message.js";
 
 //Called when customer taps "Chat with Seller" on product detail page
 export const startConversation = async (req, res) => {
   try {
     const { sellerId, productId } = req.body;
-    const customerId = req.user._id;
+    const customerId = req.user.id;
 
     //Check if a conversation already exists for this customer, seller, product
     let conversation = await Conversation.findOne({
@@ -34,7 +34,7 @@ export const startConversation = async (req, res) => {
 export const getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
-      participants: req.user._id, // Find all chats this user is part of
+      participants: req.user.id, // Find all chats this user is part of
     })
       .populate("participants", "name avatar role")
       .populate("product", "name image") // Show product info in chat list
@@ -54,7 +54,7 @@ export const sendMessage = async (req, res) => {
     // Create the message
     const message = await Message.create({
       conversation: conversationId,
-      sender: req.user._id,
+      sender: req.user.id,
       text,
     });
 
