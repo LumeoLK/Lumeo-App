@@ -1,12 +1,12 @@
-
 import "./lib/env.js";
 import express from "express";
 
 import connectDB from "./config.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import http from "http";
 
-
+import { Server } from "socket.io";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,26 +25,44 @@ app.use(express.static("public"));
 app.use("/api/auth", authRouter);
 app.use("/api/seller", sellerRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/requests", customRequestRoutes); 
+app.use("/api/requests", customRequestRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 app.use(cookieParser());
 
+// Create HTTP server for Socket.io
+const server = http.createServer(app);
+
+// Attach Socket.io to the HTTP server
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:8080"],
+  },
+});
+
+// Socket.io
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
 try {
   connectDB();
   app.get("/", (req, res) => {
-  res.send("Welcome to the Lumeo backend API 🚀");
-});
-    app.on('error', err => {
-      console.error("Error in app:", err);
-    });
+    res.send("Welcome to the Lumeo backend API 🚀");
+  });
+  app.on("error", (err) => {
+    console.error("Error in app:", err);
+  });
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Connected to port ${PORT}`);
   });
 } catch (error) {
-  console.error("Error starting server:", error); 
+  console.error("Error starting server:", error);
 }
-
