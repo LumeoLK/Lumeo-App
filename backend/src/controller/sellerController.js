@@ -2,7 +2,7 @@ import Seller from "../models/seller.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import jwt from "jsonwebtoken";
-
+import { uploadToCloudinary } from "../lib/cloudinary.js";
 
 export const becomeSeller = async (req, res) => {
   try {
@@ -66,7 +66,6 @@ export const becomeSeller = async (req, res) => {
 
 };
 
-
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock, length, width, height } = req.body;
@@ -94,15 +93,6 @@ export const createProduct = async (req, res) => {
     res.status(201).json({ success: true, msg: "Product created successfully!", product: newProduct });
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
-  }
-};
-
-export const getAllProducts = async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ msg: error.message });
   }
 };
 

@@ -1,10 +1,7 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../pages/cart_page.dart';
-//import 'pages/wish_list_page.dart';
-
+import 'dart:async';
 
 import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
           height: 150,
         ),
       ),
+
     );
   }
 }
