@@ -1,0 +1,64 @@
+
+import dotenv from "dotenv";
+dotenv.config();
+import { Worker } from "bullmq";
+import Redis from "ioredis";
+import axios from "axios";
+import { createMeshyTask} from "./services/meshyServices.js"; 
+
+const redisConnection = new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
+
+console.log("Lumeo Meshy Worker is listening for jobs...");
+
+
+const worker = new Worker(
+  "meshy-3d-queue",
+  async (job) => {
+    console.log(`\n📦 Processing Product ID: ${job.data.productId}`);
+    console.log(`🖼️ Image URL: ${job.data.imageUrl}`);
+
+    try {
+      // 1. Send image to Meshy AI
+      const taskId = await createMeshyTask(
+        job.data.imageUrl,
+        job.data.productId,
+      );
+      console.log(`Meshy Task Created! ID: ${taskId}`);
+      console.log(
+        `meshy task added for ${job.data.productId} successfully, waiting for webhook to update the product with the 3D model URL...`,
+      );
+
+      return { status: "success"};
+    } catch (error) {
+      console.error(`Job Failed:`, error.message);
+      throw error; 
+    }
+  },
+  { connection: redisConnection, concurrency: 5 },
+);
+
+
+//failure listener to catch errors after all retries are exhausted
+worker.on("failed", async (job, err) => {
+  console.error(`Job ${job.id} failed: ${err.message}`);
+
+  if (job.attemptsMade === job.opts.attempts) {
+    try {
+      await axios.post(
+        `${process.env.BACKEND_URL}/api/products/webhook/meshy-update}`,
+        {
+          meshyTaskId: "",
+          status: "failed",
+        },
+      );
+    } catch (webhookError) {
+      console.error(
+        "Failed to notify backend of permanent failure:",
+        webhookError.message,
+      );
+    }
+  }
+});
