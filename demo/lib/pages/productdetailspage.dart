@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/product.dart';
+import 'ar_screen.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
@@ -40,13 +41,53 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Image Placeholder Section
-            Container(
-              height: 350,
-              width: double.infinity,
-              color: Colors.grey[800], // PLACEHOLDER FOR IMAGE
-              child: const Center(
-                child: Icon(Icons.image, size: 50, color: Colors.white24),
-              ),
+            // 1. Image & AR Button Section
+            Stack(
+              children: [
+                // The Base: Product Image
+                Container(
+                  height: 350,
+                  width: double.infinity,
+                  color: Colors.grey[800], // Keep your placeholder color
+                  child: const Center(
+                    child: Icon(Icons.image, size: 50, color: Colors.white24),
+                  ),
+                ),
+
+                // The Overlay: AR Button
+                Positioned(
+                  bottom: 20, // Distance from bottom edge
+                  right: 20, // Distance from right edge
+                  child: GestureDetector(
+                    onTap: () {
+                      // Senior Tip: Always check if the route exists before navigating
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ARScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(
+                          0.5,
+                        ), // Semi-transparent glass effect
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Image.asset(
+                        'assets/icons/ar.png',
+                        width: 30,
+                        height: 30,
+                        color:
+                            Colors.white, // Ensures the icon matches your theme
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             Padding(

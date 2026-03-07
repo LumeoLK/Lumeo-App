@@ -4,7 +4,7 @@ import '../widgets/bottom_navagiationbar.dart';
 import 'home_content.dart';
 
 import 'wishlist_page.dart';
-import 'ar_view_page.dart';
+import 'ar_screen.dart';
 import 'cart_page.dart';
 import 'customFurniture.dart';
 
@@ -20,8 +20,9 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> pages = const [
     HomeContent(),
-    WishListPage(),
-    ARViewPage(),
+
+    WishlistPage(),
+    ARScreen(),
     CartPage(),
     CustomFurniturePage(),
   ];
