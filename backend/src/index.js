@@ -18,7 +18,6 @@ import customRequestRoutes from "./routes/customreqRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
-import blueprintRoutes from "./routes/blueprint-to-3dRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import blueprintRoutes from "./routes/blueprint-to-3dRoutes.js";
 
