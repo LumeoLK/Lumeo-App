@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class Blueprint3DScreen extends StatelessWidget {
   const Blueprint3DScreen({super.key});
@@ -152,16 +153,20 @@ class Preview3DBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
+      height: 260,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Center(
-        child: Text(
-          "3D Preview Here",
-          style: TextStyle(color: Colors.grey),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: const ModelViewer(
+          src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+          alt: "3D Model",
+          autoRotate: true,
+          cameraControls: true,
+          backgroundColor: Colors.transparent,
         ),
       ),
     );
