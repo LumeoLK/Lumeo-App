@@ -1,20 +1,20 @@
-<<<<<<< HEAD
+
 import 'dart:async';
-=======
+
 import 'package:flutter/material.dart';
-import 'package:lumeo/pages/cart_page.dart';
+// import 'package:lumeo/pages/cart_page.dart';
 //import 'pages/wish_list_page.dart';
->>>>>>> cart-page
+
 
 import '../providers/user_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';                      
-import 'pages/onboarding_page1.dart';           
+import 'pages/onboarding_page1.dart';  
+import '../pages/blueprint_3d.dart';         
 void main() {
   runApp(
     const ProviderScope(child: const MyApp(),)
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       title: 'Lumeo',
       darkTheme: ThemeData.dark(), 
       themeMode: ThemeMode.dark, 
-      home: const SplashScreen(),
+      home: const Blueprint3DScreen(),
     );
   }
 }
@@ -75,11 +75,6 @@ class _SplashScreenState extends State<SplashScreen> {
           height: 150,
         ),
       ),
-<<<<<<< HEAD
-=======
-      home: const CartPage(),
-      debugShowCheckedModeBanner: false,
->>>>>>> cart-page
     );
   }
 }

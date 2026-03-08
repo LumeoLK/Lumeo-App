@@ -33,10 +33,7 @@ class BlueprintContent extends StatelessWidget {
           Text(
             "Upload a furniture blueprint to automatically\nturn it into a 3D preview model.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
 
           SizedBox(height: 25),
@@ -91,15 +88,9 @@ class UploadBlueprintCard extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               "Upload Blueprint",
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: 18,
-              ),
+              style: TextStyle(color: Colors.orange, fontSize: 18),
             ),
-            Text(
-              "(JPG, PNG, PDF)",
-              style: TextStyle(color: Colors.grey),
-            )
+            Text("(JPG, PNG, PDF)", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),
@@ -116,15 +107,10 @@ class ConvertButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.orange,
         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       onPressed: () {},
-      child: const Text(
-        "CONVERT TO 3D",
-        style: TextStyle(color: Colors.black),
-      ),
+      child: const Text("CONVERT TO 3D", style: TextStyle(color: Colors.black)),
     );
   }
 }
@@ -138,10 +124,7 @@ class ProcessingStatus extends StatelessWidget {
       children: const [
         CircularProgressIndicator(color: Colors.orange),
         SizedBox(height: 10),
-        Text(
-          "Processing Blueprint...",
-          style: TextStyle(color: Colors.grey),
-        ),
+        Text("Processing Blueprint...", style: TextStyle(color: Colors.grey)),
       ],
     );
   }
@@ -162,7 +145,7 @@ class Preview3DBox extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: const ModelViewer(
-          src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+          src:'https://res.cloudinary.com/drno34my4/raw/upload/v1772814761/lumeo_3d_models/product_69ab009a6ee07aee64699fea.glb',
           alt: "3D Model",
           autoRotate: true,
           cameraControls: true,
