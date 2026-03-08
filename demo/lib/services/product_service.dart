@@ -8,7 +8,7 @@ class ProductService {
   Future<List<Product>> getAllProducts() async {
     try {
       final response = await http.get(
-        Uri.parse('${Constants.products}/'), 
+        Uri.parse('${Constants.productsUri}/'), 
         headers: {'Content-Type': 'application/json'},
       );
 
