@@ -5,5 +5,5 @@ class Constants {
   // Specific API routes
   static String authUri = '$baseUrl/api/auth';
   static String cartUri = '$baseUrl/api/cart';
- 
+  static String products = '$baseUrl/api/products';
 }
