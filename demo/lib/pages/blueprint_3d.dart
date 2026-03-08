@@ -20,12 +20,6 @@ class Blueprint3DScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.notifications_outlined, color: Colors.white),
-          ),
-        ],
       ),
       body: const BlueprintContent(),
     );
@@ -102,12 +96,9 @@ class _BlueprintContentState extends State<BlueprintContent>
               builder: (context, child) {
                 final progress = _progressAnimation.value;
                 final isComplete = _status == 'complete';
-                final label = isComplete
-                    ? 'Processing Complete ✓'
-                    : 'Processing...';
-                final fillColor = isComplete
-                    ? Colors.green
-                    : Colors.orange;
+                final label =
+                    isComplete ? 'Processing Complete ✓' : 'Processing...';
+                final fillColor = isComplete ? Colors.green : Colors.orange;
 
                 return Container(
                   height: 48,
@@ -118,7 +109,6 @@ class _BlueprintContentState extends State<BlueprintContent>
                   ),
                   child: Stack(
                     children: [
-                      // Filling bar
                       FractionallySizedBox(
                         widthFactor: progress,
                         child: Container(
@@ -128,7 +118,6 @@ class _BlueprintContentState extends State<BlueprintContent>
                           ),
                         ),
                       ),
-                      // Label
                       Center(
                         child: Text(
                           label,
@@ -174,40 +163,26 @@ class UploadBlueprintCard extends StatelessWidget {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Stack(
-        children: [
-          const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Colors.orange,
-                  child: Icon(Icons.upload, color: Colors.white, size: 26),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Upload Blueprint",
-                  style: TextStyle(color: Colors.orange, fontSize: 18),
-                ),
-                Text(
-                  "(JPG, PNG, PDF)",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 12,
-            right: 12,
-            child: CircleAvatar(
-              radius: 16,
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 24,
               backgroundColor: Colors.orange,
-              child: const Icon(Icons.chat_bubble_outline,
-                  color: Colors.white, size: 16),
+              child: Icon(Icons.upload, color: Colors.white, size: 26),
             ),
-          ),
-        ],
+            SizedBox(height: 10),
+            Text(
+              "Upload Blueprint",
+              style: TextStyle(color: Colors.orange, fontSize: 18),
+            ),
+            Text(
+              "(JPG, PNG, PDF)",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }
