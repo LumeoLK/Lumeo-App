@@ -1,12 +1,12 @@
 import axios from "axios";
 import Product from "../models/Product.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js"; 
+import Blueprint3DJob from "../models/Blueprint3DJob.js";
 
 
 export const handleMeshyWebhook = async (req, res) => {
   const incomingSecret = req.headers["x-meshy-api-webhook-secret-key"];
   const mySecret = process.env.MESHY_WEBHOOK_SECRET;
-console.log("HI")
   if (incomingSecret !== mySecret) {
     console.error("SECURITY ALERT: Unauthorized webhook attempt!");
     return res.status(401).send("Unauthorized");
@@ -97,7 +97,6 @@ export const checkMeshyTaskStatus = async (req, res) => {
         },
       },
     );
-    console.log("hi")
     console.log(response.data)
     return res.status(200).json(response.data);
   } catch (error) {
@@ -122,3 +121,42 @@ export const updateMeshyTask= async(req,res)=>{
     return res.status(500).send("Internal Server Error");
   }
 }
+
+// controllers/blueprintWebhookController.js
+
+export const handleBlueprint3DWebhook = async (req, res) => {
+  try {
+    const { jobId, productId, status, glbBase64, glbSize, errorMessage } = req.body;
+
+    const job = await Blueprint3DJob.findById(jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (status === "completed") {
+      // 1. Decode base64 back to buffer
+      const glbBuffer = Buffer.from(glbBase64, "base64");
+      console.log(`Received GLB for job ${jobId} — ${glbBuffer.length} bytes`);
+
+      // 2. Upload to Cloudinary using your existing function
+      const uploadResult = await uploadToCloudinary(
+        glbBuffer,
+        "3d-models",        // folder
+        `model_${productId}` // public_id
+      );
+
+      // 3. Save URL to DB
+      job.status     = "completed";
+      job.model3DUrl = uploadResult.secure_url;
+
+    } else if (status === "failed") {
+      job.status       = "failed";
+      job.errorMessage = errorMessage;
+    }
+
+    await job.save();
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error("Webhook handler error:", error.message);
+    res.status(500).json({ success: false });
+  }
+};

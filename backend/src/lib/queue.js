@@ -15,4 +15,20 @@ export const meshyQueue = new Queue("meshy-3d-queue", {
   connection: redisConnection,
 });
 
+// =======================================
+// Blueprint → 3D generation queue
+// =======================================
+
+export const blueprint3DQueue = new Queue("blueprint-3d-queue", {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+    removeOnComplete: true,
+  },
+});
+
 console.log("🚀 BullMQ Queue initialized and connected to Redis!");
