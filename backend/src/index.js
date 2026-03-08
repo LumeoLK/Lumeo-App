@@ -18,7 +18,11 @@ import customRequestRoutes from "./routes/customreqRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+
 import webhookRoutes from "./routes/webhookRoutes.js";
+
+import blueprintRoutes from "./routes/blueprint-to-3dRoutes.js";
+
 app.use(express.json()); //middleware
 app.use(express.static("public"));
 
@@ -29,7 +33,10 @@ app.use("/api/requests", customRequestRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
+
 app.use("/api", webhookRoutes); 
+
+app.use("/api/blueprint",blueprintRoutes);
 
 app.use(cookieParser());
 
