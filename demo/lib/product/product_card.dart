@@ -9,6 +9,12 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get first image from the images array
+    // If no images exist show placeholder
+    final String? imageUrl = product.images.isNotEmpty
+        ? product.images.first
+        : null;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -20,7 +26,7 @@ class ProductCard extends StatelessWidget {
       },
       child: Container(
         width: 140,
-        margin: EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(12),
@@ -28,15 +34,54 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(
-                product.image ?? "images.jpg",
-                height: 100,
-                width: double.infinity,
-                fit: BoxFit.cover,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
               ),
+              // If we have a URL load from internet (Cloudinary)
+              // If no URL show placeholder icon
+              child: imageUrl != null
+                  ? Image.network(
+                      imageUrl,
+                      height: 100,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+
+                      // Shows spinner while image is downloading
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 100,
+                          color: Colors.grey[800],
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+
+                      // Shows icon if image fails to load
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 100,
+                          width: double.infinity,
+                          color: Colors.grey[800],
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            color: Colors.white54,
+                          ),
+                        );
+                      },
+                    )
+                  // No image URL at all placeholder
+                  : Container(
+                      height: 100,
+                      width: double.infinity,
+                      color: Colors.grey[800],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white54,
+                      ),
+                    ),
             ),
 
             Padding(
@@ -44,11 +89,22 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.name, style: TextStyle(color: Colors.white)),
-                  SizedBox(height: 4),
+                  // Product name 
                   Text(
-                    "\$${product.price}",
-                    style: TextStyle(
+                    product.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  // Price 
+                  Text(
+                    "\$${product.price.toStringAsFixed(2)}",
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontWeight: FontWeight.bold,
                     ),
