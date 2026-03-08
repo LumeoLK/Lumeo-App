@@ -223,7 +223,9 @@ class ConvertButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.orange,
         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
       ),
       onPressed: onPressed,
       child: const Text(
