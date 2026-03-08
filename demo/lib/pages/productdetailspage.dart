@@ -15,9 +15,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final Color cardColor = const Color(0xFF2A2A2A);
   final Color accentColor = const Color(0xFFFDB04B); // The Orange/Yellow
   final Color secondaryTextColor = Colors.white70;
-
+  int _selectedImageIndex = 0;
   @override
   Widget build(BuildContext context) {
+    final images = widget.product.images;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -40,16 +41,80 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Image Placeholder Section
+            //Image Placeholder Section
             Container(
               height: 350,
               width: double.infinity,
-              color: Colors.grey[800], // PLACEHOLDER FOR IMAGE
-              child: const Center(
-                child: Icon(Icons.image, size: 50, color: Colors.white24),
-              ),
+              color: Colors.grey[800], // Placeholder from
+              child: images.isNotEmpty
+                  // Has images → show from Cloudinary
+                  ? Image.network(
+                      images[_selectedImageIndex],
+                      fit: BoxFit.cover,
+                      // Spinner while image loads
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      // Placeholder if image fails
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.white24,
+                          ),
+                        );
+                      },
+                    )
+                  //  No images show placeholder
+                  : const Center(
+                      child: Icon(Icons.image, size: 50, color: Colors.white24),
+                    ),
             ),
 
+            if (images.length > 1)
+              SizedBox(
+                height: 70,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount: images.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = index == _selectedImageIndex;
+                    return GestureDetector(
+                      // Tap thumbnail → update main image
+                      onTap: () => setState(() {
+                        _selectedImageIndex = index;
+                      }),
+                      child: Container(
+                        width: 55,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          // Highlight selected thumbnail
+                          border: Border.all(
+                            color: isSelected
+                                ? accentColor
+                                : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            images[index],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -90,14 +155,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     ],
                   ),
                   Text(
-                    "Nathon James",
+                    widget.product.shopName,
                     style: TextStyle(color: secondaryTextColor),
                   ),
                   const SizedBox(height: 15),
 
                   // 4. Description
                   Text(
-                    "Nathan James dining chair featuring a modern, elegant design with comfortable cushioning, sturdy wooden legs and a sleek silhouette perfect for...",
+                    widget.product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
@@ -127,7 +192,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   const SizedBox(height: 30),
 
                   // 6. List tiles for Shop Info/Customization
-                  
                   const Divider(color: Colors.white24),
 
                   _buildListTile("Ask For Customizations", () {
@@ -135,8 +199,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const ChatApplication(), 
+                        builder: (context) => const ChatApplication(),
                       ),
                     );
                   }),

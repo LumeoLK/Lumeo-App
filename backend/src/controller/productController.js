@@ -80,17 +80,17 @@ export const createProduct = async (req, res) => {
       price,
       category,
       stock,
-      images: imageUrls, 
+      images: imageUrls,
       dimensions: { length, width, height },
-      dominantColor: rgb, 
+      dominantColor: rgb,
       imageEmbedding: vector,
       model3D: { status: "pending" },
     });
-    
+
     await newProduct.save();
-    console.log("data saved")
-    const result = await generate3DModel(newProduct._id, imageUrls); 
-    
+    console.log("data saved");
+    const result = await generate3DModel(newProduct._id, imageUrls);
+
     res.status(201).json({
       success: true,
       msg: "Product created successfully!",
@@ -103,7 +103,6 @@ export const createProduct = async (req, res) => {
   }
 };
 
-
 export const approve3DModel = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -114,26 +113,31 @@ export const approve3DModel = async (req, res) => {
     }
 
     if (product.model3D.status !== "success") {
-      return res.status(400).json({ msg: "3D model is not ready for approval." });
+      return res
+        .status(400)
+        .json({ msg: "3D model is not ready for approval." });
     }
 
     await Product.findByIdAndUpdate(productId, {
       "model3D.status": "approved",
     });
 
-    res.status(200).json({success:true, msg: "3D model approved successfully." });
+    res
+      .status(200)
+      .json({ success: true, msg: "3D model approved successfully." });
   } catch (error) {
     console.error("Error approving 3D model:", error);
     res.status(500).json({ msg: "Failed to approve 3D model." });
   }
-}
+};
 
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.find()
+      .populate("sellerId", "shopName")
+      .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
     res.status(500).json({ msg: error.message });
-
   }
 };
