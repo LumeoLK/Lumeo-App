@@ -5,7 +5,7 @@ import Redis from "ioredis";
 // BullMQ requires maxRetriesPerRequest to be null
 
 const redisConnection = new Redis(
-  process.env.REDIS_URL || "redis://127.0.0.1:6379",
+  process.env.REDIS_URL,
   {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,

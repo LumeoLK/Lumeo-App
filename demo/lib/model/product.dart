@@ -5,6 +5,7 @@ class Product {
   final String description;
   final List<String> images;
   final String shopName;
+  final String sellerId;
   Product({
     required this.id,
     required this.name,
@@ -12,14 +13,18 @@ class Product {
     required this.description,
     this.images = const [],
     this.shopName = 'Unknown Seller',
+    this.sellerId = '',
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     String shopName = 'Unknown Seller';
-    final sellerId = json['sellerId'];
-    if (sellerId is Map) {
-      // extract shopName
-      shopName = sellerId['shopName'] ?? 'Unknown Seller';
+    String sellerId = '';
+    final sellerData = json['sellerId'];
+    if (sellerData is Map) {
+      shopName = sellerData['shopName'] ?? 'Unknown Seller';
+      sellerId = sellerData['_id'] ?? '';
+    } else if (sellerData is String) {
+      sellerId = sellerData;
     }
     return Product(
       id: json['_id'] ?? '',
@@ -28,6 +33,7 @@ class Product {
       description: json['description'] ?? '',
       images: List<String>.from(json['images'] ?? []),
       shopName: shopName,
+      sellerId: sellerId,
     );
   }
 }
