@@ -137,3 +137,65 @@ export const getAllProducts = async (req, res) => {
 
   }
 };
+
+export const searchProducts = async (req, res) => {
+  try {
+    const {
+      keyword,
+      category,
+      minPrice,
+      maxPrice,
+      sortBy,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    let query = {};
+    if (keyword) query.title = { $regex: keyword, $options: "i" };
+    if (category) query.category = category;
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    let sortOptions = {};
+    if (sortBy === "price-low") sortOptions.price = 1;
+    else if (sortBy === "price-high") sortOptions.price = -1;
+    else sortOptions.createdAt = -1;
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const products = await Product.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(Number(limit))
+      .select("title price images category");
+
+    const total = await Product.countDocuments(query);
+
+    res.json({
+      success: true,
+      count: products.length,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit)),
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
+    res.json(product);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ msg: error.message });
+  }
+}

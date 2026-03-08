@@ -64,7 +64,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ARScreen(),
+                          builder: (context) => const ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
                     },
