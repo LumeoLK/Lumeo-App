@@ -8,7 +8,7 @@ class Blueprint3DScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: const Text("Blueprint to 3D"),
+        title: const Text("Blueprint 3D"),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -27,13 +27,42 @@ class BlueprintContent extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: const [
-          SizedBox(height: 20),
-          UploadBlueprintCard(),
+          SizedBox(height: 10),
+
+          Text(
+            "Upload a furniture blueprint to automatically\nturn it into a 3D preview model.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+
           SizedBox(height: 25),
+
+          UploadBlueprintCard(),
+
+          SizedBox(height: 25),
+
           ConvertButton(),
+
           SizedBox(height: 20),
+
           ProcessingStatus(),
+
           SizedBox(height: 20),
+
+          Text(
+            "Preview 3D Model",
+            style: TextStyle(
+              color: Colors.orange,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          SizedBox(height: 15),
+
           Preview3DBox(),
         ],
       ),
