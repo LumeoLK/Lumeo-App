@@ -14,7 +14,7 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue }) => {
         
         {/* The Icon Container */}
         <div className="w-10 h-10 rounded-xl bg-amber-900/20 flex items-center justify-center border border-amber-500/20">
-          <Icon className="w-5 h-5 text-orange-500" />
+          <Icon className="w-5 h-5 text-brand" />
         </div>
       </div>
 

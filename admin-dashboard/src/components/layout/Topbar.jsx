@@ -18,18 +18,18 @@ const Topbar = () => {
           <input 
             type="text" 
             placeholder="Global search..." 
-            className="bg-zinc-900 text-zinc-200 pl-10 pr-4 py-2.5 rounded-full border border-zinc-800 focus:outline-none focus:border-orange-500 w-64 text-sm"
+            className="bg-zinc-900 text-zinc-200 pl-10 pr-4 py-2.5 rounded-full border border-zinc-800 focus:outline-none focus:border-brand w-64 text-sm"
           />
         </div>
 
         {/* Notifications */}
         <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
           <Bell className="w-6 h-6" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-[#09090b]"></span>
+          <span className="absolute top-2 right-2 w-2 h-2 bg-brand rounded-full border-2 border-[#09090b]"></span>
         </button>
         
         {/* Profile Avatar */}
-        <div className="w-10 h-10 rounded-full bg-amber-900/50 text-orange-500 flex items-center justify-center font-bold border border-orange-500/20">
+        <div className="w-10 h-10 rounded-full bg-amber-900/50 text-brand flex items-center justify-center font-bold border border-brand/20">
           AD
         </div>
       </div>

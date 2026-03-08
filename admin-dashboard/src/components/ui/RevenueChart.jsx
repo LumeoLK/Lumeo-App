@@ -37,7 +37,7 @@ const RevenueChart = () => {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                 activeTab === tab 
-                  ? 'bg-orange-500 text-black' 
+                  ? 'bg-[#FBB040] text-black' 
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
@@ -53,20 +53,20 @@ const RevenueChart = () => {
           <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#f9d225" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#FBB040" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
             <Tooltip 
               contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
-              itemStyle={{ color: '#f97316' }}
+              itemStyle={{ color: '#FBB040' }}
             />
             <Area 
               type="monotone" 
               dataKey="revenue" 
-              stroke="#f97316" 
+              stroke="#FBB040" 
               strokeWidth={3} 
               fillOpacity={1} 
               fill="url(#colorRevenue)" 

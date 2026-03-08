@@ -7,34 +7,29 @@ import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';                      
-import 'pages/onboarding_page1.dart';           
+import 'package:shared_preferences/shared_preferences.dart';
+import 'pages/onboarding_page1.dart';
+
 void main() {
-  runApp(
-    const ProviderScope(child: const MyApp(),)
-      
-    );
- 
+  runApp(const ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
-      
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Lumeo',
-      darkTheme: ThemeData.dark(), 
-      themeMode: ThemeMode.dark, 
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark,
       home: const SplashScreen(),
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {        
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
@@ -42,7 +37,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -51,9 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const OnboardingPage1(),
-        ),
+        MaterialPageRoute(builder: (context) => const OnboardingPage1()),
       );
     });
   }
