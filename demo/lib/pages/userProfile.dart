@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../pages/my_orders.dart';
 import '../services/auth_service.dart';
 //void main() => runApp(const MaterialApp(home: ProfilePage()));
 
@@ -51,10 +52,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             onPressed: () {},
             icon: const Icon(Icons.search, color: Colors.white),
           ),
-          const CircleAvatar(
-            backgroundColor: Color(0xFF2E2E2E),
-            child: Icon(Icons.person, color: Colors.orange),
-          ),
+
           const SizedBox(width: 16),
         ],
       ),
@@ -99,9 +97,14 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-            _buildMenuTile('My orders', 'Already have 12 orders'),
-            _buildMenuTile('Shipping addresses', '3 addresses'),
-            _buildMenuTile('Payment methods', 'Visa **34'),
+            _buildMenuTile(
+              'My orders',
+              'Already have 12 orders',
+              const MyOrders(),
+              context,
+            ),
+            _buildMenuTile('Shipping addresses', '3 addresses', null, context),
+            _buildMenuTile('Payment methods', 'Visa **34', null, context),
 
             const SizedBox(height: 30),
 
@@ -135,7 +138,12 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     );
   }
 
-  Widget _buildMenuTile(String title, String subtitle) {
+  Widget _buildMenuTile(
+    String title,
+    String subtitle,
+    Widget? page,
+    BuildContext context,
+  ) {
     return Column(
       children: [
         ListTile(
@@ -152,6 +160,15 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+
+          onTap: page == null
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => page),
+                  );
+                },
         ),
         const Divider(color: Colors.white12, height: 1),
       ],

@@ -48,11 +48,7 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 15),
-                    const CircleAvatar(
-                      backgroundColor: cardColor,
-                      child: Icon(Icons.person, color: accentColor),
-                    ),
+                    
                   ],
                 ),
 
