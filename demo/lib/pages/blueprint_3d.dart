@@ -87,27 +87,66 @@ class _BlueprintContentState extends State<BlueprintContent>
           const Text(
             "Upload a furniture blueprint to automatically\nturn it into a 3D preview model.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
+          const SizedBox(height: 25),
+          const UploadBlueprintCard(),
+          const SizedBox(height: 25),
+          ConvertButton(onPressed: _startProcessing),
+          const SizedBox(height: 20),
 
-          SizedBox(height: 25),
+          // Processing Status Bar
+          if (_status != 'idle')
+            AnimatedBuilder(
+              animation: _progressAnimation,
+              builder: (context, child) {
+                final progress = _progressAnimation.value;
+                final isComplete = _status == 'complete';
+                final label = isComplete
+                    ? 'Processing Complete ✓'
+                    : 'Processing...';
+                final fillColor = isComplete
+                    ? Colors.green
+                    : Colors.orange;
 
-          UploadBlueprintCard(),
+                return Container(
+                  height: 48,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Filling bar
+                      FractionallySizedBox(
+                        widthFactor: progress,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: fillColor.withOpacity(0.35),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      // Label
+                      Center(
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            color: isComplete ? Colors.green : Colors.grey,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
 
-          SizedBox(height: 25),
-
-          ConvertButton(),
-
-          SizedBox(height: 20),
-
-          ProcessingStatus(),
-
-          SizedBox(height: 20),
-
-          Text(
+          const SizedBox(height: 20),
+          const Text(
             "Preview 3D Model",
             style: TextStyle(
               color: Colors.orange,
@@ -135,25 +174,40 @@ class UploadBlueprintCard extends StatelessWidget {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.upload, color: Colors.orange, size: 40),
-            SizedBox(height: 10),
-            Text(
-              "Upload Blueprint",
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: 18,
-              ),
+      child: Stack(
+        children: [
+          const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Colors.orange,
+                  child: Icon(Icons.upload, color: Colors.white, size: 26),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Upload Blueprint",
+                  style: TextStyle(color: Colors.orange, fontSize: 18),
+                ),
+                Text(
+                  "(JPG, PNG, PDF)",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
             ),
-            Text(
-              "(JPG, PNG, PDF)",
-              style: TextStyle(color: Colors.grey),
-            )
-          ],
-        ),
+          ),
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.orange,
+              child: const Icon(Icons.chat_bubble_outline,
+                  color: Colors.white, size: 16),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -169,31 +223,15 @@ class ConvertButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.orange,
         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
       ),
-      onPressed: () {},
+      onPressed: onPressed,
       child: const Text(
         "CONVERT TO 3D",
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),
-    );
-  }
-}
-
-class ProcessingStatus extends StatelessWidget {
-  const ProcessingStatus({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        CircularProgressIndicator(color: Colors.orange),
-        SizedBox(height: 10),
-        Text(
-          "Processing Blueprint...",
-          style: TextStyle(color: Colors.grey),
-        ),
-      ],
     );
   }
 }
@@ -213,7 +251,7 @@ class Preview3DBox extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: const ModelViewer(
-          src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+          src: 'https://res.cloudinary.com/drno34my4/raw/upload/v1772814761/lumeo_3d_models/product_69ab009a6ee07aee64699fea.glb',
           alt: "3D Model",
           autoRotate: true,
           cameraControls: true,
