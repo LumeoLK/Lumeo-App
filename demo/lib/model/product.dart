@@ -3,23 +3,23 @@ class Product {
   final String name;
   final double price;
   final String description;
-  final String? image;
+  final List<String> images;
 
   Product({
     required this.id,
     required this.name,
     required this.price,
     required this.description,
-    this.image,
+    this.images = const [],
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['_id'] ?? '',
-      name: json['name'] ?? '',
+      name: json['title'] ?? '',
       price: (json['price'] as num).toDouble(),
       description: json['description'] ?? '',
-      image: json['image'],
+      images: List<String>.from(json['images'] ?? []),
     );
   }
 }
