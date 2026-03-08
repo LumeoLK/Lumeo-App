@@ -9,31 +9,88 @@ class Blueprint3DScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: const Text("Blueprint 3D"),
+        title: const Text(
+          "Blueprint 3D",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Icon(Icons.notifications_outlined, color: Colors.white),
+          ),
+        ],
       ),
       body: const BlueprintContent(),
     );
   }
 }
 
-class BlueprintContent extends StatelessWidget {
+class BlueprintContent extends StatefulWidget {
   const BlueprintContent({super.key});
+
+  @override
+  State<BlueprintContent> createState() => _BlueprintContentState();
+}
+
+class _BlueprintContentState extends State<BlueprintContent>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _progressAnimation;
+
+  // States: idle, processing, complete
+  String _status = 'idle';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+    _progressAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() => _status = 'complete');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _startProcessing() {
+    if (_status == 'processing') return;
+    setState(() => _status = 'processing');
+    _controller.forward(from: 0);
+  }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
-        children: const [
-          SizedBox(height: 10),
-
-          Text(
+        children: [
+          const SizedBox(height: 10),
+          const Text(
             "Upload a furniture blueprint to automatically\nturn it into a 3D preview model.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
           ),
 
           SizedBox(height: 25),
@@ -58,10 +115,8 @@ class BlueprintContent extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-
-          SizedBox(height: 15),
-
-          Preview3DBox(),
+          const SizedBox(height: 15),
+          const Preview3DBox(),
         ],
       ),
     );
@@ -88,9 +143,15 @@ class UploadBlueprintCard extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               "Upload Blueprint",
-              style: TextStyle(color: Colors.orange, fontSize: 18),
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: 18,
+              ),
             ),
-            Text("(JPG, PNG, PDF)", style: TextStyle(color: Colors.grey)),
+            Text(
+              "(JPG, PNG, PDF)",
+              style: TextStyle(color: Colors.grey),
+            )
           ],
         ),
       ),
@@ -99,7 +160,8 @@ class UploadBlueprintCard extends StatelessWidget {
 }
 
 class ConvertButton extends StatelessWidget {
-  const ConvertButton({super.key});
+  final VoidCallback onPressed;
+  const ConvertButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +172,10 @@ class ConvertButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       onPressed: () {},
-      child: const Text("CONVERT TO 3D", style: TextStyle(color: Colors.black)),
+      child: const Text(
+        "CONVERT TO 3D",
+        style: TextStyle(color: Colors.black),
+      ),
     );
   }
 }
@@ -124,7 +189,10 @@ class ProcessingStatus extends StatelessWidget {
       children: const [
         CircularProgressIndicator(color: Colors.orange),
         SizedBox(height: 10),
-        Text("Processing Blueprint...", style: TextStyle(color: Colors.grey)),
+        Text(
+          "Processing Blueprint...",
+          style: TextStyle(color: Colors.grey),
+        ),
       ],
     );
   }
@@ -145,7 +213,7 @@ class Preview3DBox extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: const ModelViewer(
-          src:'https://res.cloudinary.com/drno34my4/raw/upload/v1772814761/lumeo_3d_models/product_69ab009a6ee07aee64699fea.glb',
+          src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
           alt: "3D Model",
           autoRotate: true,
           cameraControls: true,
