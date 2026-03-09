@@ -1,6 +1,6 @@
 import Blueprint3DJob from "../models/Blueprint3DJob.js";
 import { uploadToCloudinary } from "../lib/cloudinary.js";
-import { blueprint3DQueue } from "../queues/queue.js";
+import { blueprint3DQueue } from "../lib/queue.js";
 
 export const uploadBlueprint = async (req, res) => {
   try {
