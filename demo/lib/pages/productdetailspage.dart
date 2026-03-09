@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/product.dart';
+import '../services/cart_service.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
+
   final Product product;
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
@@ -178,7 +181,23 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () async {
+                        try {
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          String token = prefs.getString('x-auth-token') ?? '';
+                          await CartService.addToCart(
+                            token,
+                            widget.product.id,
+                            widget.product.price,
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Added to cart")),
+                          );
+                        } catch (e) {
+                          print(e);
+                        }
+                      },
                       child: const Text(
                         "ADD TO CART",
                         style: TextStyle(
