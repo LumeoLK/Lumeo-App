@@ -137,3 +137,5 @@ $RECYCLE.BIN/
 .idea/
 .vscode/
 
+# FVM Version Cache
+.fvm/

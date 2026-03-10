@@ -1,29 +1,43 @@
 class Product {
-  final String id; // MongoDB _id — needed to fetch from backend
+
+  final String id;
   final String name;
   final double price;
-  final String image;
   final String description;
-  final String modelUrl; // 👈 the .glb file URL
+  final List<String> images;
+  final String shopName;
+  final String sellerId;
+  final String modelUrl; 
 
   Product({
     required this.id,
     required this.name,
     required this.price,
-    required this.image,
     required this.description,
     required this.modelUrl,
+    this.images = const [],
+    this.shopName = 'Unknown Seller',
+    this.sellerId = '',
   });
 
-  // Converts raw JSON from your backend into a Product object
   factory Product.fromJson(Map<String, dynamic> json) {
+    String shopName = 'Unknown Seller';
+    String sellerId = '';
+    final sellerData = json['sellerId'];
+    if (sellerData is Map) {
+      shopName = sellerData['shopName'] ?? 'Unknown Seller';
+      sellerId = sellerData['_id'] ?? '';
+    } else if (sellerData is String) {
+      sellerId = sellerData;
+    }
     return Product(
       id: json['_id'] ?? '',
-      name: json['name'] ?? '',
+      name: json['title'] ?? '',
       price: (json['price'] as num).toDouble(),
-      image: json['image'] ?? '',
       description: json['description'] ?? '',
-      modelUrl: json['modelUrl'] ?? '',
+      images: List<String>.from(json['images'] ?? []),
+      shopName: shopName,
+      sellerId: sellerId,
     );
   }
 }

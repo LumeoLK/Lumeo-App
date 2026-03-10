@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:lumeo_v2/pages/chat_application.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/product.dart';
 import 'ar_screen.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
+
   final Product product;
 
   @override
@@ -15,9 +18,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final Color cardColor = const Color(0xFF2A2A2A);
   final Color accentColor = const Color(0xFFFDB04B);
   final Color secondaryTextColor = Colors.white70;
-
+  int _selectedImageIndex = 0;
   @override
   Widget build(BuildContext context) {
+    final images = widget.product.images;
     // 👇 widget.product gives you access to the product passed in
     final product = widget.product;
 
@@ -43,6 +47,36 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            //Image Placeholder Section
+            Container(
+              height: 350,
+              width: double.infinity,
+              color: Colors.grey[800], // Placeholder from
+              child: images.isNotEmpty
+                  // Has images → show from Cloudinary
+                  ? Image.network(
+                      images[_selectedImageIndex],
+                      fit: BoxFit.cover,
+                      // Spinner while image loads
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      // Placeholder if image fails
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.white24,
+                          ),
+                        );
+                      },
+                    )
+                  //  No images show placeholder
+                  : const Center(
+                      child: Icon(Icons.image, size: 50, color: Colors.white24),
+                    ),
             Stack(
               children: [
                 // Product Image
@@ -91,6 +125,48 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               ],
             ),
 
+            if (images.length > 1)
+              SizedBox(
+                height: 70,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount: images.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = index == _selectedImageIndex;
+                    return GestureDetector(
+                      // Tap thumbnail → update main image
+                      onTap: () => setState(() {
+                        _selectedImageIndex = index;
+                      }),
+                      child: Container(
+                        width: 55,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          // Highlight selected thumbnail
+                          border: Border.all(
+                            color: isSelected
+                                ? accentColor
+                                : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            images[index],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -129,11 +205,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       ),
                     ],
                   ),
+                  Text(
+                    widget.product.shopName,
+                    style: TextStyle(color: secondaryTextColor),
+                  ),
                   const SizedBox(height: 15),
 
                   // ✅ FIXED: now uses real description
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
@@ -148,7 +228,23 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () async {
+                        // try {
+                        //   SharedPreferences prefs = await SharedPreferences.getInstance();
+                        //   String token = prefs.getString('x-auth-token') ?? '';
+                        //   await CartService.addToCart(
+                        //     token,
+                        //     widget.product.id,
+                        //     widget.product.price,
+                        //   );
+
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //     const SnackBar(content: Text("Added to cart")),
+                        //   );
+                        // } catch (e) {
+                        //   print(e);
+                        // }
+                      },
                       child: const Text(
                         "ADD TO CART",
                         style: TextStyle(
@@ -161,9 +257,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  _buildListTile("Shop Information"),
+                  // 6. List tiles for Shop Info/Customization
                   const Divider(color: Colors.white24),
-                  _buildListTile("Ask For Customizations"),
+
+                  _buildListTile("Ask For Customizations", () {
+                    // Navigation code to the chat application page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChatApplication(),
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 30),
 
                   const Text(
@@ -209,12 +314,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  Widget _buildListTile(String title) {
+  Widget _buildListTile(String title, VoidCallback onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: () {},
+      onTap: onTap, // Triggers the navigation
     );
   }
 

@@ -1,6 +1,13 @@
 import express from "express";
 
-import { getUserOrders, getSellerOrders, updateOrderStatus,createOrder ,placeOrder} from "../controller/orderController.js";
+import {
+  getUserOrders,
+  getSellerOrders,
+  updateOrderStatus,
+  createOrder,
+  placeOrder,
+  getMyOrders,
+} from "../controller/orderController.js";
 
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 
