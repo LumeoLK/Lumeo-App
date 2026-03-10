@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/product.dart';
-// import '../services/cart_service.dart';
+import 'ar_screen.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
 
   final Product product;
+
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
-  // Exact colors from your design
   final Color backgroundColor = const Color(0xFF1E1E1E);
   final Color cardColor = const Color(0xFF2A2A2A);
-  final Color accentColor = const Color(0xFFFDB04B); // The Orange/Yellow
+  final Color accentColor = const Color(0xFFFDB04B);
   final Color secondaryTextColor = Colors.white70;
   int _selectedImageIndex = 0;
   @override
   Widget build(BuildContext context) {
     final images = widget.product.images;
+    // 👇 widget.product gives you access to the product passed in
+    final product = widget.product;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,9 +32,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context), // Practice pop here!
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.product.name, style: TextStyle(color: Colors.white)),
+        title: Text(product.name, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -74,6 +77,52 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   : const Center(
                       child: Icon(Icons.image, size: 50, color: Colors.white24),
                     ),
+            Stack(
+              children: [
+                // Product Image
+                Container(
+                  height: 350,
+                  width: double.infinity,
+                  color: Colors.grey[800],
+                  child: product.image.isNotEmpty
+                      ? Image.network(product.image, fit: BoxFit.cover)
+                      : const Center(
+                          child: Icon(Icons.image, size: 50, color: Colors.white24),
+                        ),
+                ),
+
+                // AR Button — bottom right corner
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      // ✅ FIXED: was "product.modelUrl", now "widget.product.modelUrl"
+                      // Both work since we did `final product = widget.product` above
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ARScreen(modelUrl: product.modelUrl),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Image.asset(
+                        'assets/icons/ar.png',
+                        width: 30,
+                        height: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             if (images.length > 1)
@@ -123,7 +172,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 2. Dropdowns Row
                   Row(
                     children: [
                       _buildDropdown("Size"),
@@ -135,21 +183,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. Title and Price
+                  // ✅ FIXED: now uses real product data
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.product.name,
-                        style: TextStyle(
+                        product.name,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       Text(
-                        widget.product.price.toString(),
-                        style: TextStyle(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -163,14 +211,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  // 4. Description
+                  // ✅ FIXED: now uses real description
                   Text(
                     widget.product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
 
-                  // 5. Add to Cart Button
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -224,7 +271,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   }),
                   const SizedBox(height: 30),
 
-                  // 7. "You can also like this" Section
                   const Text(
                     "You can also like this",
                     style: TextStyle(
@@ -235,7 +281,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  // Horizontal List of related items
                   SizedBox(
                     height: 200,
                     child: ListView.builder(
@@ -253,7 +298,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  // UI Helper methods to keep code clean (Like React sub-components)
   Widget _buildDropdown(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -293,10 +337,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[700], // IMAGE PLACEHOLDER
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
-                ),
+                color: Colors.grey[700],
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
               ),
             ),
           ),
@@ -305,17 +347,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Dining Chair",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
-                ),
-                Text(
-                  "12\$",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text("Dining Chair", style: TextStyle(color: Colors.white, fontSize: 12)),
+                Text("\$12", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ],
             ),
           ),

@@ -11,6 +11,9 @@ import setupSocket from "./socket/socketHandler.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
+app.use(cookieParser());
+
 import authRouter from "./routes/auth.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
