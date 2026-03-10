@@ -20,7 +20,7 @@ export const uploadBlueprint = async (req, res) => {
     );
 
     const blueprintUrl = cloudinaryResult.secure_url;
-
+    console.log(blueprintUrl)
     // Save job in DB
     const job = await Blueprint3DJob.create({
       productId,

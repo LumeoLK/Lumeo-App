@@ -42,7 +42,7 @@ app.use(cookieParser());
 try {
   connectDB();
   app.get("/", (req, res) => {
-  res.send("Welcome to the Lumeo backend API 🚀");
+  res.send("Welcome to the Lumeo backend API");
 });
     app.on('error', err => {
       console.error("Error in app:", err);
