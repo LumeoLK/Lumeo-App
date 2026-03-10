@@ -47,7 +47,14 @@ console.log("HI")
     // 4. Handle a SUCCESSFUL generation
     if (payload.status === "SUCCEEDED") {
 
-      const temporaryGlbUrl = payload.model_urls.glb;
+      const temporaryGlbUrl = payload.model_urls?.glb;
+
+      if (!temporaryGlbUrl) {
+        console.warn(
+          `[Meshy Webhook] Status is SUCCEEDED, but no GLB URL provided for task ${meshyTaskId}. Skipping download.`,
+        );
+        return res.status(200).send("Awaiting valid URL");
+      }
 
 
       const response = await axios.get(temporaryGlbUrl, {

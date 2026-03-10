@@ -6,10 +6,11 @@ import connectDB from "./config.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(cookieParser());
 
 import authRouter from "./routes/auth.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
