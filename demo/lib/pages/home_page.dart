@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> pages = const [
     HomeContent(),
 
-    WishlistPage(),
+    // WishlistPage(),
     ARScreen(),
     CartPage(),
     CustomFurniturePage(),

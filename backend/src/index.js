@@ -19,6 +19,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
+import mlRoutes from "./routes/mlRoutes.js"
 app.use(express.json()); //middleware
 app.use(express.static("public"));
 
@@ -30,6 +31,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api", webhookRoutes); 
+app.use("/api/internal/ml", mlRoutes);
 
 app.use(cookieParser());
 

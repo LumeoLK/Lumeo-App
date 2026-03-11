@@ -1,4 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException,Query
+from fastapi.middleware.cors import CORSMiddleware
+
 import torch
 import clip
 from PIL import Image
