@@ -56,9 +56,13 @@ class CartNotifier extends StateNotifier<CartState> {
   Future<void> addToCart(String productId, double price) async {
     try {
       final token = await _getToken();
+      print('[CartProvider] Token: ${token.isNotEmpty ? "${token.substring(0, 20)}..." : "EMPTY"}');
+      print('[CartProvider] Adding product: $productId, price: $price');
       await CartService.addToCart(token, productId, price);
+      print('[CartProvider] Add to cart succeeded!');
       await fetchCart(); // Refresh cart after adding
     } catch (e) {
+      print('[CartProvider] Add to cart FAILED: $e');
       state = state.copyWith(error: e.toString());
     }
   }

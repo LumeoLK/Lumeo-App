@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
 import 'package:lumeo_v2/providers/cart_provider.dart';
 import '../model/product.dart';
+import '../utils/auth_guard.dart';
+import '../pages/cart_page.dart';
 
 // Step 1: ConsumerStatefulWidget instead of StatefulWidget
 class ProductDetailsPage extends ConsumerStatefulWidget {
@@ -188,7 +190,10 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       onPressed: cartState.isLoading
                           ? null
                           : () async {
-                              // Step 4: ref.read triggers the action (never ref.watch in callbacks)
+                              // Check if user is logged in first
+                              if (!await requireAuth(context, ref)) return;
+
+                              // User is authenticated — proceed with adding to cart
                               await ref
                                   .read(cartProvider.notifier)
                                   .addToCart(
@@ -198,18 +203,21 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
                               final error = ref.read(cartProvider).error;
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      error == null
-                                          ? 'Added to cart!'
-                                          : 'Failed: $error',
+                                if (error == null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const CartPage(),
                                     ),
-                                    backgroundColor: error == null
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                );
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed: $error'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                       child: cartState.isLoading

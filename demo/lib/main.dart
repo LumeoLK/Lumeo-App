@@ -31,47 +31,47 @@ class MyApp extends StatelessWidget {
       title: 'Lumeo',
       darkTheme: ThemeData.dark(), 
       themeMode: ThemeMode.dark, 
-      home: const SplashScreen(),
+      home: const Login(),
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {        
-  const SplashScreen({super.key});
+// class SplashScreen extends StatefulWidget {        
+//   const SplashScreen({super.key});
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
+//   @override
+//   State<SplashScreen> createState() => _SplashScreenState();
+// }
 
-class _SplashScreenState extends State<SplashScreen> {
+// class _SplashScreenState extends State<SplashScreen> {
 
-  @override
-  void initState() {
-    super.initState();
+//   @override
+//   void initState() {
+//     super.initState();
 
-    // Wait 3 seconds → go to next page
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const OnboardingPage1(),
-        ),
-      );
-    });
-  }
+//     // Wait 3 seconds → go to next page
+//     Timer(const Duration(seconds: 3), () {
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => const OnboardingPage1(),
+//         ),
+//       );
+//     });
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFBB040), //orange color
-      body: Center(
-        child: Image.asset(
-          "assets/images/lumeo_brandmark.png",
-          width: 150,
-          height: 150,
-        ),
-      ),
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: const Color(0xFFFBB040), //orange color
+//       body: Center(
+//         child: Image.asset(
+//           "assets/images/lumeo_brandmark.png",
+//           width: 150,
+//           height: 150,
+//         ),
+//       ),
 
-    );
-  }
-}
+//     );
+//   }
+//}

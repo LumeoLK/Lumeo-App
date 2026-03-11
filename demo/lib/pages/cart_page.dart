@@ -69,7 +69,7 @@ class _CartPageState extends ConsumerState<CartPage> {
             ),
           ),
 
-          // Loading / Error / Cart Items
+         
           Expanded(
             child: cartState.isLoading
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFFFBB040)))
@@ -215,7 +215,7 @@ class _CartPageState extends ConsumerState<CartPage> {
       ),
       child: Row(
         children: [
-          // Product image placeholder (CartItem only has productId, no image URL)
+         
           Container(
             width: 100,
             height: 100,
@@ -237,7 +237,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        item.productId, // Replace with product name if you enrich CartItem
+                        item.productId, 
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,

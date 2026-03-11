@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../Constants.dart';
 
 class CartService {
-
-  static const String baseUrl = "https://lumeo-app.onrender.com/api/cart";
 
   static Future<void> addToCart(
       String token,
@@ -12,7 +11,7 @@ class CartService {
       ) async {
 
     final response = await http.post(
-      Uri.parse("$baseUrl/add"),
+      Uri.parse("${Constants.cartUri}/add"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
@@ -24,15 +23,15 @@ class CartService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception("Failed to add to cart");
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception("Failed to add to cart: ${response.statusCode} - ${response.body}");
     }
   }
 
   static Future<List<dynamic>> getCart(String token) async {
 
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse(Constants.cartUri),
       headers: {
         "Authorization": "Bearer $token"
       },
@@ -52,7 +51,7 @@ class CartService {
       ) async {
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/remove"),
+      Uri.parse("${Constants.cartUri}/remove"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
