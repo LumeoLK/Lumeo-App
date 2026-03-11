@@ -1,52 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/cart_provider.dart';
+import '../model/cart_item.dart';
 
-class CartPage extends StatefulWidget {
+class CartPage extends ConsumerStatefulWidget {
   const CartPage({Key? key}) : super(key: key);
 
   @override
-  State<CartPage> createState() => _CartPageState();
+  ConsumerState<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
-  // sample cart items
-  List<Map<String, dynamic>> cartItems = [
-    {
-      'id': 1,
-      'name': 'Tufted Wingback Accent Chair',
-      'material': 'Mahogany',
-      'price': 51,
-      'quantity': 1,
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'id': 2,
-      'name': 'Modern Wood-Frame Armchair',
-      'material': 'Teak',
-      'price': 30,
-      'quantity': 1,
-      'image': 'assets/images/chair2.avif',
-    },
-    {
-      'id': 3,
-      'name': '6-Seater Pedestal Dining Table',
-      'material': 'Mahogany',
-      'price': 100,
-      'quantity': 1,
-      'image': 'assets/images/table.png',
-    },
-  ];
-
-  // calculate total price
-  int getTotalPrice() {
-    int total = 0;
-    for (var item in cartItems) {
-      total += (item['price'] as int) * (item['quantity'] as int);
-    }
-    return total;
+class _CartPageState extends ConsumerState<CartPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch cart when page loads
+    Future.microtask(() => ref.read(cartProvider.notifier).fetchCart());
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartState = ref.watch(cartProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
       appBar: AppBar(
@@ -93,19 +68,49 @@ class _CartPageState extends State<CartPage> {
               ),
             ),
           ),
-          
-          // cart items list
+
+          // Loading / Error / Cart Items
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                return buildCartItem(cartItems[index], index);
-              },
-            ),
+            child: cartState.isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFFFBB040)))
+                : cartState.error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Something went wrong',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  ref.read(cartProvider.notifier).fetchCart(),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFBB040)),
+                              child: const Text('Retry',
+                                  style: TextStyle(color: Colors.black)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : cartState.items.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Your cart is empty',
+                              style: TextStyle(color: Colors.white70, fontSize: 16),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: cartState.items.length,
+                            itemBuilder: (context, index) {
+                              return buildCartItem(cartState.items[index]);
+                            },
+                          ),
           ),
-          
-          // promo code section
+
+          // Promo code section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -138,16 +143,13 @@ class _CartPageState extends State<CartPage> {
                     color: Color(0xFF3a3a3a),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.arrow_forward, color: Colors.white),
                 ),
               ],
             ),
           ),
-          
-          // total amount
+
+          // Total amount
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -158,7 +160,7 @@ class _CartPageState extends State<CartPage> {
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
                 Text(
-                  '${getTotalPrice()}\$',
+                  '\$${cartState.totalPrice.toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -168,17 +170,17 @@ class _CartPageState extends State<CartPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
-          // reserve button
+
+          // Reserve button
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: cartState.items.isEmpty ? null : () {
                   // reserve action
                 },
                 style: ElevatedButton.styleFrom(
@@ -200,11 +202,10 @@ class _CartPageState extends State<CartPage> {
           ),
         ],
       ),
-     
     );
   }
 
-  Widget buildCartItem(Map<String, dynamic> item, int index) {
+  Widget buildCartItem(CartItem item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -214,7 +215,7 @@ class _CartPageState extends State<CartPage> {
       ),
       child: Row(
         children: [
-          // product image
+          // Product image placeholder (CartItem only has productId, no image URL)
           Container(
             width: 100,
             height: 100,
@@ -222,18 +223,11 @@ class _CartPageState extends State<CartPage> {
               color: const Color(0xFF3a3a3a),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                item['image'],
-                fit: BoxFit.cover,
-              ),
-            ),
+            child: const Icon(Icons.chair, color: Colors.white54, size: 40),
           ),
-          
+
           const SizedBox(width: 12),
-          
-          // product details
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,106 +235,37 @@ class _CartPageState extends State<CartPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['name'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    Expanded(
+                      child: Text(
+                        item.productId, // Replace with product name if you enrich CartItem
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['material'],
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.more_vert, color: Colors.grey),
+                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
                       onPressed: () {
-                        // show options
+                        ref.read(cartProvider.notifier).removeFromCart(item.productId);
                       },
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
-                
-                // quantity controls and price
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // quantity controls
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (item['quantity'] > 1) {
-                                item['quantity']--;
-                              }
-                            });
-                          },
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3a3a3a),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Icon(
-                              Icons.remove,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 12),
-                        
-                        Text(
-                          '${item['quantity']}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 12),
-                        
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              item['quantity']++;
-                            });
-                          },
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3a3a3a),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    // price
                     Text(
-                      '${item['price']}\$',
+                      'Qty: ${item.quantity}',
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    Text(
+                      '\$${item.price.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -356,6 +281,4 @@ class _CartPageState extends State<CartPage> {
       ),
     );
   }
-
-  
 }

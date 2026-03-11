@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumeo_v2/providers/cart_provider.dart';
 import '../model/product.dart';
-import '../services/cart_service.dart';
 
-class ProductDetailsPage extends StatefulWidget {
+// Step 1: ConsumerStatefulWidget instead of StatefulWidget
+class ProductDetailsPage extends ConsumerStatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
 
   final Product product;
+
   @override
-  State<ProductDetailsPage> createState() => _ProductDetailsPageState();
+  ConsumerState<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState extends State<ProductDetailsPage> {
-  // Exact colors from your design
+// Step 2: ConsumerState instead of State — this is what gives us access to "ref"
+class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
   final Color backgroundColor = const Color(0xFF1E1E1E);
   final Color cardColor = const Color(0xFF2A2A2A);
-  final Color accentColor = const Color(0xFFFDB04B); // The Orange/Yellow
+  final Color accentColor = const Color(0xFFFDB04B);
   final Color secondaryTextColor = Colors.white70;
   int _selectedImageIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     final images = widget.product.images;
+
+    // Step 3: ref.watch — reads cartState and rebuilds button when isLoading changes
+    final cartState = ref.watch(cartProvider);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,9 +36,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context), // Practice pop here!
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.product.name, style: TextStyle(color: Colors.white)),
+        title: Text(
+          widget.product.name,
+          style: const TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -44,22 +54,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Image Placeholder Section
             Container(
               height: 350,
               width: double.infinity,
-              color: Colors.grey[800], // Placeholder from
+              color: Colors.grey[800],
               child: images.isNotEmpty
-                  // Has images → show from Cloudinary
                   ? Image.network(
                       images[_selectedImageIndex],
                       fit: BoxFit.cover,
-                      // Spinner while image loads
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return const Center(child: CircularProgressIndicator());
                       },
-                      // Placeholder if image fails
                       errorBuilder: (context, error, stackTrace) {
                         return const Center(
                           child: Icon(
@@ -70,7 +76,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         );
                       },
                     )
-                  //  No images show placeholder
                   : const Center(
                       child: Icon(Icons.image, size: 50, color: Colors.white24),
                     ),
@@ -89,16 +94,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   itemBuilder: (context, index) {
                     final isSelected = index == _selectedImageIndex;
                     return GestureDetector(
-                      // Tap thumbnail → update main image
-                      onTap: () => setState(() {
-                        _selectedImageIndex = index;
-                      }),
+                      onTap: () => setState(() => _selectedImageIndex = index),
                       child: Container(
                         width: 55,
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          // Highlight selected thumbnail
                           border: Border.all(
                             color: isSelected
                                 ? accentColor
@@ -118,12 +119,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   },
                 ),
               ),
+
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 2. Dropdowns Row
                   Row(
                     children: [
                       _buildDropdown("Size"),
@@ -135,18 +136,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. Title and Price
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.product.name,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Expanded(
+                        child: Text(
+                          widget.product.name,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 12),
                       Text(
                         widget.product.price.toString(),
                         style: TextStyle(
@@ -163,14 +167,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  // 4. Description
                   Text(
                     widget.product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
 
-                  // 5. Add to Cart Button
+                  // Add to Cart Button
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -181,40 +184,58 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () async {
-                        try {
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
-                          String token = prefs.getString('x-auth-token') ?? '';
-                          await CartService.addToCart(
-                            token,
-                            widget.product.id,
-                            widget.product.price,
-                          );
+                      // Disabled while loading so user can't double-tap
+                      onPressed: cartState.isLoading
+                          ? null
+                          : () async {
+                              // Step 4: ref.read triggers the action (never ref.watch in callbacks)
+                              await ref
+                                  .read(cartProvider.notifier)
+                                  .addToCart(
+                                    widget.product.id,
+                                    widget.product.price,
+                                  );
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Added to cart")),
-                          );
-                        } catch (e) {
-                          print(e);
-                        }
-                      },
-                      child: const Text(
-                        "ADD TO CART",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                              final error = ref.read(cartProvider).error;
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error == null
+                                          ? 'Added to cart!'
+                                          : 'Failed: $error',
+                                    ),
+                                    backgroundColor: error == null
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      child: cartState.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Text(
+                              "ADD TO CART",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 30),
 
-                  // 6. List tiles for Shop Info/Customization
                   const Divider(color: Colors.white24),
 
                   _buildListTile("Ask For Customizations", () {
-                    // Navigation code to the chat application page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -224,7 +245,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   }),
                   const SizedBox(height: 30),
 
-                  // 7. "You can also like this" Section
                   const Text(
                     "You can also like this",
                     style: TextStyle(
@@ -235,7 +255,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  // Horizontal List of related items
                   SizedBox(
                     height: 200,
                     child: ListView.builder(
@@ -253,7 +272,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  // UI Helper methods to keep code clean (Like React sub-components)
   Widget _buildDropdown(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -275,7 +293,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: onTap, // Triggers the navigation
+      onTap: onTap,
     );
   }
 
@@ -293,7 +311,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[700], // IMAGE PLACEHOLDER
+                color: Colors.grey[700],
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(15),
                 ),
@@ -310,7 +328,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 Text(
-                  "12\$",
+                  "\$12",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
