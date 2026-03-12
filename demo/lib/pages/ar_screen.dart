@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
@@ -7,9 +8,8 @@ class ARScreen extends StatefulWidget {
 
   const ARScreen({super.key, required this.modelUrl});
 
-  @override
-  State<ARScreen> createState() => _ARScreenState();
-}
+
+//   const ARScreen({super.key, required this.modelUrl});
 
 class _ARScreenState extends State<ARScreen> {
   bool _isUnityLoaded = false;
