@@ -39,7 +39,8 @@ dependencies:
   flutter_riverpod: ^3.0.3
   get: ^4.7.2
   provider: ^6.1.5+1
-
+  image_picker: ^1.0.7
+  permission_handler: ^11.3.0
   google_sign_in: ^6.2.1
   #flutter_facebook_auth: ^7.1.2
   font_awesome_flutter: ^10.12.0

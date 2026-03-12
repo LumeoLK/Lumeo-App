@@ -32,7 +32,7 @@ class AuthService {
       };
 
       http.Response res = await http.post(
-        Uri.parse('${Constants.uri}/register'),
+        Uri.parse('${Constants.authUri}/register'),
         body: jsonEncode(userData),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -64,7 +64,7 @@ class AuthService {
     try {
       final navigator = Navigator.of(context);
       http.Response res = await http.post(
-        Uri.parse('${Constants.uri}/login'),
+        Uri.parse('${Constants.authUri}/login'),
         body: jsonEncode({'email': email, 'password': password}),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -124,7 +124,7 @@ class AuthService {
         );
 
         http.Response res = await http.post(
-          Uri.parse('${Constants.uri}/googleAuth'),
+          Uri.parse('${Constants.authUri}/googleAuth'),
           body: jsonEncode({...userAcc.toJson(), 'mode': mode}),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
@@ -159,7 +159,7 @@ class AuthService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${Constants.uri}/forgotPassword'),
+        Uri.parse('${Constants.authUri}/forgotPassword'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email.trim()}),
       );
