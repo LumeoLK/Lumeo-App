@@ -16,7 +16,7 @@ import lumeo_brandmark from '../../assets/lumeo_brandmark.png';
 const Sidebar = () => {
   const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/sellers', label: 'Seller Verification', icon: ShieldCheck, notification: true },
+    { path: '/sellers', label: 'Seller Verification', icon: ShieldCheck},
     { path: '/products', label: 'Products', icon: Package },
     { path: '/orders', label: 'Orders', icon: ShoppingCart },
     { path: '/requests', label: 'Custom Requests', icon: Palette },
