@@ -19,7 +19,6 @@ const Sidebar = () => {
     { path: '/sellers', label: 'Seller Verification', icon: ShieldCheck},
     { path: '/products', label: 'Products', icon: Package },
     { path: '/orders', label: 'Orders', icon: ShoppingCart },
-    { path: '/requests', label: 'Custom Requests', icon: Palette },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 
