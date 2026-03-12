@@ -91,7 +91,6 @@ async def process_product(file: UploadFile = File(...)): # Name MUST be 'file' t
 @app.post("/api/v1/search")
 async def search_furniture(
     file: UploadFile = File(...),
-    top_k: int = Query(default=10, ge=1, le=50),
 ):
     # Validate file type
     if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
@@ -170,7 +169,7 @@ async def search_furniture(
         })
    # Sort by score and return top results
     scored.sort(key=lambda x: x["score"], reverse=True)
-    top_results = scored[:top_k]
+    top_results = scored[:10]
 
     print(f"Top {len(top_results)} results — scores: {[r['score'] for r in top_results]}")
 
