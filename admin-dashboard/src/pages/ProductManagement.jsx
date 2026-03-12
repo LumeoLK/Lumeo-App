@@ -162,7 +162,6 @@ const ProductManagement = () => {
           </table>
         </div>
 
-        {/* --- ADD THIS NEW PAGINATION FOOTER SECTION --- */}
         <div className="px-6 py-4 border-t border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
           
           {/* Results Counter */}
@@ -192,7 +191,6 @@ const ProductManagement = () => {
 
           </div>
         </div>
-        {/* --- END OF NEW PAGINATION FOOTER --- */}
 
       </div>
     </div>
