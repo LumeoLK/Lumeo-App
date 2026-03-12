@@ -1,8 +1,12 @@
 import express from "express";
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 import upload from "../lib/cloudinary.js";
-import { searchProducts} from "../controller/sellerController.js";
-import { createProduct ,getAllProducts } from "../controller/productController.js";
+import {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  searchProducts,
+} from "../controller/productController.js";
 
 
 const router = express.Router();
@@ -18,5 +22,6 @@ router.post(
 
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
+router.get("/:id", getProductById);
 
 export default router;
