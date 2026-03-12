@@ -48,35 +48,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //Image Placeholder Section
-            Container(
-              height: 350,
-              width: double.infinity,
-              color: Colors.grey[800], // Placeholder from
-              child: images.isNotEmpty
-                  // Has images → show from Cloudinary
-                  ? Image.network(
-                      images[_selectedImageIndex],
-                      fit: BoxFit.cover,
-                      // Spinner while image loads
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(child: CircularProgressIndicator());
-                      },
-                      // Placeholder if image fails
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 50,
-                            color: Colors.white24,
-                          ),
-                        );
-                      },
-                    )
-                  //  No images show placeholder
-                  : const Center(
-                      child: Icon(Icons.image, size: 50, color: Colors.white24),
-                    ),
             Stack(
               children: [
                 // Product Image
@@ -84,8 +55,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   height: 350,
                   width: double.infinity,
                   color: Colors.grey[800],
-                  child: product.image.isNotEmpty
-                      ? Image.network(product.image, fit: BoxFit.cover)
+                  child: product.images.isNotEmpty
+                      ? Image.network(product.images[0], fit: BoxFit.cover)
                       : const Center(
                           child: Icon(Icons.image, size: 50, color: Colors.white24),
                         ),

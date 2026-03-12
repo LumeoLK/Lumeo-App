@@ -38,6 +38,7 @@ class Product {
       images: List<String>.from(json['images'] ?? []),
       shopName: shopName,
       sellerId: sellerId,
+      modelUrl: json['modelUrl'] ?? '',
     );
   }
 }

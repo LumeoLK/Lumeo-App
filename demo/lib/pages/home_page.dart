@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> pages = const [
     HomeContent(),
     WishListPage(),
-    ARScreen(),
+    ARScreen(modelUrl: 'https://res.cloudinary.com/drno34my4/raw/upload/v1773127388/lumeo_3d_models/product_69afc5c3027d16efd3341435.glb'), 
     CartPage(),
     CustomFurniturePage(),
   ];

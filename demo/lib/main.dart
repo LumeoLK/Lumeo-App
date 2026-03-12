@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'pages/onboarding_page1.dart';
-import '../providers/user_provider.dart';
+// import '../providers/user_provider.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -24,13 +24,13 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.dark,
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: const SplashScreen(), 
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {        
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
@@ -66,3 +66,28 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:get/get.dart';
+
+// import '../pages/seller_dashboard.dart';
+
+// void main() {
+//   runApp(const ProviderScope(child: MyApp()));
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GetMaterialApp(
+//       title: 'Lumeo',
+//       darkTheme: ThemeData.dark(),
+//       themeMode: ThemeMode.dark,
+//       home: const SellerDashboardPage(),
+//       debugShowCheckedModeBanner: false,
+//     );
+//   }
+// }
