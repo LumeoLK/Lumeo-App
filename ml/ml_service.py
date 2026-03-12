@@ -78,3 +78,96 @@ async def process_product(file: UploadFile = File(...)): # Name MUST be 'file' t
         
         # Send 500 status code so Node.js Axios catches the error
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/search")
+async def search_furniture(
+    file: UploadFile = File(...),
+    top_k: int = Query(default=10, ge=1, le=50),
+):
+    # Validate file type
+    if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
+        raise HTTPException(status_code=400, detail="Only JPEG/PNG images accepted")
+
+    # Read image bytes
+    image_bytes = await file.read()
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    # Extract embedding + color from uploaded image
+    try:
+        user_color, user_embedding = extract_ml_features(image_bytes)
+        print(f"User image dominant color: {user_color}")
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
+    
+
+    # Fetch ALL products from Node
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{NODE_BACKEND_URL}/api/internal/ml/products"
+            )
+            response.raise_for_status()
+            data = response.json()
+            products = data.get("products", [])
+            print(f"Fetched {len(products)} products from Node")
+
+    except httpx.ConnectError:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Cannot connect to Node backend at {NODE_BACKEND_URL} — is it running?",
+        )
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Node backend timed out")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Node backend returned error: {e.response.status_code}",
+        )
+
+    if not products:
+        return {"success": True, "results": [], "total": 0}
+
+    # Score every product
+    user_vec = np.array(user_embedding).reshape(1, -1)
+    scored = []
+
+    for product in products:
+        embedding = product.get("imageEmbedding")
+
+        if not embedding or len(embedding) == 0:
+            continue
+
+        product_vec = np.array(embedding).reshape(1, -1)
+
+        # Visual similarity 80% + color 20%
+        visual_score = float(cosine_similarity(user_vec, product_vec)[0][0])
+        color_score = compute_color_score(user_color, product.get("dominantColor", []))
+        final_score = (visual_score * 0.8) + (color_score * 0.2)
+
+        scored.append({
+            "id": str(product.get("_id", "")),
+            "title": product.get("title", ""),
+            "description": product.get("description", ""),
+            "price": product.get("price", 0),
+            "category": product.get("category", ""),
+            "images": product.get("images", []),
+            "dimensions": product.get("dimensions", {}),
+            "dominantColor": product.get("dominantColor", []),
+            "averageRating": product.get("averageRating", 0),
+            "model3D": product.get("model3D", {}),
+            "score": round(final_score, 4),
+        })
+   # Sort by score and return top results
+    scored.sort(key=lambda x: x["score"], reverse=True)
+    top_results = scored[:top_k]
+
+    print(f"Top {len(top_results)} results — scores: {[r['score'] for r in top_results]}")
+
+    return {
+        "success": True,
+        "total": len(top_results),
+        "results": top_results,
+    }
