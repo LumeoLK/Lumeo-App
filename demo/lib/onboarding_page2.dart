@@ -19,6 +19,7 @@ class _OnboardingPage2State extends State<OnboardingPage2> {
     // Same video loop as Page 1
     _controller = VideoPlayerController.asset('assets/videos/loop.mp4')
       ..setLooping(true)
+      ..setVolume(0) //mute audio
       ..initialize().then((_) {
         setState(() {
           _initialized = true;
