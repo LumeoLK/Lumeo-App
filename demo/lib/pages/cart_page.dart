@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'wish_list_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -367,7 +368,17 @@ class _CartPageState extends State<CartPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           buildNavItem(Icons.home, 'Home', false),
-          buildNavItem(Icons.favorite_border, 'Wish List', false),
+          
+          GestureDetector(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const WishListPage()),
+              );
+            },
+            child: buildNavItem(Icons.favorite_border, 'Wish List', false),
+          ),
+
           buildNavItem(Icons.view_in_ar, 'AR View', false),
           buildNavItem(Icons.shopping_cart, 'Cart', true),
           buildNavItem(Icons.settings, 'Custom', false),

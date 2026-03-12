@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cart_page.dart';
 
 class WishListPage extends StatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -444,7 +445,17 @@ class _WishListPageState extends State<WishListPage> {
           _buildNavItem(Icons.home, 'Home', false),
           _buildNavItem(Icons.favorite_border, 'Wish List', true),
           _buildNavItem(Icons.view_in_ar, 'AR View', false),
-          _buildNavItem(Icons.shopping_cart, 'Cart', false),
+          
+          GestureDetector(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()),
+              );
+            },
+            child: _buildNavItem(Icons.shopping_cart, 'Cart', false),
+          ),
+
           _buildNavItem(Icons.settings, 'Custom', false),
         ],
       ),
