@@ -44,10 +44,18 @@ def extract_ml_features(image_bytes):
         img_small = img.resize((100, 100))
         pixels = np.array(img_small).reshape(-1, 3)
         kmeans = KMeans(n_clusters=3, n_init=10)
+        labels = kmeans.fit_predict(pixels)
+
         kmeans.fit(pixels)
         centers = kmeans.cluster_centers_
-        distances = np.linalg.norm(centers - np.array([255, 255, 255]), axis=1) #Euclidean Distance
-        dominant_rgb = centers[np.argmax(distances)].astype(int).tolist()
+
+        labels_2d = labels.reshape(100, 100)
+        center_section = labels_2d[25:75, 25:75]
+        
+        counts = np.bincount(center_section.flatten(), minlength=3)
+        dominant_cluster_index = np.argmax(counts) 
+        
+        dominant_rgb = centers[dominant_cluster_index].astype(int).tolist()
 
         return dominant_rgb, image_vector
     except Exception as e:
