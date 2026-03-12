@@ -32,30 +32,43 @@ def greet():
 def extract_ml_features(image_bytes):
     try:
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        
+
         # Extract Vector (CLIP)
         img_input = preprocess(img).unsqueeze(0).to(device)
         with torch.no_grad():
             vector = model.encode_image(img_input)
-            vector /= vector.norm(dim=-1, keepdim=True) #it scales the vector to a lenght of 1
+            vector /= vector.norm(dim=-1, keepdim=True)  #it scales the vector to a lenght of 1
             image_vector = vector.cpu().numpy().flatten().tolist()
-        
-        # Extract Colors (K-Means)
-        img_small = img.resize((100, 100))
-        pixels = np.array(img_small).reshape(-1, 3)
-        kmeans = KMeans(n_clusters=3, n_init=10)
-        labels = kmeans.fit_predict(pixels)
 
-        kmeans.fit(pixels)
+        # Extract Dominant Color
+        img_small = img.resize((100, 100))
+        pixels = np.array(img_small).reshape(-1, 3).astype(np.float32)
+
+        # Detect background color from corners
+        corner_indices = [0, 99, 9900, 9999]
+        corners = pixels[corner_indices]
+        bg_color = corners.mean(axis=0)
+       
+        # Filter out background pixels
+        # Any pixel within 40 RGB distance of background = background
+        diff = np.linalg.norm(pixels - bg_color, axis=1)
+        object_pixels = pixels[diff > 40]
+
+        # Fallback if too few object pixels found
+        if len(object_pixels) < 50:
+            print("Too few object pixels — using all pixels")
+            object_pixels = pixels
+
+        # KMeans on object pixels only
+        kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
+        kmeans.fit(object_pixels)
         centers = kmeans.cluster_centers_
 
-        labels_2d = labels.reshape(100, 100)
-        center_section = labels_2d[25:75, 25:75]
-        
-        counts = np.bincount(center_section.flatten(), minlength=3)
-        dominant_cluster_index = np.argmax(counts) 
-        
-        dominant_rgb = centers[dominant_cluster_index].astype(int).tolist()
+        # Pick most frequent cluster
+        labels = kmeans.labels_
+        counts = np.bincount(labels, minlength=3)
+        dominant_rgb = centers[np.argmax(counts)].astype(int).tolist()
+        print(f"  Dominant RGB: {dominant_rgb}")
 
         return dominant_rgb, image_vector
     except Exception as e:
