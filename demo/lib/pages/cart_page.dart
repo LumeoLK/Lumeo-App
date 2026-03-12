@@ -189,7 +189,7 @@ class _CartPageState extends State<CartPage> {
                   ),
                 ),
                 child: const Text(
-                  'RESERVE',
+                  'CHECKOUT',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 16,
@@ -242,26 +242,29 @@ class _CartPageState extends State<CartPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['name'],
-                          style: const TextStyle(
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['name'],
+                            style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            overflow: TextOverflow.ellipsis, // optional: truncate long names
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['material'],
-                          style: const TextStyle(
+                          const SizedBox(height: 4),
+                          Text(
+                            item['material'],
+                            style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.more_vert, color: Colors.grey),
