@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, RefreshCw, EyeOff, Trash2 } from 'lucide-react';
+import { Search, RefreshCw, EyeOff, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Dummy data for Lumeo furniture products
 const initialProducts = [
@@ -48,7 +48,7 @@ const ProductManagement = () => {
       {/* Header Section */}
       <div>
         <h1 className="text-2xl font-bold text-white tracking-wide">Product Management</h1>
-        <p className="text-zinc-500 text-sm mt-1">Admin / Product Management</p>
+       
       </div>
 
       {/* Toolbar: Search, Filter, and Sync Button */}
@@ -159,11 +159,42 @@ const ProductManagement = () => {
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
+
+        {/* --- ADD THIS NEW PAGINATION FOOTER SECTION --- */}
+        <div className="px-6 py-4 border-t border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+          
+          {/* Results Counter */}
+          <div className="text-zinc-500">
+            Showing <span className="text-white font-medium">1</span> to <span className="text-white font-medium">10</span> of <span className="text-white font-medium">15</span> results
+          </div>
+          
+          {/* Controls */}
+          <div className="flex items-center gap-4">
+            
+            {/* Rows per page dropdown */}
+            <select className="bg-[#09090b] text-zinc-200 border border-zinc-800 rounded-lg px-3 py-1.5 focus:outline-none focus:border-brand text-sm cursor-pointer">
+              <option>10 per page</option>
+              <option>25 per page</option>
+              <option>50 per page</option>
+            </select>
+            
+            {/* Next/Prev Buttons */}
+            <div className="flex gap-2">
+              <button className="p-1.5 rounded-lg border border-zinc-800 bg-[#09090b] text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors" title="Previous Page">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button className="p-1.5 rounded-lg border border-zinc-800 bg-[#09090b] text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors" title="Next Page">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+          </div>
+        </div>
+        {/* --- END OF NEW PAGINATION FOOTER --- */}
+
       </div>
-      
     </div>
   );
 };
