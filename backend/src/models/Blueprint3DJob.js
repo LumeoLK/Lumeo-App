@@ -2,12 +2,6 @@ import mongoose from "mongoose";
 
 const blueprint3DJobSchema = new mongoose.Schema(
   {
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
-
     blueprintImageUrl: {
       type: String,
       required: true,

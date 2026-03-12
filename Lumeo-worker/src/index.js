@@ -13,7 +13,6 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 
 console.log("Worker is listening for jobs...");
 
-
 // ────────────────────────────────────────────────────────
 //  WORKER 1 — Meshy AI queue
 // ────────────────────────────────────────────────────────
@@ -30,16 +29,15 @@ const meshyWorker = new Worker(
       );
       console.log(`Meshy Task Created: ${taskId}`);
       console.log(
-        `Meshy task added for ${job.data.productId} successfully, waiting for webhook...`
+        `Meshy task added for ${job.data.productId} successfully, waiting for webhook...`,
       );
       return { status: "success", taskId };
-
     } catch (error) {
       console.error(`Meshy job failed:`, error.message);
       throw error;
     }
   },
-  { connection: redisConnection, concurrency: 5 }
+  { connection: redisConnection, concurrency: 4 },
 );
 
 meshyWorker.on("failed", async (job, err) => {
@@ -52,7 +50,7 @@ meshyWorker.on("failed", async (job, err) => {
         {
           meshyTaskId: "",
           status: "failed",
-        }
+        },
       );
     } catch (webhookError) {
       console.error("Failed to notify backend:", webhookError.message);
@@ -60,74 +58,85 @@ meshyWorker.on("failed", async (job, err) => {
   }
 });
 
-
 // ────────────────────────────────────────────────────────
 //  WORKER 2 — Blueprint 3D queue
 // ────────────────────────────────────────────────────────
 const blueprintWorker = new Worker(
   "blueprint-3d-queue",
   async (job) => {
-    const { jobId, productId, blueprintUrl } = job.data;
+    const { jobId, blueprintUrl } = job.data;
     console.log(`Processing blueprint job ${jobId}`);
 
     try {
       // 1. Call Python ML service — get GLB bytes back
-      const response = await axios.post(
-        `${process.env.ML_SERVICE_URL}/generate-3d`,
-        { imageUrl: blueprintUrl },
-        { responseType: "arraybuffer", timeout: 120000 }
-      );
+      // const response = await axios.post(
+      //   `${process.env.ML_SERVICE_URL}/generate-3d`,
+      //   { imageUrl: blueprintUrl },
+      //   { responseType: "arraybuffer", timeout: 120000 }
+      // );
+
+      // const modelBuffer = Buffer.from(response.data);
+      // console.log(`ML done for job ${jobId} — ${modelBuffer.length} bytes`);
+
+      // Replace the ML service URL with your static test model URL
+      const SIMULATED_ML_URL =
+        "https://res.cloudinary.com/drno34my4/raw/upload/v1773127388/lumeo_3d_models/product_69afc5c3027d16efd3341435.glb";
+
+      console.log(`Simulating ML generation for job ${jobId}...`);
+
+      // We perform a GET request to the static link instead of a POST to the ML service
+      const response = await axios.get(SIMULATED_ML_URL, {
+        responseType: "arraybuffer",
+        timeout: 120000,
+      });
 
       const modelBuffer = Buffer.from(response.data);
-      console.log(`ML done for job ${jobId} — ${modelBuffer.length} bytes`);
+      console.log(
+        `Simulation done for job ${jobId} — ${modelBuffer.length} bytes`,
+      );
 
-      // 2. Send GLB to main backend webhook as base64
-      //    Main backend handles Cloudinary upload + DB update
+      // The rest of your code remains the same...
+      // Main backend handles Cloudinary upload + DB update
       await axios.post(
-        `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`,
+        `http://localhost:3000/api/webhooks/blueprint-3d-update`, // fix the links after tesdting
         {
           jobId,
-          productId,
-          status:    "completed",
+          status: "completed",
           glbBase64: modelBuffer.toString("base64"),
-          glbSize:   modelBuffer.length,
-        }
+          glbSize: modelBuffer.length,
+        },
       );
 
       console.log(`Job ${jobId} complete — webhook sent`);
       return { success: true };
-
     } catch (error) {
       console.error(`Blueprint worker error for job ${jobId}:`, error.message);
 
-      await axios.post(
-        `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`,
-        {
+      await axios
+        .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
           jobId,
-          productId,
-          status:       "failed",
+          status: "failed",
           errorMessage: error.message,
-        }
-      ).catch(e => console.error("Webhook notify error:", e.message));
+        })
+        .catch((e) => console.error("Webhook notify error:", e.message));
 
       throw error;
     }
   },
-  { connection: redisConnection, concurrency: 3 }
+  { connection: redisConnection, concurrency: 3 },
 );
 
 blueprintWorker.on("failed", async (job, err) => {
   console.error(`Blueprint job ${job.data?.jobId} failed: ${err.message}`);
 
   if (job.attemptsMade === job.opts.attempts) {
-    await axios.post(
-      `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`,
-      {
-        jobId:        job.data.jobId,
-        productId:    job.data.productId,
-        status:       "failed",
+    await axios
+      .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
+        jobId: job.data.jobId,
+
+        status: "failed",
         errorMessage: err.message,
-      }
-    ).catch(e => console.error("Webhook notify error:", e.message));
+      })
+      .catch((e) => console.error("Webhook notify error:", e.message));
   }
 });

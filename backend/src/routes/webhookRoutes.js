@@ -9,10 +9,9 @@ import {
 const router = express.Router();
 
 router.post("/webhooks/meshy", handleMeshyWebhook);
-
 router.post("/webhooks/meshy-status", checkMeshyTaskStatus);
 router.post("/webhooks/meshy-update", updateMeshyTask);
-router.post("/blueprint-3d-update", handleBlueprint3DWebhook);
+router.post("/webhooks/blueprint-3d-update", handleBlueprint3DWebhook);
 
 
 export default router;

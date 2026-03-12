@@ -4,8 +4,7 @@ import { blueprint3DQueue } from "../lib/queue.js";
 
 export const uploadBlueprint = async (req, res) => {
   try {
-    const { productId } = req.body;
-
+    
     if (!req.file) {
       return res.status(400).json({
         message: "Blueprint image is required",
@@ -23,7 +22,6 @@ export const uploadBlueprint = async (req, res) => {
     console.log(blueprintUrl)
     // Save job in DB
     const job = await Blueprint3DJob.create({
-      productId,
       blueprintImageUrl: blueprintUrl,
       status: "pending",
     });
@@ -31,7 +29,6 @@ export const uploadBlueprint = async (req, res) => {
     // Add job to queue
     const queueJob = await blueprint3DQueue.add("generate-3d-from-blueprint", {
       jobId: job._id,
-      productId,
       blueprintUrl,
     });
 
