@@ -1,0 +1,10 @@
+scikit-learn
+opencv-python
+torch
+torchvision
+torchaudio
+transformers
+datasets
+numpy
+pandas
+pillow
