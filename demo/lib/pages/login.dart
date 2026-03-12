@@ -105,9 +105,6 @@ class _LoginState extends ConsumerState<Login> {
                         if (value == null || value.isEmpty) {
                           return "Password cannot be empty";
                         }
-                        if (value.length < 6) {
-                          return "Password must be at least 6 characters";
-                        }
                         return null; // valid
                       },
                     ),
