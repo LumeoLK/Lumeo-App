@@ -14,9 +14,14 @@ export const register = async (req, res) => {
         .json({ msg: "User with same email already exist" });
     }
     const hashedPassword = await bcryptjs.hash(password, 10);
-    let user = new User({ email, password: hashedPassword, name,role:"user"});
+    let user = new User({
+      email,
+      password: hashedPassword,
+      name,
+      role: "user",
+    });
     user = await user.save();
-    res.json({success:true,user});
+    res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -34,7 +39,6 @@ export const login = async (req, res) => {
     }
     const user = await User.findOne({ email }).select("+password");
 
-    
     if (!user) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
@@ -44,11 +48,10 @@ export const login = async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     const userDto = {
@@ -63,7 +66,7 @@ export const login = async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 30*24 * 60 * 60 * 1000, 
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
       return res.json({
@@ -78,7 +81,6 @@ export const login = async (req, res) => {
       token,
       user: userDto,
     });
-
   } catch (error) {
     return res.status(500).json({ msg: "Server error" });
   }
@@ -115,7 +117,9 @@ export const forgotPassword = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({success: false, msg: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, msg: "Internal server error" });
   }
 };
 
@@ -135,9 +139,11 @@ export const resetPassword = async (req, res) => {
     const newhashPassword = await bcryptjs.hash(password, 10);
     user.password = newhashPassword;
     await user.save();
-    return res.status(200).json({success: true, message: "Password reset successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Password reset successfully" });
   } catch (error) {
-    return res.status(500).json({success: false, msg: error.message });
+    return res.status(500).json({ success: false, msg: error.message });
   }
 };
 
@@ -177,5 +183,3 @@ export const googleAuth = async (req, res) => {
     return res.status(500).json({ msg: error.message });
   }
 };
-
-

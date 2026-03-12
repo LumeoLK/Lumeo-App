@@ -61,40 +61,42 @@ const productSchema = mongoose.Schema(
     },
     views: { type: Number, default: 0 },
 
- 
-  images: {
-  type: [String],
-  validate: {
-    validator: function (arr) {
-      return arr.length <= 5;
+    images: {
+      type: [String],
+      validate: {
+        validator: function (arr) {
+          return arr.length <= 5;
+        },
+        message: "You can upload up to 5 images only",
+      },
     },
-    message: "You can upload up to 5 images only"
-  }
-},
 
-model3D: {
-    url: { 
-      type: String, 
-      default: "" 
+    model3D: {
+      url: {
+        type: String,
+        default: "",
+      },
+      meshyTaskId: {
+        type: String,
+        default: "",
+      },
+      message: {
+        type: String,
+        default: "",
+      },
+      status: {
+        type: String,
+        enum: ["pending", "approved", "failed", "generating","success"],
+        default: "pending",
+      },
     },
-    placement: {
-      type: String,
-      enum: ["floor", "wall", "ceiling", "table"], // Critical for AR placement logic
-      default: "floor"
-    },
-    scale: {
-      type: Number,
-      default: 1.0 // 1.0 = Real World Scale
-    }
-  },
-
 
     averageRating: {
       type: Number,
       default: 0,
       min: 0,
       max: 5,
-      set: (val) => Math.round(val * 10) / 10, // Round to 1 decimal place (e.g., 4.6)
+      set: (val) => Math.round(val * 10) / 10,
     },
     numReviews: {
       type: Number,

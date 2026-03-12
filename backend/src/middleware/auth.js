@@ -58,7 +58,7 @@ export const verifyAdmin = async (req, res, next) => {
 export const verifySeller = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    console.log(user)
+    console.log(req.user.id)
     if (user.role !== "seller" && user.role !== "admin") {
        return res.status(403).json({ msg: "Access Denied" });
     }
@@ -73,6 +73,6 @@ export const verifySeller = async (req, res, next) => {
 
     next();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({success:false, error: error.message });
   }
 };
