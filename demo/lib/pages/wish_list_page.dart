@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cart_page.dart';
 
 class WishListPage extends StatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -10,6 +11,18 @@ class WishListPage extends StatefulWidget {
 class _WishListPageState extends State<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
+  bool isGridView = false;
+
+final List<Map<String, dynamic>> allCategories = [
+  {'label': 'All',     'icon': Icons.grid_view},
+  {'label': 'Chairs',  'icon': Icons.chair},
+  {'label': 'Beds',    'icon': Icons.bed},
+  {'label': 'Tables',  'icon': Icons.table_restaurant},
+  {'label': 'Sofas',   'icon': Icons.weekend},
+  {'label': 'Lamps',   'icon': Icons.light},
+  {'label': 'Shelves', 'icon': Icons.shelves},
+  {'label': 'Decor',   'icon': Icons.image},
+];
 
   // sample data for testing
   final List<Map<String, dynamic>> wishListItems = [
@@ -167,10 +180,14 @@ class _WishListPageState extends State<WishListPage> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.view_list, color: Colors.white),
-                  onPressed: () {
-                    // toggle list/grid view
-                  },
+                  icon: Icon(
+                    Icons.view_list,
+                    color: selectedCategory.isEmpty
+                        ? Colors.white
+                        : const Color(0xFFFBB040),
+                  ),
+                  tooltip: 'Browse categories',
+                  onPressed: _showCategoriesSheet,
                 ),
               ],
             ),
@@ -444,7 +461,17 @@ class _WishListPageState extends State<WishListPage> {
           _buildNavItem(Icons.home, 'Home', false),
           _buildNavItem(Icons.favorite_border, 'Wish List', true),
           _buildNavItem(Icons.view_in_ar, 'AR View', false),
-          _buildNavItem(Icons.shopping_cart, 'Cart', false),
+          
+          GestureDetector(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()),
+              );
+            },
+            child: _buildNavItem(Icons.shopping_cart, 'Cart', false),
+          ),
+
           _buildNavItem(Icons.settings, 'Custom', false),
         ],
       ),
@@ -471,6 +498,115 @@ class _WishListPageState extends State<WishListPage> {
       ],
     );
   }
+
+  void _showCategoriesSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF2a2a2a),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[600],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'Browse Categories',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.85,
+                    ),
+                    itemCount: allCategories.length,
+                    itemBuilder: (context, index) {
+                      final cat = allCategories[index];
+                      final label = cat['label'] as String;
+                      final isSelected = label == 'All'
+                          ? selectedCategory.isEmpty
+                          : selectedCategory == label;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedCategory = label == 'All' ? '' : label;
+                          });
+                          setSheetState(() {});
+                          Navigator.pop(context);
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFFBB040)
+                                    : const Color(0xFF3a3a3a),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                cat['icon'] as IconData,
+                                color: isSelected ? Colors.white : Colors.grey,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              label,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? const Color(0xFFFBB040)
+                                    : Colors.grey,
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 
 //filtering options
   void _showFilterDialog() {
