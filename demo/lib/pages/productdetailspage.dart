@@ -61,12 +61,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   child: GestureDetector(
                     onTap: () {
                       // Senior Tip: Always check if the route exists before navigating
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ARScreen(),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const ARScreen(),
+                      //   ),
+                      // );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
