@@ -201,7 +201,7 @@ class _CartPageState extends State<CartPage> {
           ),
         ],
       ),
-      bottomNavigationBar: buildBottomNav(),
+     
     );
   }
 

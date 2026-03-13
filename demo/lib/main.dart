@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo/pages/cart_page.dart';
-//import 'pages/wish_list_page.dart';
+//import 'package:lumeo/pages/user/cart_page.dart';
+import 'package:lumeo/pages/seller/onboarding_page1.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const CartPage(),
+      home: const SellerOnboardingPage(),
       debugShowCheckedModeBanner: false,
     );
   }
