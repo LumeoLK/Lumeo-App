@@ -7,7 +7,7 @@ import '../Constants.dart';
 
 class ChatService {
 
-  // Get token from storage 
+  // Get token which was stored during login
   Future<String> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('x-auth-token') ?? '';
