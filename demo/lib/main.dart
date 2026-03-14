@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:lumeo_v2/pages/ar_search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import your pages
@@ -24,13 +25,13 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.dark,
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: const SplashScreen(), 
+      home: ARSearchPage(), //const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {        
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
@@ -45,9 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const OnboardingPage1(),
-        ),
+        MaterialPageRoute(builder: (context) => const OnboardingPage1()),
       );
     });
   }

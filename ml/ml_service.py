@@ -23,7 +23,7 @@ app.add_middleware(
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
 
-NODE_BACKEND_URL = os.getenv("NODE_BACKEND_URL","http://localhost:3000")
+NODE_BACKEND_URL = os.getenv("NODE_BACKEND_URL","https://lumeo-app.onrender.com")
 
 @app.get("/")
 def greet():

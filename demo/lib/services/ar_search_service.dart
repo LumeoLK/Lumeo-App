@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
 import '../Constants.dart';
 import '../utils/utils.dart';
+import 'package:http_parser/http_parser.dart';
 
 // Stores the list of search results
 final searchResultsProvider = StateProvider<List<dynamic>>((ref) => []);
@@ -15,7 +16,6 @@ final searchLoadingProvider = StateProvider<bool>((ref) => false);
 
 // Main service provider
 final arSearchProvider = Provider((ref) => ARSearchService(ref));
-
 
 class ARSearchService {
   final Ref _ref;
@@ -36,10 +36,14 @@ class ARSearchService {
       final request = http.MultipartRequest('POST', uri);
 
       request.files.add(
-        await http.MultipartFile.fromPath('file', imageFile.path),
+        http.MultipartFile.fromBytes(
+          'file',
+          await imageFile.readAsBytes(),
+          filename: 'room.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ),
       );
 
-      
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
@@ -48,7 +52,6 @@ class ARSearchService {
 
         if (body['success'] == true) {
           final results = body['results'] as List<dynamic>;
-          print('Got ${results.length} results from ML');
 
           // Update results provider
           _ref.read(searchResultsProvider.notifier).state = results;
@@ -57,7 +60,10 @@ class ARSearchService {
         }
       } else {
         final error = jsonDecode(response.body);
-        showSnackBar(context, 'Search failed: ${error['detail'] ?? 'Unknown error'}');
+        showSnackBar(
+          context,
+          'Search failed: ${error['detail'] ?? 'Unknown error'}',
+        );
       }
     } catch (e) {
       print('ARSearchService error: $e');
