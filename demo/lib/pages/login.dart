@@ -79,6 +79,9 @@ class _LoginState extends ConsumerState<Login> {
                         if (value == null || value.isEmpty) {
                           return "Email cannot be empty";
                         }
+                        if (value.length < 5) {
+                          return "Password must be at least 6 characters";
+                        }
                         if (!value.trim().endsWith("@gmail.com")) {
                           return "Please use a Gmail address (you@gmail.com)";
                         }
