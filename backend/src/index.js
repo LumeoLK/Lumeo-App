@@ -20,6 +20,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
 
 app.use(cookieParser());
 app.use(express.json()); //middleware
@@ -34,6 +35,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api", webhookRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 // Create HTTP server for Socket.io
 const server = http.createServer(app);
