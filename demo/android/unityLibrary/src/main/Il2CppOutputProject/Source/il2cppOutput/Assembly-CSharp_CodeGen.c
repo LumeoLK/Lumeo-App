@@ -25,6 +25,10 @@ extern void SendToFlutterTouched_Update_m65438B2B9B349D9B7F7C89EAD018DDD46EB2E05
 extern void SendToFlutterTouched__ctor_m246DE028B72D893A798C5CA05BC8A295647E7485 (void);
 extern void SendToFlutter_Send_mC3EEBDA79530F83C75829EFC506B20AF3C9B16AE (void);
 extern void SendToFlutter__ctor_mC1E72A3BCF91ABFED2B53D4D12E5D43091965061 (void);
+extern void ModelLoader_LoadModelFromPath_m6179C91022138A3BCAB4392349C18031A821B6BB (void);
+extern void ModelLoader__ctor_m1BF7BBB319739ED959A3464BE552B8DE574E673C (void);
+extern void U3CLoadModelFromPathU3Ed__1_MoveNext_m21BEDA94AA885565210E6CC4470ABD29B5684624 (void);
+extern void U3CLoadModelFromPathU3Ed__1_SetStateMachine_m51D8A8748C80F7DE65F8692B34B69B02BEEB3297 (void);
 extern void PlaceFurniture_Awake_mCDCDFD10AEABE26C16A9431E0350E24BCBA54889 (void);
 extern void PlaceFurniture_Start_m4E404AA893DC7DFC101DEE5561DB3EEA267CF4BC (void);
 extern void PlaceFurniture_InitializeAR_m3414FF69F879F864D9D0B9B22A17D74DDBB73407 (void);
@@ -51,7 +55,7 @@ extern void U3CCheckAvailabilityCoroutineU3Ed__2_MoveNext_m046C6671F163EC0521B8D
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m53E52F5C1BCA051A78FDD3B675472236A872061D (void);
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_Reset_mE77DE6A74009B8FF9B0A7D295EC0692430D2927A (void);
 extern void U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_get_Current_mCBBCC5B0B317EFD8CDEFA90DAE36CAB1C171E37F (void);
-static Il2CppMethodPointer s_methodPointers[44] = 
+static Il2CppMethodPointer s_methodPointers[48] = 
 {
 	ARLogoPinner_Update_mC5A953C770C621C5C51A14EDD5CEFCCC1542F923,
 	ARLogoPinner__ctor_mDA1146BE9EC91485564D917F29228012021E061F,
@@ -71,6 +75,10 @@ static Il2CppMethodPointer s_methodPointers[44] =
 	SendToFlutterTouched__ctor_m246DE028B72D893A798C5CA05BC8A295647E7485,
 	SendToFlutter_Send_mC3EEBDA79530F83C75829EFC506B20AF3C9B16AE,
 	SendToFlutter__ctor_mC1E72A3BCF91ABFED2B53D4D12E5D43091965061,
+	ModelLoader_LoadModelFromPath_m6179C91022138A3BCAB4392349C18031A821B6BB,
+	ModelLoader__ctor_m1BF7BBB319739ED959A3464BE552B8DE574E673C,
+	U3CLoadModelFromPathU3Ed__1_MoveNext_m21BEDA94AA885565210E6CC4470ABD29B5684624,
+	U3CLoadModelFromPathU3Ed__1_SetStateMachine_m51D8A8748C80F7DE65F8692B34B69B02BEEB3297,
 	PlaceFurniture_Awake_mCDCDFD10AEABE26C16A9431E0350E24BCBA54889,
 	PlaceFurniture_Start_m4E404AA893DC7DFC101DEE5561DB3EEA267CF4BC,
 	PlaceFurniture_InitializeAR_m3414FF69F879F864D9D0B9B22A17D74DDBB73407,
@@ -98,61 +106,72 @@ static Il2CppMethodPointer s_methodPointers[44] =
 	U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_Reset_mE77DE6A74009B8FF9B0A7D295EC0692430D2927A,
 	U3CCheckAvailabilityCoroutineU3Ed__2_System_Collections_IEnumerator_get_Current_mCBBCC5B0B317EFD8CDEFA90DAE36CAB1C171E37F,
 };
-static const int32_t s_InvokerIndices[44] = 
+extern void U3CLoadModelFromPathU3Ed__1_MoveNext_m21BEDA94AA885565210E6CC4470ABD29B5684624_AdjustorThunk (void);
+extern void U3CLoadModelFromPathU3Ed__1_SetStateMachine_m51D8A8748C80F7DE65F8692B34B69B02BEEB3297_AdjustorThunk (void);
+static Il2CppTokenAdjustorThunkPair s_adjustorThunks[2] = 
 {
-	15960,
-	15960,
-	27654,
-	15960,
-	12121,
-	15960,
-	12121,
-	15960,
-	15960,
-	6192,
-	15960,
-	15960,
-	15960,
-	15960,
-	15960,
-	15960,
-	26327,
-	15960,
-	15960,
-	15960,
-	15756,
-	12121,
-	12300,
-	15960,
-	27654,
-	12060,
-	15960,
-	15564,
-	15756,
-	15960,
-	15756,
-	15960,
-	15960,
-	27695,
-	15960,
-	15960,
-	15756,
-	15960,
-	12060,
-	15960,
-	15564,
-	15756,
-	15960,
-	15756,
+	{ 0x06000015, U3CLoadModelFromPathU3Ed__1_MoveNext_m21BEDA94AA885565210E6CC4470ABD29B5684624_AdjustorThunk },
+	{ 0x06000016, U3CLoadModelFromPathU3Ed__1_SetStateMachine_m51D8A8748C80F7DE65F8692B34B69B02BEEB3297_AdjustorThunk },
+};
+static const int32_t s_InvokerIndices[48] = 
+{
+	16748,
+	16748,
+	29407,
+	16748,
+	12692,
+	16748,
+	12692,
+	16748,
+	16748,
+	6479,
+	16748,
+	16748,
+	16748,
+	16748,
+	16748,
+	16748,
+	28051,
+	16748,
+	12692,
+	16748,
+	16748,
+	12692,
+	16748,
+	16748,
+	16525,
+	12692,
+	12886,
+	16748,
+	29407,
+	12628,
+	16748,
+	16328,
+	16525,
+	16748,
+	16525,
+	16748,
+	16748,
+	29449,
+	16748,
+	16748,
+	16525,
+	16748,
+	12628,
+	16748,
+	16328,
+	16525,
+	16748,
+	16525,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	44,
+	48,
 	s_methodPointers,
-	0,
-	NULL,
+	2,
+	s_adjustorThunks,
 	s_InvokerIndices,
 	0,
 	NULL,

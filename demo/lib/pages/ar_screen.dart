@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
@@ -8,8 +7,9 @@ class ARScreen extends StatefulWidget {
 
   const ARScreen({super.key, required this.modelUrl});
 
-
-//   const ARScreen({super.key, required this.modelUrl});
+  @override
+  State<ARScreen> createState() => _ARScreenState();
+}
 
 class _ARScreenState extends State<ARScreen> {
   bool _isUnityLoaded = false;
@@ -25,6 +25,20 @@ class _ARScreenState extends State<ARScreen> {
   }
 
   Future<void> _downloadModel() async {
+    if (widget.modelUrl.isEmpty) {
+      setState(() {
+        _errorMessage = '3D model not available for this product.';
+        _isDownloading = false;
+      });
+      return;
+    }
+    if (widget.modelUrl.isEmpty) {
+      setState(() {
+        _errorMessage = '3D model not available for this product.';
+        _isDownloading = false;
+      });
+      return;
+    }
     setState(() => _isDownloading = true);
 
     try {
@@ -59,12 +73,18 @@ class _ARScreenState extends State<ARScreen> {
 
   // Called once Unity finishes loading — we then send the model path
   void _onUnityMessage(String message) {
+    print('DEBUG Unity message received: "$message"');
     if (message == 'scene_loaded') {
       setState(() => _isUnityLoaded = true);
-
+       print('DEBUG localModelPath is: "$_localModelPath"');
       // 👇 Send the local .glb path to Unity
       if (_localModelPath != null) {
+        print('DEBUG sending path to Unity: $_localModelPath'); 
         sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
+      } else {
+        print(
+          'DEBUG model not downloaded yet when scene_loaded fired',
+        ); // 👈 add this
       }
     }
   }
@@ -145,5 +165,4 @@ class _ARScreenState extends State<ARScreen> {
       ),
     );
   }
-}
 }

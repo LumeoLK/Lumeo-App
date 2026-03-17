@@ -8,7 +8,9 @@ dependencies {
     implementation(name: 'ARPresto', ext:'aar')
     implementation(name: 'UnityARCore', ext:'aar')
     implementation(name: 'unityandroidpermissions', ext:'aar')
-    // implementation project(':unityLibrary:xrmanifest.androidlib')
+    if (project.findProject(':unityLibrary:xrmanifest.androidlib') != null) {
+    implementation project(':unityLibrary:xrmanifest.androidlib')
+}
 }
 
 android {
@@ -27,7 +29,7 @@ android {
         consumerProguardFiles "proguard-unity.txt"
         versionName "0.1.0"
         minSdk 29
-        targetSdk 36
+        targetSdk 34
         versionCode 1
 
         ndk {
