@@ -1,3 +1,5 @@
+import 'package:lumeo_v2/services/socket_service.dart';
+
 import '../Constants.dart';
 import '../model/user.dart';
 import '../pages/home_page.dart';
@@ -53,6 +55,7 @@ class AuthService {
           final userId = body['_id'] ?? body['user']?['_id'] ?? '';
           await prefs.setString('userId', userId);
 
+          SocketService().connect(userId);
           // Save user to Riverpod
           if (body['user'] != null) {
             ref.read(currentUserProvider.notifier).state = User.fromJson(
@@ -103,7 +106,7 @@ class AuthService {
           // Save userId
           final userId = body['_id'] ?? body['user']?['_id'] ?? '';
           await prefs.setString('userId', userId);
-
+          SocketService().connect(userId);
           // Save user to Riverpod
           if (body['user'] != null) {
             ref.read(currentUserProvider.notifier).state = User.fromJson(
@@ -176,6 +179,7 @@ class AuthService {
             // Save userId for Google sign in
             final userId = body['_id'] ?? body['user']?['_id'] ?? '';
             await prefs.setString('userId', userId);
+            SocketService().connect(userId);
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const HomePage()),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
 import 'package:lumeo_v2/providers/cart_provider.dart';
+import 'package:lumeo_v2/providers/chat_provider.dart';
+import 'package:lumeo_v2/services/auth_service.dart';
 import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';
@@ -260,13 +262,57 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
                   const Divider(color: Colors.white24),
 
-                  _buildListTile("Ask For Customizations", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatApplication(),
-                      ),
+                  _buildListTile("Ask For Customizations", () async {
+                    // Check user is logged in
+                    if (!await requireAuth(context, ref)) return;
+
+                    // Get logged in user from Riverpod
+                    final currentUser = ref.read(currentUserProvider);
+                    if (currentUser == null) return;
+
+                    // Show loading spinner while fetching/creating conversation
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
                     );
+
+                    try {
+                      // Hit POST /api/chat/conversations on your backend
+                      final conversation = await ref
+                          .read(chatServiceProvider)
+                          .startConversation(
+                            sellerId: widget.product.sellerId,
+                            productId: widget.product.id,
+                          );
+                      print('=== conversationId: ${conversation.id} ===');
+                      print('=== productId: ${conversation.productId} ===');
+                      print('=== sellerId: ${widget.product.sellerId} ===');
+                      if (context.mounted) {
+                        Navigator.pop(context); // dismiss spinner
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatApplication(
+                              conversation: conversation,
+                              currentUserId: currentUser.id,
+                              currentUserName: currentUser.name,
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        Navigator.pop(context); // dismiss spinner
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Could not start chat: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   }),
                   const SizedBox(height: 30),
 
