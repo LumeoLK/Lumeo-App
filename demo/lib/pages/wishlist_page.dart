@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/model/product.dart';
 import 'package:lumeo_v2/providers/wishlist_provider.dart';
+import 'package:lumeo_v2/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 
 class WishListPage extends ConsumerStatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -13,17 +16,69 @@ class WishListPage extends ConsumerStatefulWidget {
 class _WishListPageState extends ConsumerState<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
+  bool _isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      ref.read(wishlistProvider.notifier).fetchWishlist();
+    Future.microtask(() async {
+      await _checkLoginAndFetch();
     });
+  }
+
+  Future<void> _checkLoginAndFetch() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      ref.read(wishlistProvider.notifier).fetchWishlist();
+      return;
+    }
+    // Fallback: check token in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      ref.read(wishlistProvider.notifier).fetchWishlist();
+      return;
+    }
+    setState(() => _isLoggedIn = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1a1a1a),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.favorite_border, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Wishlist',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  LoginRequiredDialog.show(context);
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final wishlistState = ref.watch(wishlistProvider);
     final items = wishlistState.items;
 
