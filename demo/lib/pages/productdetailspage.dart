@@ -5,6 +5,7 @@ import 'package:lumeo_v2/providers/cart_provider.dart';
 import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';
+import '../providers/wishlist_provider.dart';
 
 // Step 1: ConsumerStatefulWidget instead of StatefulWidget
 class ProductDetailsPage extends ConsumerStatefulWidget {
@@ -30,6 +31,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
     // Step 3: ref.watch — reads cartState and rebuilds button when isLoading changes
     final cartState = ref.watch(cartProvider);
+    final wishlistState = ref.watch(wishlistProvider);
+    final isFavorite = wishlistState.items.any((item) => item.id == widget.product.id);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -133,7 +136,21 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       const SizedBox(width: 10),
                       _buildDropdown("Mahogani"),
                       const Spacer(),
-                      const Icon(Icons.favorite_border, color: Colors.white),
+                      IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (!await requireAuth(context, ref)) return;
+                          
+                          if (isFavorite) {
+                            ref.read(wishlistProvider.notifier).removeFromWishlist(widget.product.id);
+                          } else {
+                            ref.read(wishlistProvider.notifier).addToWishlist(widget.product.id);
+                          }
+                        },
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
