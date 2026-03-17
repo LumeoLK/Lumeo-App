@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:lumeo/pages/user/cart_page.dart';
 import 'package:lumeo/pages/seller/onboarding_page1.dart';
+//import 'package:lumeo/pages/seller/onboarding_page2.dart';
 
 void main() {
   runApp(const MyApp());
