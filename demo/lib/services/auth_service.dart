@@ -1,210 +1,79 @@
-import 'package:lumeo_v2/services/socket_service.dart';
-
-import '../Constants.dart';
-import '../model/user.dart';
-import '../pages/home_page.dart';
-import '../pages/login.dart';
-import '../utils/utils.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import "../Constants.dart";
+import '../Constants.dart';
 
-final currentUserProvider = StateProvider<User?>((ref) => null);
-
-final authProvider = Provider(
-  (ref) => AuthService(googleSignIn: GoogleSignIn()),
-);
 
 class AuthService {
-  void signUpUser({
-    required BuildContext context,
+  final GoogleSignIn _googleSignIn;
+  AuthService({required GoogleSignIn googleSignIn})
+      : _googleSignIn = googleSignIn;
+
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${Constants.authUri}/login'),
+      body: jsonEncode({'email': email, 'password': password}),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+    );
+    if (res.statusCode != 200) {
+      throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
+    }
+    return jsonDecode(res.body);
+  }
+
+  Future<Map<String, dynamic>> signUpUser({
     required String email,
     required String name,
     required String password,
-    required WidgetRef ref,
   }) async {
-    try {
-      final Map<String, dynamic> userData = {
-        'name': name,
-        'email': email,
-        'password': password,
-      };
-
-      http.Response res = await http.post(
-        Uri.parse('${Constants.authUri}/register'),
-        body: jsonEncode({'name': name, 'email': email, 'password': password}),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      );
-
-      httpErrorHandle(
-        response: res,
-        context: context,
-        onSuccess: () async {
-          final body = jsonDecode(res.body);
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-
-          //Save token
-          await prefs.setString('x-auth-token', body['token'] ?? '');
-
-          // Save userId
-          final userId = body['_id'] ?? body['user']?['_id'] ?? '';
-          await prefs.setString('userId', userId);
-
-          SocketService().connect(userId);
-          // Save user to Riverpod
-          if (body['user'] != null) {
-            ref.read(currentUserProvider.notifier).state = User.fromJson(
-              body['user'],
-            );
-          } else {
-            ref.read(currentUserProvider.notifier).state = User.fromJson(body);
-          }
-
-          showSnackBar(context, 'Registered successfully!');
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            (route) => false,
-          );
-        },
-      );
-    } catch (e) {
-      showSnackBar(context, e.toString());
+    final res = await http.post(
+      Uri.parse('${Constants.authUri}/register'),
+      body: jsonEncode({'name': name, 'email': email, 'password': password}),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
     }
+    return jsonDecode(res.body);
   }
 
-  void login({
-    required BuildContext context,
-    required String email,
-    required String password,
-    required WidgetRef ref,
-  }) async {
-    try {
-      final navigator = Navigator.of(context);
-      http.Response res = await http.post(
-        Uri.parse('${Constants.authUri}/login'),
-        body: jsonEncode({'email': email, 'password': password}),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      );
-
-      httpErrorHandle(
-        response: res,
-        context: context,
-        onSuccess: () async {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          final body = jsonDecode(res.body);
-
-          // Save token
-          await prefs.setString('x-auth-token', body['token'] ?? '');
-
-          // Save userId
-          final userId = body['_id'] ?? body['user']?['_id'] ?? '';
-          await prefs.setString('userId', userId);
-          SocketService().connect(userId);
-          // Save user to Riverpod
-          if (body['user'] != null) {
-            ref.read(currentUserProvider.notifier).state = User.fromJson(
-              body['user'],
-            );
-          } else {
-            // Backend returns flat object
-            ref.read(currentUserProvider.notifier).state = User.fromJson(body);
-          }
-          navigator.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            (route) => false,
-          );
-        },
-      );
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
-  }
-
-  void signout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('x-auth-token', '');
-    await prefs.setString('userId', ''); //  clear userId
+  Future<Map<String, dynamic>> signInWithGoogle({required String mode}) async {
     await _googleSignIn.signOut();
-    prefs.setString('x-auth-token', '');
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => Login()),
-      (route) => false,
+    final googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) throw Exception('Google sign-in cancelled');
+
+    final res = await http.post(
+      Uri.parse('${Constants.authUri}/googleAuth'),
+      body: jsonEncode({
+        'email': googleUser.email,
+        'name': googleUser.displayName ?? '',
+        'profilePicture': googleUser.photoUrl ?? '',
+        'mode': mode,
+      }),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
+    }
+    return jsonDecode(res.body);
+  }
+
+  Future<void> resetPassword({required String email}) async {
+    await http.post(
+      Uri.parse('${Constants.authUri}/forgotPassword'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email.trim()}),
     );
   }
 
-  final GoogleSignIn _googleSignIn;
-  AuthService({required GoogleSignIn googleSignIn})
-    : _googleSignIn = googleSignIn;
-
-  void signInWithGoogle({
-    required BuildContext context,
-    required String mode,
-  }) async {
-    try {
-      await _googleSignIn.signOut();
-      final GoogleSignInAccount? user = await _googleSignIn.signIn();
-      if (user != null) {
-        final userAcc = User(
-          email: user.email,
-          name: user.displayName ?? "No name",
-          profilePicture: user.photoUrl ?? '',
-          id: '',
-          token: '',
-        );
-
-        http.Response res = await http.post(
-          Uri.parse('${Constants.authUri}/googleAuth'),
-          body: jsonEncode({...userAcc.toJson(), 'mode': mode}),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-        );
-        httpErrorHandle(
-          response: res,
-          context: context,
-          onSuccess: () async {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-
-            final body = jsonDecode(res.body);
-
-            await prefs.setString('x-auth-token', body['token'] ?? '');
-
-            // Save userId for Google sign in
-            final userId = body['_id'] ?? body['user']?['_id'] ?? '';
-            await prefs.setString('userId', userId);
-            SocketService().connect(userId);
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const HomePage()),
-              (_) => false,
-            );
-          },
-        );
-      }
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
-  }
-
-  void resetPassword({
-    required BuildContext context,
-    required String email,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${Constants.authUri}/forgotPassword'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email.trim()}),
-      );
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
+  Future<void> signout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _googleSignIn.signOut();
+    await prefs.setString('x-auth-token', '');
+    await prefs.setString('userId', '');
   }
 }

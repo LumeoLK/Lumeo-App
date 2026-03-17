@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
 import 'package:lumeo_v2/providers/cart_provider.dart';
 import 'package:lumeo_v2/providers/chat_provider.dart';
-import 'package:lumeo_v2/services/auth_service.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';

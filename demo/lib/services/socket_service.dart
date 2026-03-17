@@ -13,7 +13,7 @@ class SocketService {
   // Called once after login — opens the persistent connection to your server
   void connect(String userId) {
     socket = IO.io(
-      Constants.baseUrl, // Android emulator → your machine
+      Constants.baseUrl, 
       IO.OptionBuilder()
           .setTransports(['websocket']) // use websocket not long-polling
           .disableAutoConnect() // we control when to connect manually

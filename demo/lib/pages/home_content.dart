@@ -4,7 +4,6 @@ import '../widgets/banner_carousel.dart';
 import '../widgets/product_section.dart';
 import '../providers/product_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/utils.dart';
 
 
 class HomeContent extends ConsumerStatefulWidget {
@@ -34,7 +33,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     ref.listen(productProvider, (previous, next) {
       // Only show snackbar when a new error appears
       if (next.error != null && next.error != previous?.error) {
-        showSnackBar(context, next.error!);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!)),
+        );
       }
     });
 
