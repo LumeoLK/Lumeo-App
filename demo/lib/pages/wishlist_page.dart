@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/model/product.dart';
 import 'package:lumeo_v2/providers/wishlist_provider.dart';
+import 'package:lumeo_v2/providers/cart_provider.dart';
 import 'package:lumeo_v2/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
+import 'package:lumeo_v2/pages/cart_page.dart';
 
 class WishListPage extends ConsumerStatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -256,6 +258,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
   }
 
   Widget _buildCategoryChip(String category) {
+    final cartState = ref.watch(cartProvider);
     bool isSelected = selectedCategory == category;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -373,10 +376,31 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                     color: Colors.white,
                     size: 20,
                   ),
-                  onPressed: () {
-                          // navigate to AR view or add to cart
-                          print('View in AR: ${product.name}');
-                        },
+                  onPressed: () async {
+                    // Add to cart and navigate to cart page
+                    await ref
+                        .read(cartProvider.notifier)
+                        .addToCart(product.id, product.price);
+
+                    final error = ref.read(cartProvider).error;
+                    if (context.mounted) {
+                      if (error == null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CartPage(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed: $error'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
                 ),
               ),
             ],
