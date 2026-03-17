@@ -1,70 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/model/product.dart';
+import 'package:lumeo_v2/providers/wishlist_provider.dart';
 
-class WishListPage extends StatefulWidget {
+class WishListPage extends ConsumerStatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
 
   @override
-  State<WishListPage> createState() => _WishListPageState();
+  ConsumerState<WishListPage> createState() => _WishListPageState();
 }
 
-class _WishListPageState extends State<WishListPage> {
+class _WishListPageState extends ConsumerState<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
+  @override
+  void initState() {
+    super.initState();
 
-  // sample data for testing
-  final List<Map<String, dynamic>> wishListItems = [
-    {
-      'id': 1,
-      'name': 'Tufted Wingback Accent Chair',
-      'seller': 'Nathan James',
-      'material': 'Mahogany',
-      'price': 32,
-      'image': 'assets/images/chair1.avif',
-      'isNew': false,
-      'discount': null,
-      'soldOut': false,
-      'category': 'Chairs',
-    },
-    {
-      'id': 2,
-      'name': 'Modern Wood-Frame Armchair',
-      'seller': 'Nathan James',
-      'material': 'Teak',
-      'price': 46,
-      'image': 'assets/images/chair2.avif',
-      'isNew': true,
-      'discount': null,
-      'soldOut': false,
-      'category': 'Chairs',
-    },
-    {
-      'id': 3,
-      'name': 'Modern Ergonomic Scoop Chair',
-      'seller': 'John Doe',
-      'material': 'Walnut',
-      'price': 52,
-      'image': 'assets/images/chair3.jpg',
-      'isNew': false,
-      'discount': null,
-      'soldOut': true,
-      'category': 'Chairs',
-    },
-    {
-      'id': 4,
-      'name': '6-Seater Pedestal Dining Table',
-      'seller': 'John Doe',
-      'material': 'Mahogany',
-      'price': 100,
-      'image': 'assets/images/table.png',
-      'isNew': false,
-      'discount': 30,
-      'soldOut': false,
-      'category': 'Tables',
-    },
-  ];
+    Future.microtask(() {
+      ref.read(wishlistProvider.notifier).fetchWishlist();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final wishlistState = ref.watch(wishlistProvider);
+    final items = wishlistState.items;
+
+    if (wishlistState.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
       appBar: AppBar(
@@ -82,7 +48,10 @@ class _WishListPageState extends State<WishListPage> {
               hintText: 'Search store',
               hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
             ),
           ),
         ),
@@ -115,7 +84,7 @@ class _WishListPageState extends State<WishListPage> {
               ),
             ),
           ),
-          
+
           // category filter chips
           SizedBox(
             height: 50,
@@ -130,9 +99,9 @@ class _WishListPageState extends State<WishListPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // filters and sorting row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -175,66 +144,61 @@ class _WishListPageState extends State<WishListPage> {
               ],
             ),
           ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // list of items
-                    Expanded(
-                      child: _getFilteredItems().isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No items',
-                                style: TextStyle(color: Colors.grey, fontSize: 16),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _getFilteredItems().length,
-                              itemBuilder: (context, index) {
-                                return _buildWishListItem(_getFilteredItems()[index]);
-                              },
-                            ),  
-                        ),
-                  ],
-                ),
-               
-              );
-            }
 
-            List<Map<String, dynamic>> _getFilteredItems() {
-              List<Map<String, dynamic>> filtered;
-              
-              // filter by category
-              if (selectedCategory.isEmpty) {
-                filtered = List.from(wishListItems);
-              } else {
-                filtered = wishListItems.where((item) {
-                  return item['category'] == selectedCategory;
-                }).toList();
-              }
-              
-              // apply sorting
-              if (sortBy == 'low_to_high') {
-                filtered.sort((a, b) => a['price'].compareTo(b['price']));
-              } else if (sortBy == 'high_to_low') {
-                filtered.sort((a, b) => b['price'].compareTo(a['price']));
-              } else if (sortBy == 'available') {
-                filtered = filtered.where((item) => !item['soldOut']).toList();
-              }
-              
-              return filtered;
-            }
+          const SizedBox(height: 16),
 
-            String _getSortText() {
-              if (sortBy == 'low_to_high') {
-                return 'Price: lowest to high';
-              } else if (sortBy == 'high_to_low') {
-                return 'Price: highest to low';
-              } else if (sortBy == 'available') {
-                return 'Available only';
-              }
-              return 'Price: lowest to high';
-            }
+          // list of items
+          Expanded(
+            child: _getFilteredItems(items).isEmpty
+                ? const Center(
+                    child: Text(
+                      'No items',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _getFilteredItems(items).length,
+                    itemBuilder: (context, index) {
+                      return _buildWishListItem(_getFilteredItems(items)[index]);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Product> _getFilteredItems(List<Product> items) {
+    List<Product> filtered;
+
+    if (selectedCategory.isEmpty) {
+      filtered = List.from(items);
+    } else {
+      filtered = items.where((item) {
+        return item.description.toLowerCase().contains(selectedCategory.toLowerCase());
+      }).toList();
+    }
+
+    if (sortBy == 'low_to_high') {
+      filtered.sort((a, b) => a.price.compareTo(b.price));
+    } else if (sortBy == 'high_to_low') {
+      filtered.sort((a, b) => b.price.compareTo(a.price));
+    }
+
+    return filtered;
+  }
+
+  String _getSortText() {
+    if (sortBy == 'low_to_high') {
+      return 'Price: lowest to high';
+    } else if (sortBy == 'high_to_low') {
+      return 'Price: highest to low';
+    } else if (sortBy == 'available') {
+      return 'Available only';
+    }
+    return 'Price: lowest to high';
+  }
 
   Widget _buildCategoryChip(String category) {
     bool isSelected = selectedCategory == category;
@@ -246,9 +210,9 @@ class _WishListPageState extends State<WishListPage> {
         onSelected: (selected) {
           setState(() {
             if (selectedCategory == category) {
-              selectedCategory = '';  // deselect if clicking same category
+              selectedCategory = ''; // deselect if clicking same category
             } else {
-              selectedCategory = category;  // select new category
+              selectedCategory = category; // select new category
             }
           });
         },
@@ -263,7 +227,7 @@ class _WishListPageState extends State<WishListPage> {
     );
   }
 
-  Widget _buildWishListItem(Map<String, dynamic> item) {
+  Widget _buildWishListItem(Product product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -285,83 +249,28 @@ class _WishListPageState extends State<WishListPage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: item['soldOut']
-                      ? ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                            Colors.grey,
-                            BlendMode.saturation,
-                          ),
-                          child: Image.asset(
-                            item['image'],
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Image.asset(
-                          item['image'],
-                          fit: BoxFit.cover,
-                        ),
+                  child: product.images.isNotEmpty
+                      ? Image.network(product.images[0], fit: BoxFit.cover)
+                      : Container(color: Colors.grey),
                 ),
               ),
-              if (item['isNew'])
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'NEW',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              if (item['discount'] != null)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '-${item['discount']}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // product info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['seller'],
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                  product.shopName,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  item['name'],
+                  product.name,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -369,36 +278,22 @@ class _WishListPageState extends State<WishListPage> {
                   ),
                 ),
                 Text(
-                  item['material'],
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                  '',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${item['price']}\$',
+                  '\$${product.price}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (item['soldOut'])
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Sorry, this item is currently sold out',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
-          
+
           // action buttons
           Column(
             children: [
@@ -406,7 +301,9 @@ class _WishListPageState extends State<WishListPage> {
                 icon: const Icon(Icons.close, color: Colors.white, size: 20),
                 onPressed: () {
                   // remove from wishlist
-                  print('Remove item ${item['id']}');
+                  ref
+                      .read(wishlistProvider.notifier)
+                      .removeFromWishlist(product.id);
                 },
               ),
               const SizedBox(height: 20),
@@ -416,12 +313,14 @@ class _WishListPageState extends State<WishListPage> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.shopping_cart, color: Colors.white, size: 20),
-                  onPressed: item['soldOut']
-                      ? null
-                      : () {
+                  icon: const Icon(
+                    Icons.shopping_cart,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: () {
                           // navigate to AR view or add to cart
-                          print('View in AR: ${item['name']}');
+                          print('View in AR: ${product.name}');
                         },
                 ),
               ),
@@ -432,88 +331,86 @@ class _WishListPageState extends State<WishListPage> {
     );
   }
 
-  
-
-//filtering options
+  //filtering options
   void _showFilterDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: const Color(0xFF2a2a2a),
-        title: const Text(
-          'Sort & Filter',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text(
-                'Price: Low to High',
-                style: TextStyle(color: Colors.white),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2a2a2a),
+          title: const Text(
+            'Sort & Filter',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text(
+                  'Price: Low to High',
+                  style: TextStyle(color: Colors.white),
+                ),
+                leading: Radio<String>(
+                  value: 'low_to_high',
+                  groupValue: sortBy,
+                  activeColor: const Color(0xFFFBB040),
+                  onChanged: (value) {
+                    setState(() {
+                      sortBy = value!;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
               ),
-              leading: Radio<String>(
-                value: 'low_to_high',
-                groupValue: sortBy,
-                activeColor: const Color(0xFFFBB040),
-                onChanged: (value) {
-                  setState(() {
-                    sortBy = value!;
-                  });
-                  Navigator.pop(context);
-                },
+              ListTile(
+                title: const Text(
+                  'Price: High to Low',
+                  style: TextStyle(color: Colors.white),
+                ),
+                leading: Radio<String>(
+                  value: 'high_to_low',
+                  groupValue: sortBy,
+                  activeColor: const Color(0xFFFBB040),
+                  onChanged: (value) {
+                    setState(() {
+                      sortBy = value!;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
               ),
-            ),
-            ListTile(
-              title: const Text(
-                'Price: High to Low',
-                style: TextStyle(color: Colors.white),
+              ListTile(
+                title: const Text(
+                  'Available Only',
+                  style: TextStyle(color: Colors.white),
+                ),
+                leading: Radio<String>(
+                  value: 'available',
+                  groupValue: sortBy,
+                  activeColor: const Color(0xFFFBB040),
+                  onChanged: (value) {
+                    setState(() {
+                      sortBy = value!;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
               ),
-              leading: Radio<String>(
-                value: 'high_to_low',
-                groupValue: sortBy,
-                activeColor: const Color(0xFFFBB040),
-                onChanged: (value) {
-                  setState(() {
-                    sortBy = value!;
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              title: const Text(
-                'Available Only',
-                style: TextStyle(color: Colors.white),
-              ),
-              leading: Radio<String>(
-                value: 'available',
-                groupValue: sortBy,
-                activeColor: const Color(0xFFFBB040),
-                onChanged: (value) {
-                  setState(() {
-                    sortBy = value!;
-                  });
-                  Navigator.pop(context);
-                },
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(color: Color(0xFFFBB040)),
               ),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Close',
-              style: TextStyle(color: Color(0xFFFBB040)),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 }
