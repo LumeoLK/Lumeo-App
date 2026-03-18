@@ -108,7 +108,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 ? NetworkImage(user.profilePicture)
                 : null,
             child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
-                ? const Icon(Icons.person, color: Colors.orange)
+                ? const Icon(Icons.person, color: Color(0xFF1a1a1a))
                 : null,
           ),
           const SizedBox(width: 16),
@@ -137,7 +137,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                       ? NetworkImage(user.profilePicture)
                       : null,
                   child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
-                      ? const Icon(Icons.person, color: Colors.orange, size: 40)
+                      ? const Icon(Icons.person, color: Color(0xFF1a1a1a), size: 40)
                       : null,
                 ),
                 const SizedBox(width: 16),
