@@ -81,7 +81,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ARScreen(modelUrl: "https://res.cloudinary.com/drno34my4/raw/upload/v1772769831/lumeo_3d_models/rskvmfcr5uloyvamaczt.glb"),
+                              ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
                     },

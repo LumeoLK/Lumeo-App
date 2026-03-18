@@ -3,7 +3,7 @@ import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
 
 class ARScreen extends StatefulWidget {
-  final String modelUrl; // 👈 passed in from product page
+  final String modelUrl;
 
   const ARScreen({super.key, required this.modelUrl});
 
@@ -84,7 +84,7 @@ class _ARScreenState extends State<ARScreen> {
       } else {
         print(
           'DEBUG model not downloaded yet when scene_loaded fired',
-        ); // 👈 add this
+        ); 
       }
     }
   }

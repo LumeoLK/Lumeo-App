@@ -22,7 +22,11 @@ class ModelDownloader {
       print('Model already cached: $filePath');
       return filePath;
     }
-
+  // 👉 ADD THESE LOGS RIGHT HERE 👈
+    print('====================================');
+    print('Attempting to download 3D model from: $url');
+    print('Saving to local path: $filePath');
+    print('====================================');
     // Download the file
     await _dio.download(url, filePath, onReceiveProgress: onProgress);
 

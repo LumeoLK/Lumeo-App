@@ -8,9 +8,7 @@ dependencies {
     implementation(name: 'ARPresto', ext:'aar')
     implementation(name: 'UnityARCore', ext:'aar')
     implementation(name: 'unityandroidpermissions', ext:'aar')
-    if (project.findProject(':unityLibrary:xrmanifest.androidlib') != null) {
-    implementation project(':unityLibrary:xrmanifest.androidlib')
-}
+    // implementation project(':unityLibrary:xrmanifest.androidlib')
 }
 
 android {
