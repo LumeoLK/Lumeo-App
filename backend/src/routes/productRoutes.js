@@ -23,6 +23,6 @@ router.post(
 
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
-router.get("/:id", getProductById);
 router.get("/mlproducts", getProductsForML);
+router.get("/:id", getProductById);
 export default router;
