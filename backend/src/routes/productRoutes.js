@@ -23,5 +23,5 @@ router.post(
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 router.get("/:id", getProductById);
-
+router.get("/products", getProductsForML);
 export default router;
