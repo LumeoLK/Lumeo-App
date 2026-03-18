@@ -127,7 +127,7 @@ async def search_furniture(
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{NODE_BACKEND_URL}/api/products/"
+                f"{NODE_BACKEND_URL}/api/products/mlproducts"
             )
             response.raise_for_status()
             data = response.json()
@@ -165,7 +165,7 @@ async def search_furniture(
         # Visual similarity 80% + color 20%
         visual_score = float(cosine_similarity(user_vec, product_vec)[0][0])
         color_score = compute_color_score(user_color, product.get("dominantColor", []))
-        final_score = (visual_score * 0.8) + (color_score * 0.2)
+        final_score = (visual_score * 0.5) + (color_score * 0.5)
 
         scored.append({
             "id": str(product.get("_id", "")),
