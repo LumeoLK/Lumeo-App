@@ -22994,7 +22994,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR ReadOnlySpan_1_t7A178E7A4E6042F7DC8238EDC8E81
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 67842
+// Method Definition Index: 67850
 IL2CPP_EXTERN_C IL2CPP_NO_INLINE IL2CPP_METHOD_ATTR void RecalculateIndicesForTriangleFanInPlaceJob_1_Execute_m2D955899E16441E11A2C5A9BD3293582E663A236_gshared (RecalculateIndicesForTriangleFanInPlaceJob_1_tC400EB66044327E02576578858C7EE6B61271E02* IL2CPP_PARAMETER_RESTRICT __this, const RuntimeMethod* method) 
 {
 	uint16_t V_0 = 0;
@@ -23100,7 +23100,7 @@ IL2CPP_EXTERN_C  void RecalculateIndicesForTriangleFanInPlaceJob_1_Execute_m2D95
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 67842
+// Method Definition Index: 67850
 IL2CPP_EXTERN_C IL2CPP_NO_INLINE IL2CPP_METHOD_ATTR void RecalculateIndicesForTriangleFanInPlaceJob_1_Execute_mB9A7867E4107B39DE7FED5438E0FA5939DA540B5_gshared (RecalculateIndicesForTriangleFanInPlaceJob_1_tE08982D9C28B2E30543A68E61ED866E1EF07DDA8* IL2CPP_PARAMETER_RESTRICT __this, const RuntimeMethod* method) 
 {
 	uint32_t V_0 = 0;
@@ -23206,7 +23206,7 @@ IL2CPP_EXTERN_C  void RecalculateIndicesForTriangleFanInPlaceJob_1_Execute_mB9A7
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 67842
+// Method Definition Index: 67850
 IL2CPP_EXTERN_C IL2CPP_NO_INLINE IL2CPP_METHOD_ATTR void RecalculateIndicesForTriangleFanInPlaceJob_1_Execute_m154CD1955F5F160E933E534F9E0A0D330733D53B_gshared (RecalculateIndicesForTriangleFanInPlaceJob_1_t47054830384CC2A17BF739E6B96BC92491722B61* IL2CPP_PARAMETER_RESTRICT __this, const RuntimeMethod* method) 
 {
 	const uint32_t SizeOf_T_tF362416989BC26F7F6016671827FDE0858F94101 = il2cpp_codegen_sizeof(il2cpp_rgctx_data_no_init(InitializedTypeInfo(method->klass)->rgctx_data, 5));
