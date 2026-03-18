@@ -6,6 +6,7 @@ import {
   getAllProducts,
   getProductById,
   searchProducts,
+  getProductsForML
 } from "../controller/productController.js";
 
 
@@ -23,5 +24,5 @@ router.post(
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
 router.get("/:id", getProductById);
-
+router.get("/mlproducts", getProductsForML);
 export default router;
