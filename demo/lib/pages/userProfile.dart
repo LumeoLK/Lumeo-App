@@ -1,46 +1,97 @@
-// import 'package:flutter/material.dart';
-
-// class Userprofile extends StatefulWidget {
-//   const Userprofile({super.key});
-
-//   @override
-//   State<Userprofile> createState() => _UserprofileState();
-// }
-
-// class _UserprofileState extends State<Userprofile> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
-//void main() => runApp(const MaterialApp(home: ProfilePage()));
+import '../widgets/login_required_dialog.dart';
+import '../pages/login.dart';
+import '../pages/my_orders.dart';
+
 
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
 
-  // StatefulWidgets create a 'State' object that persists
   @override
   ConsumerState<Userprofile> createState() => _UserprofileState();
 }
 
 class _UserprofileState extends ConsumerState<Userprofile> {
-  // 1. Define the variables that will change (the "State")
-  bool isSeller = false;
+  bool _isLoggedIn = false;
 
-  void toggleSellerStatus() {
-    // 2. Wrap the change in setState() to trigger a UI refresh
-    setState(() {
-      isSeller = !isSeller;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      await _checkLoginStatus();
     });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      return;
+    }
+    setState(() => _isLoggedIn = false);
+  }
+
+  void _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('x-auth-token', '');
+    await prefs.setString('userId', '');
+    ref.read(currentUserProvider.notifier).state = null;
+
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => Login()),
+        (route) => false,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // If not logged in, show login prompt
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1E1E1E),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.person_outline, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Profile',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  LoginRequiredDialog.show(context);
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final user = ref.watch(currentUserProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -51,9 +102,14 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             onPressed: () {},
             icon: const Icon(Icons.search, color: Colors.white),
           ),
-          const CircleAvatar(
-            backgroundColor: Color(0xFF2E2E2E),
-            child: Icon(Icons.person, color: Colors.orange),
+          CircleAvatar(
+            backgroundColor: const Color(0xFF2E2E2E),
+            backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
+                ? NetworkImage(user.profilePicture)
+                : null,
+            child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
+                ? const Icon(Icons.person, color: Colors.orange)
+                : null,
           ),
           const SizedBox(width: 16),
         ],
@@ -74,16 +130,22 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             const SizedBox(height: 20),
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://placeholder.com/150'),
+                  backgroundColor: const Color(0xFF2E2E2E),
+                  backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
+                      ? NetworkImage(user.profilePicture)
+                      : null,
+                  child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
+                      ? const Icon(Icons.person, color: Colors.orange, size: 40)
+                      : null,
                 ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user?.name ?? 'Matilda Brown',
+                      user?.name ?? 'User',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -91,7 +153,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                       ),
                     ),
                     Text(
-                      user?.email ?? 'matildabrown@mail.com',
+                      user?.email ?? '',
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ],
@@ -99,43 +161,48 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-            _buildMenuTile('My orders', 'Already have 12 orders'),
-            _buildMenuTile('Shipping addresses', '3 addresses'),
-            _buildMenuTile('Payment methods', 'Visa **34'),
+            _buildMenuTile('My orders', 'View your order history', onTap: () {
+             Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrders()));
+            }),
+            _buildMenuTile('Shipping addresses', 'Manage your addresses', onTap: () {
+              // TODO: Navigate to addresses page
+            }),
+            _buildMenuTile('Payment methods', 'Manage your payment methods', onTap: () {
+              // TODO: Navigate to payment methods page
+            }),
 
             const SizedBox(height: 30),
 
-            // 3. The UI now reacts to the 'isSeller' variable
+            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isSeller
-                      ? Colors.green
-                      : const Color(0xFFFFB347),
+                  backgroundColor: Color(0xFFFBB040),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: toggleSellerStatus,
-                child: Text(
-                  isSeller ? 'You are a Seller!' : 'Become a Seller',
-                  style: const TextStyle(
-                    color: Colors.black,
+                onPressed: _logout,
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMenuTile(String title, String subtitle) {
+  Widget _buildMenuTile(String title, String subtitle, {VoidCallback? onTap}) {
     return Column(
       children: [
         ListTile(
@@ -152,6 +219,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: onTap,
         ),
         const Divider(color: Colors.white12, height: 1),
       ],
