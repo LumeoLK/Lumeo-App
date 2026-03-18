@@ -127,7 +127,7 @@ async def search_furniture(
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{NODE_BACKEND_URL}/api/internal/ml/products"
+                f"{NODE_BACKEND_URL}/api/products/"
             )
             response.raise_for_status()
             data = response.json()
