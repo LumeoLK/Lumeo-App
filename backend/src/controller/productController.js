@@ -237,3 +237,24 @@ export const retry3dgeneration = async (req, res) => {
   }
 };
 
+}
+export const getProductsForML = async (req, res) => {
+  try {
+    // Only get in-stock items
+    const filter = { stock: { $gt: 0 } };
+
+    // Fetch only the fields the AI model needs
+    const products = await Product.find(filter).select(
+      "title description price category images dimensions dominantColor averageRating imageEmbedding model3D"
+    );
+
+    res.status(200).json({
+      success: true,
+      total: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error("ML Internal Controller Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
