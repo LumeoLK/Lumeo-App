@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../widgets/login_required_dialog.dart';
@@ -38,3 +39,4 @@ Future<bool> requireAuth(BuildContext context, WidgetRef ref) async {
   }
   return false;
 }
+

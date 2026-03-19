@@ -1,15 +1,9 @@
-// import 'dart:convert';
-
-import '../Constants.dart';
-import '../services/auth_service.dart';
-import '../utils/utils.dart';
+import '../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 class Forgotpassword extends ConsumerStatefulWidget {
-  Forgotpassword({super.key});
+  const Forgotpassword({super.key});
 
   @override
   ConsumerState<Forgotpassword> createState() => _ForgotpasswordState();
@@ -17,108 +11,98 @@ class Forgotpassword extends ConsumerStatefulWidget {
 
 class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController email = TextEditingController();
+  final email = TextEditingController();
+
+  @override
+  void dispose() {
+    email.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authService = ref.read(authProvider);
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Full screen background
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/backgroundImg.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 30, top: 75, right: 30, bottom: 5),
+              padding: const EdgeInsets.only(
+                  left: 30, top: 75, right: 30, bottom: 5),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
+                    const Text(
                       "Forgot Password",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                      ), // text over image
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(height: 65),
-                    Text(
-                      "Please, enter your email address. You will receive a link to create a new password via email.",
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: const Color.fromARGB(255, 255, 255, 255),
                       ),
                     ),
-                    SizedBox(height: 50),
+                    const SizedBox(height: 65),
+                    const Text(
+                      "Please enter your email address. You will receive a link to create a new password via email.",
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 50),
                     TextFormField(
                       controller: email,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "Enter email",
-                        hintStyle: TextStyle(
-                          color: const Color.fromARGB(255, 0, 0, 0),
-                        ),
+                        hintStyle: const TextStyle(color: Colors.black),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                            borderRadius: BorderRadius.circular(10)),
                         fillColor: Colors.white,
-
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return "Email cannot be empty";
-                        }
-                        if (!value.trim().endsWith("@gmail.com")) {
+                        if (!value.trim().endsWith("@gmail.com"))
                           return "Please use a Gmail address (you@gmail.com)";
-                        }
-                        return null; // valid
+                        return null;
                       },
                     ),
-                    SizedBox(height: 150),
+                    const SizedBox(height: 150),
                     Align(
                       alignment: Alignment.center,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Trigger form validation
+                        onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            authService.resetPassword(
-                              context: context,
-                              email: email.text,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Password reset email sent!'),
-                              ),
-                            );
+                            // ✅ .notifier to call methods, not ref.read(authProvider)
+                            await ref
+                                .read(authProvider.notifier)
+                                .resetPassword(email.text);
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Password reset email sent!')),
+                              );
+                            }
                           }
-                          // If invalid, the error message from validator will automatically show below the TextFormField
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFE09D3B),
+                          backgroundColor: const Color(0xFFE09D3B),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          minimumSize: Size(150, 40),
+                              borderRadius: BorderRadius.circular(30)),
+                          minimumSize: const Size(150, 40),
                         ),
-                        child: Text(
-                          "SEND",
-                          style: TextStyle(color: Colors.black),
-                        ),
+                        child: const Text("SEND",
+                            style: TextStyle(color: Colors.black)),
                       ),
                     ),
                   ],

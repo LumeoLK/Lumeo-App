@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/pages/customFurniture.dart';
 import 'package:lumeo_v2/pages/login.dart';
 import 'package:lumeo_v2/pages/my_orders.dart';
-import 'package:lumeo_v2/services/auth_service.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 
 class Userprofile extends ConsumerStatefulWidget {
@@ -45,7 +45,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('x-auth-token', '');
     await prefs.setString('userId', '');
-    ref.read(currentUserProvider.notifier).state = null;
+    await ref.read(authProvider.notifier).signout();
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(

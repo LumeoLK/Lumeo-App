@@ -24,10 +24,11 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
   final Color darkBg = const Color(0xFF1E1E1E);
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
+  late ChatNotifier _chatNotifier;
   @override
   void initState() {
     super.initState();
+    _chatNotifier = ref.read(chatProvider.notifier);
     // Load message history + set up socket listeners
     // Future.microtask ensures this runs after the widget is built
     Future.microtask(
@@ -38,9 +39,10 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
 
   @override
   void dispose() {
+    _chatNotifier.leaveChat();
     // Clean up when user leaves the chat screen
     // This removes socket listeners so we don't get duplicate messages
-    ref.read(chatProvider.notifier).leaveChat();
+   
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -66,11 +68,8 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
 
     _messageController.clear();
 
-    // Tell the provider to send the message
-    // Provider handles optimistic UI + HTTP save + socket broadcast
-    ref
-        .read(chatProvider.notifier)
-        .sendMessage(
+    
+    _chatNotifier.sendMessage(
           conversationId: widget.conversation.id,
           text: text,
           currentUserId: widget.currentUserId,

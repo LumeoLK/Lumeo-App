@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/model/product.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:lumeo_v2/providers/wishlist_provider.dart';
 import 'package:lumeo_v2/providers/cart_provider.dart';
-import 'package:lumeo_v2/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 import 'package:lumeo_v2/pages/cart_page.dart';

@@ -1,15 +1,8 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/onboarding_page1.dart';
 
 void main() {
