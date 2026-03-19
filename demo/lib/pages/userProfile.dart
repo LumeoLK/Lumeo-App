@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/pages/seller-registration_info.dart';
 import '../services/auth_service.dart';
 //void main() => runApp(const MaterialApp(home: ProfilePage()));
 
@@ -118,7 +119,21 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: toggleSellerStatus,
+                onPressed: () {
+                  // If they aren't a seller yet, send them to the form
+                  if (!isSeller) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const SellerRegistrationInfoScreen(),
+                      ),
+                    );
+                  } else {
+                    // If they ARE a seller, maybe toggle status or go to Seller Dashboard
+                    toggleSellerStatus();
+                  }
+                },
                 child: Text(
                   isSeller ? 'You are a Seller!' : 'Become a Seller',
                   style: const TextStyle(

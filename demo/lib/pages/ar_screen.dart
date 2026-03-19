@@ -1,15 +1,15 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_embed_unity/flutter_embed_unity.dart';
+// import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
 
 class ARScreen extends StatefulWidget {
-  final String modelUrl; // 👈 passed in from product page
+  final String modelUrl; 
 
   const ARScreen({super.key, required this.modelUrl});
 
-
-//   const ARScreen({super.key, required this.modelUrl});
+  @override
+  State<ARScreen> createState() => _ARScreenState();
+} 
 
 class _ARScreenState extends State<ARScreen> {
   bool _isUnityLoaded = false;
@@ -54,24 +54,21 @@ class _ARScreenState extends State<ARScreen> {
     final size = MediaQuery.of(context).size;
     final x = details.globalPosition.dx / size.width;
     final y = details.globalPosition.dy / size.height;
-    sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
+    //sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
   }
 
-  // Called once Unity finishes loading — we then send the model path
   void _onUnityMessage(String message) {
     if (message == 'scene_loaded') {
       setState(() => _isUnityLoaded = true);
 
-      // 👇 Send the local .glb path to Unity
       if (_localModelPath != null) {
-        sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
+        //sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show download progress before opening Unity
     if (_isDownloading) {
       return Scaffold(
         backgroundColor: Colors.black,
@@ -103,7 +100,6 @@ class _ARScreenState extends State<ARScreen> {
       );
     }
 
-    // Show error if download failed
     if (_errorMessage != null) {
       return Scaffold(
         body: Center(
@@ -115,32 +111,31 @@ class _ARScreenState extends State<ARScreen> {
       );
     }
 
-    // Show AR view
     return Scaffold(
       appBar: AppBar(title: const Text('AR View')),
       body: Stack(
         children: [
-          GestureDetector(
-            onTapDown: (details) => _onTap(details, context),
-            child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
-          ),
-          if (!_isUnityLoaded)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading AR...',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          // GestureDetector(
+          //   onTapDown: (details) => _onTap(details, context),
+          //   child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
+          // ),
+          // if (!_isUnityLoaded)
+          //   Container(
+          //     color: Colors.black54,
+          //     child: const Center(
+          //       child: Column(
+          //         mainAxisAlignment: MainAxisAlignment.center,
+          //         children: [
+          //           CircularProgressIndicator(color: Colors.white),
+          //           SizedBox(height: 16),
+          //           Text(
+          //             'Loading AR...',
+          //             style: TextStyle(color: Colors.white, fontSize: 18),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );
