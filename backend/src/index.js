@@ -48,8 +48,10 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api", webhookRoutes);
-
+app.use("/api/webhooks", webhookRoutes);
+app.get("/api/health", (req, res) => {
+  return res.status(200).json({ status: "ok" });
+});
 // Create HTTP server for Socket.io
 const server = http.createServer(app);
 
