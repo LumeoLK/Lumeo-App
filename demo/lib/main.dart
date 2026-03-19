@@ -10,7 +10,7 @@ import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'pages/onboarding_page1.dart';
 import '../providers/user_provider.dart';
-
+import "./pages/emptyspace.dart";
 void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -25,7 +25,12 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.dark,
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: ARSearchPage(), //const SplashScreen(),
+      home: RecommendationResultsPage(
+        roomType: 'general',
+        measuredWidth: 100,
+        measuredDepth: 100,
+        recommendations: [],
+      ), //const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
