@@ -1,35 +1,59 @@
-// import 'package:flutter/material.dart';
-
-// class Userprofile extends StatefulWidget {
-//   const Userprofile({super.key});
-
-//   @override
-//   State<Userprofile> createState() => _UserprofileState();
-// }
-
-// class _UserprofileState extends State<Userprofile> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_provider.dart';
-//void main() => runApp(const MaterialApp(home: ProfilePage()));
+import 'package:lumeo_v2/providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumeo_v2/pages/customFurniture.dart';
+import 'package:lumeo_v2/pages/login.dart';
+import 'package:lumeo_v2/pages/my_orders.dart';
+import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
 
-  // StatefulWidgets create a 'State' object that persists
   @override
   ConsumerState<Userprofile> createState() => _UserprofileState();
 }
 
 class _UserprofileState extends ConsumerState<Userprofile> {
-  // 1. Define the variables that will change (the "State")
   bool isSeller = false;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      await _checkLoginStatus();
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    if (mounted) setState(() => _isLoggedIn = false);
+  }
+
+  void _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('x-auth-token', '');
+    await prefs.setString('userId', '');
+    await ref.read(authProvider.notifier).signout();
+
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const Login()),
+        (route) => false,
+      );
+    }
+  }
 
   void toggleSellerStatus() {
     // 2. Wrap the change in setState() to trigger a UI refresh
@@ -40,7 +64,41 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1E1E1E),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.person_outline, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Profile',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  LoginRequiredDialog.show(context);
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final user = ref.watch(currentUserProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -74,16 +132,22 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             const SizedBox(height: 20),
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://placeholder.com/150'),
+                  backgroundColor: const Color(0xFF2E2E2E),
+                  backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
+                      ? NetworkImage(user.profilePicture)
+                      : null,
+                  child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
+                      ? const Icon(Icons.person, color: Color(0xFF1a1a1a), size: 40)
+                      : null,
                 ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user?.name ?? 'Matilda Brown',
+                      user?.name ?? 'User',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -91,7 +155,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                       ),
                     ),
                     Text(
-                      user?.email ?? 'matildabrown@mail.com',
+                      user?.email ?? '',
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ],
@@ -99,13 +163,25 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-            _buildMenuTile('My orders', 'Already have 12 orders'),
-            _buildMenuTile('Shipping addresses', '3 addresses'),
-            _buildMenuTile('Payment methods', 'Visa **34'),
+      
+            _buildMenuTile('My orders', 'Already have 12 orders', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrders()));
+            }),
+            _buildMenuTile('Shipping addresses', '3 addresses', onTap: () {
+              // TODO: Implement Shipping addresses page
+            }),
+            _buildMenuTile('Payment methods', 'Visa **34', onTap: () {
+              // TODO: Implement Payment methods page
+            }),
+            _buildMenuTile('Settings', 'Account and privacy', onTap: () {
+              // TODO: Implement Settings page
+            }),
+            _buildMenuTile('Custom Furniture', 'Create your own design', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomFurniturePage()));
+            }),
 
             const SizedBox(height: 30),
 
-            // 3. The UI now reacts to the 'isSeller' variable
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -129,13 +205,25 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            
+            // Re-adding logout button since it's important
+            TextButton(
+              onPressed: _logout,
+              child: const Center(
+                child: Text(
+                  'Sign Out',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildMenuTile(String title, String subtitle) {
+  Widget _buildMenuTile(String title, String subtitle, {VoidCallback? onTap}) {
     return Column(
       children: [
         ListTile(
@@ -152,6 +240,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: onTap,
         ),
         const Divider(color: Colors.white12, height: 1),
       ],

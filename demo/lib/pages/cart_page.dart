@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cart_provider.dart';
 import '../model/cart_item.dart';
+import 'package:lumeo_v2/widgets/search_bar.dart';
 
 class CartPage extends ConsumerStatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -27,32 +28,8 @@ class _CartPageState extends ConsumerState<CartPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2a2a2a),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const TextField(
-            style: TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Office Chairs',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
-            onPressed: () {},
-          ),
-        ],
+        toolbarHeight: 70,
+        title: const SearchBarWidget(hintText: 'Search cart'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

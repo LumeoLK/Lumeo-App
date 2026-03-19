@@ -34,7 +34,7 @@ class MyOrdersState extends State<MyOrders> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Navbar')),
+      appBar: AppBar(title: Text('My Orders')),
       backgroundColor: Colors.black,
       body: Container(
         margin: const EdgeInsets.all(16),

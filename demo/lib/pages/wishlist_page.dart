@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/model/product.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:lumeo_v2/providers/wishlist_provider.dart';
+import 'package:lumeo_v2/providers/cart_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumeo_v2/widgets/login_required_dialog.dart';
+import 'package:lumeo_v2/pages/cart_page.dart';
+import 'package:lumeo_v2/widgets/search_bar.dart';
 
 class WishListPage extends ConsumerStatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -13,17 +19,69 @@ class WishListPage extends ConsumerStatefulWidget {
 class _WishListPageState extends ConsumerState<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
+  bool _isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      ref.read(wishlistProvider.notifier).fetchWishlist();
+    Future.microtask(() async {
+      await _checkLoginAndFetch();
     });
+  }
+
+  Future<void> _checkLoginAndFetch() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      ref.read(wishlistProvider.notifier).fetchWishlist();
+      return;
+    }
+    // Fallback: check token in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      setState(() => _isLoggedIn = true);
+      ref.read(wishlistProvider.notifier).fetchWishlist();
+      return;
+    }
+    setState(() => _isLoggedIn = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1a1a1a),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.favorite_border, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Wishlist',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  LoginRequiredDialog.show(context);
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final wishlistState = ref.watch(wishlistProvider);
     final items = wishlistState.items;
 
@@ -36,39 +94,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2a2a2a),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const TextField(
-            style: TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Search store',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // search functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
-            onPressed: () {
-              // profile page
-            },
-          ),
-        ],
+        title: const SearchBarWidget(hintText: 'Search wishlist'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,6 +227,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
   }
 
   Widget _buildCategoryChip(String category) {
+    final cartState = ref.watch(cartProvider);
     bool isSelected = selectedCategory == category;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -318,10 +345,31 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                     color: Colors.white,
                     size: 20,
                   ),
-                  onPressed: () {
-                          // navigate to AR view or add to cart
-                          print('View in AR: ${product.name}');
-                        },
+                  onPressed: () async {
+                    // Add to cart and navigate to cart page
+                    await ref
+                        .read(cartProvider.notifier)
+                        .addToCart(product.id, product.price);
+
+                    final error = ref.read(cartProvider).error;
+                    if (context.mounted) {
+                      if (error == null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CartPage(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed: $error'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
                 ),
               ),
             ],
