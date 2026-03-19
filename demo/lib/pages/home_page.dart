@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
     HomeContent(),
 
     // WishlistPage(),
-    ARScreen(),
+    // ARScreen(),
     CartPage(),
     CustomFurniturePage(),
   ];
