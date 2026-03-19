@@ -9,7 +9,7 @@ class WishListPage extends StatefulWidget {
 
 class _WishListPageState extends State<WishListPage> {
   String selectedCategory = '';
-  String sortBy = 'low_to_high';
+  String sortBy = 'Price: lowest to high';
 
   // sample data for testing
   final List<Map<String, dynamic>> wishListItems = [
@@ -156,11 +156,11 @@ class _WishListPageState extends State<WishListPage> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: Row(
-                    children: [
+                    children: const [
                       Icon(Icons.swap_vert, color: Colors.white, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        _getSortText(),
+                        'Price: lowest to high',
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ],
@@ -197,43 +197,17 @@ class _WishListPageState extends State<WishListPage> {
                         ),
                   ],
                 ),
-               
+                bottomNavigationBar: _buildBottomNav(),
               );
             }
 
             List<Map<String, dynamic>> _getFilteredItems() {
-              List<Map<String, dynamic>> filtered;
-              
-              // filter by category
               if (selectedCategory.isEmpty) {
-                filtered = List.from(wishListItems);
-              } else {
-                filtered = wishListItems.where((item) {
-                  return item['category'] == selectedCategory;
-                }).toList();
+                return wishListItems;  // show all items when no category selected
               }
-              
-              // apply sorting
-              if (sortBy == 'low_to_high') {
-                filtered.sort((a, b) => a['price'].compareTo(b['price']));
-              } else if (sortBy == 'high_to_low') {
-                filtered.sort((a, b) => b['price'].compareTo(a['price']));
-              } else if (sortBy == 'available') {
-                filtered = filtered.where((item) => !item['soldOut']).toList();
-              }
-              
-              return filtered;
-            }
-
-            String _getSortText() {
-              if (sortBy == 'low_to_high') {
-                return 'Price: lowest to high';
-              } else if (sortBy == 'high_to_low') {
-                return 'Price: highest to low';
-              } else if (sortBy == 'available') {
-                return 'Available only';
-              }
-              return 'Price: lowest to high';
+              return wishListItems.where((item) {
+                return item['category'] == selectedCategory;
+              }).toList();
             }
 
   Widget _buildCategoryChip(String category) {
@@ -432,7 +406,45 @@ class _WishListPageState extends State<WishListPage> {
     );
   }
 
-  
+  Widget _buildBottomNav() {
+    return Container(
+      height: 70,
+      decoration: const BoxDecoration(
+        color: Color(0xFF2a2a2a),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavItem(Icons.home, 'Home', false),
+          _buildNavItem(Icons.favorite_border, 'Wish List', true),
+          _buildNavItem(Icons.view_in_ar, 'AR View', false),
+          _buildNavItem(Icons.shopping_cart, 'Cart', false),
+          _buildNavItem(Icons.settings, 'Custom', false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool isActive) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          color: isActive ? Colors.white : const Color(0xFFFBB040),
+          size: 28,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : const Color(0xFFFBB040),
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
 
 //filtering options
   void _showFilterDialog() {
