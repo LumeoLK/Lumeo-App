@@ -202,6 +202,41 @@ export const getProductById = async (req, res) => {
     console.log(error.message);
     return res.status(500).json({ msg: error.message });
   }
+};
+
+export const retry3dgeneration = async (req, res) => {
+
+  const { productId } = req.body;
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
+    if (!product.images || product.images.length === 0) {
+      return res
+        .status(400)
+        .json({ msg: "No images available for 3D generation." });
+    }
+    if(product.model3D.status === "success"){
+      return res
+        .status(400)
+        .json({ msg: "3D model already generated successfully." });
+    }
+
+    const result = await generate3DModel(productId, product.images);
+    res
+      .status(200)
+      .json({
+        success: true,
+        msg: "3D model generation retried.",
+        jobId: result.jobId ,
+      });
+  } catch (error) {
+    console.error("Error retrying 3D model generation:", error);
+    res.status(500).json({ msg: "Failed to retry 3D model generation." });
+  }
+};
+
 }
 export const getProductsForML = async (req, res) => {
   try {

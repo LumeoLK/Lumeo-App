@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo_v2/pages/chat_application.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../model/product.dart';
 import 'ar_screen.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
-
   final Product product;
 
   @override
@@ -18,11 +15,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final Color cardColor = const Color(0xFF2A2A2A);
   final Color accentColor = const Color(0xFFFDB04B);
   final Color secondaryTextColor = Colors.white70;
-  int _selectedImageIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    final images = widget.product.images;
-    // 👇 widget.product gives you access to the product passed in
     final product = widget.product;
 
     return Scaffold(
@@ -47,18 +42,32 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Image Placeholder Section
+            // 1. IMAGE CAROUSEL & AR BUTTON (Overlapping each other)
             Stack(
               children: [
-                // Product Image
-                Container(
+                // Image Carousel using PageView
+                SizedBox(
                   height: 350,
                   width: double.infinity,
-                  color: Colors.grey[800],
                   child: product.images.isNotEmpty
-                      ? Image.network(product.images[0], fit: BoxFit.cover)
-                      : const Center(
-                          child: Icon(Icons.image, size: 50, color: Colors.white24),
+                      ? PageView.builder(
+                          itemCount: product.images.length,
+                          itemBuilder: (context, index) {
+                            return Image.network(
+                              product.images[index],
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Container(
+                          color: Colors.grey[800],
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              size: 50,
+                              color: Colors.white24,
+                            ),
+                          ),
                         ),
                 ),
 
@@ -68,12 +77,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   right: 20,
                   child: GestureDetector(
                     onTap: () {
-                      // ✅ FIXED: was "product.modelUrl", now "widget.product.modelUrl"
-                      // Both work since we did `final product = widget.product` above
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ARScreen(modelUrl: product.modelUrl),
+                          builder: (context) =>
+                              ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
                     },
@@ -96,48 +104,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               ],
             ),
 
-            if (images.length > 1)
-              SizedBox(
-                height: 70,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  itemCount: images.length,
-                  itemBuilder: (context, index) {
-                    final isSelected = index == _selectedImageIndex;
-                    return GestureDetector(
-                      // Tap thumbnail → update main image
-                      onTap: () => setState(() {
-                        _selectedImageIndex = index;
-                      }),
-                      child: Container(
-                        width: 55,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          // Highlight selected thumbnail
-                          border: Border.all(
-                            color: isSelected
-                                ? accentColor
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.network(
-                            images[index],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+            // 2. PRODUCT DETAILS TEXT (Sequentially below the images)
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -154,7 +121,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ✅ FIXED: now uses real product data
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -176,15 +142,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       ),
                     ],
                   ),
-                  Text(
-                    widget.product.shopName,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
                   const SizedBox(height: 15),
 
-                  // ✅ FIXED: now uses real description
                   Text(
-                    widget.product.description,
+                    product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
@@ -199,23 +160,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () async {
-                        // try {
-                        //   SharedPreferences prefs = await SharedPreferences.getInstance();
-                        //   String token = prefs.getString('x-auth-token') ?? '';
-                        //   await CartService.addToCart(
-                        //     token,
-                        //     widget.product.id,
-                        //     widget.product.price,
-                        //   );
-
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //     const SnackBar(content: Text("Added to cart")),
-                        //   );
-                        // } catch (e) {
-                        //   print(e);
-                        // }
-                      },
+                      onPressed: () {},
                       child: const Text(
                         "ADD TO CART",
                         style: TextStyle(
@@ -228,18 +173,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // 6. List tiles for Shop Info/Customization
+                  _buildListTile("Shop Information"),
                   const Divider(color: Colors.white24),
-
-                  _buildListTile("Ask For Customizations", () {
-                    // Navigation code to the chat application page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatApplication(),
-                      ),
-                    );
-                  }),
+                  _buildListTile("Ask For Customizations"),
                   const SizedBox(height: 30),
 
                   const Text(
@@ -285,12 +221,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  Widget _buildListTile(String title, VoidCallback onTap) {
+  Widget _buildListTile(String title) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: onTap, // Triggers the navigation
+      onTap: () {},
     );
   }
 
@@ -309,7 +245,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[700],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
               ),
             ),
           ),
@@ -318,8 +256,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Dining Chair", style: TextStyle(color: Colors.white, fontSize: 12)),
-                Text("\$12", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(
+                  "Dining Chair",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                Text(
+                  "\$12",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
