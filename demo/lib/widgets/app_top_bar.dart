@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/userProfile.dart';
-import '../pages/home.dart';
+import '../pages/home_page.dart';
 
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({super.key});
@@ -15,7 +15,8 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(), 
+              builder: (context) => HomePage(),
+            ),
           );
         },
         child: Image.asset(
@@ -26,7 +27,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.white),
+          icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => Userprofile()));
           },

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart';
-import '../widgets/login_required_dialog.dart';
-import '../pages/login.dart';
-import '../pages/my_orders.dart';
-
+import 'package:lumeo_v2/pages/customFurniture.dart';
+import 'package:lumeo_v2/pages/login.dart';
+import 'package:lumeo_v2/pages/my_orders.dart';
+import 'package:lumeo_v2/services/auth_service.dart';
+import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
@@ -15,6 +15,7 @@ class Userprofile extends ConsumerStatefulWidget {
 }
 
 class _UserprofileState extends ConsumerState<Userprofile> {
+  bool isSeller = false;
   bool _isLoggedIn = false;
 
   @override
@@ -28,16 +29,16 @@ class _UserprofileState extends ConsumerState<Userprofile> {
   Future<void> _checkLoginStatus() async {
     final user = ref.read(currentUserProvider);
     if (user != null && user.id.isNotEmpty) {
-      setState(() => _isLoggedIn = true);
+      if (mounted) setState(() => _isLoggedIn = true);
       return;
     }
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('x-auth-token') ?? '';
     if (token.isNotEmpty) {
-      setState(() => _isLoggedIn = true);
+      if (mounted) setState(() => _isLoggedIn = true);
       return;
     }
-    setState(() => _isLoggedIn = false);
+    if (mounted) setState(() => _isLoggedIn = false);
   }
 
   void _logout() async {
@@ -48,15 +49,21 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => Login()),
+        MaterialPageRoute(builder: (context) => const Login()),
         (route) => false,
       );
     }
   }
 
+  void toggleSellerStatus() {
+    // 2. Wrap the change in setState() to trigger a UI refresh
+    setState(() {
+      isSeller = !isSeller;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // If not logged in, show login prompt
     if (!_isLoggedIn) {
       return Scaffold(
         backgroundColor: const Color(0xFF1E1E1E),
@@ -102,14 +109,9 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             onPressed: () {},
             icon: const Icon(Icons.search, color: Colors.white),
           ),
-          CircleAvatar(
-            backgroundColor: const Color(0xFF2E2E2E),
-            backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
-                ? NetworkImage(user.profilePicture)
-                : null,
-            child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
-                ? const Icon(Icons.person, color: Color(0xFF1a1a1a))
-                : null,
+          const CircleAvatar(
+            backgroundColor: Color(0xFF2E2E2E),
+            child: Icon(Icons.person, color: Colors.orange),
           ),
           const SizedBox(width: 16),
         ],
@@ -161,37 +163,57 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-            _buildMenuTile('My orders', 'View your order history', onTap: () {
-             Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrders()));
+      
+            _buildMenuTile('My orders', 'Already have 12 orders', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrders()));
             }),
-            _buildMenuTile('Shipping addresses', 'Manage your addresses', onTap: () {
-              // TODO: Navigate to addresses page
+            _buildMenuTile('Shipping addresses', '3 addresses', onTap: () {
+              // TODO: Implement Shipping addresses page
             }),
-            _buildMenuTile('Payment methods', 'Manage your payment methods', onTap: () {
-              // TODO: Navigate to payment methods page
+            _buildMenuTile('Payment methods', 'Visa **34', onTap: () {
+              // TODO: Implement Payment methods page
+            }),
+            _buildMenuTile('Settings', 'Account and privacy', onTap: () {
+              // TODO: Implement Settings page
+            }),
+            _buildMenuTile('Custom Furniture', 'Create your own design', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomFurniturePage()));
             }),
 
             const SizedBox(height: 30),
 
-            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFBB040),
+                  backgroundColor: isSeller
+                      ? Colors.green
+                      : const Color(0xFFFFB347),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: _logout,
-                child: const Text(
-                  'Sign Out',
-                  style: TextStyle(
-                    color: Colors.white,
+                onPressed: toggleSellerStatus,
+                child: Text(
+                  isSeller ? 'You are a Seller!' : 'Become a Seller',
+                  style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Re-adding logout button since it's important
+            TextButton(
+              onPressed: _logout,
+              child: const Center(
+                child: Text(
+                  'Sign Out',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
                 ),
               ),
             ),
@@ -201,7 +223,6 @@ class _UserprofileState extends ConsumerState<Userprofile> {
       ),
     );
   }
-
   Widget _buildMenuTile(String title, String subtitle, {VoidCallback? onTap}) {
     return Column(
       children: [
