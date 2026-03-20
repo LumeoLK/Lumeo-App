@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:demo/pages/home_page.dart';
+import '../pages/home_page.dart';
 
 class ReserveSuccessPage extends StatelessWidget {
   const ReserveSuccessPage({super.key});
