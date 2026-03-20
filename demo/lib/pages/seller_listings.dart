@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 //color constants
-const kBg = Color(0xFF000000);       // background color
-const kCard = Color(0xFF1a1a1a);     // boxes color
+const bgColor = Color(0xFF000000);       // background color
+const cardColor = Color(0xFF1a1a1a);     // boxes color
 const kOrange = Color(0xFFfbb040); 
-const kText = Colors.white;   // input texts color
-const kHint = Color(0xFF888888);  //color for hints in the boxes
+const textColor = Colors.white;   // input texts color
+const hintText = Color(0xFF888888);  //color for hints in the boxes
 
 void main() => runApp(const MaterialApp(home: ListingsPage(), debugShowCheckedModeBanner: false));
 
@@ -31,15 +33,15 @@ class _ListingsPageState extends State<ListingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBg,
+      backgroundColor: bgColor,
       appBar: _buildAppBar(),
       body: _tab == 0
           ? const AddProductForm()
-          : const Center(child: Text('Products List', style: TextStyle(color: kText))),
+          : const Center(child: Text('Products List', style: TextStyle(color: textColor))),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: kCard,
+        backgroundColor: cardColor,
         selectedItemColor: kOrange,
-        unselectedItemColor: kHint,
+        unselectedItemColor: hintText,
         currentIndex: _navIndex,
         onTap: (i) => setState(() => _navIndex = i),
         type: BottomNavigationBarType.fixed,
@@ -51,12 +53,12 @@ class _ListingsPageState extends State<ListingsPage> {
   }
 
   AppBar _buildAppBar() => AppBar(
-        backgroundColor: kBg,
-        leading: const BackButton(color: kText),
-        title: const Text('Listings', style: TextStyle(color: kText, fontSize: 28, fontWeight: FontWeight.bold)),
+        backgroundColor: bgColor,
+        leading: const BackButton(color: textColor),
+        title: const Text('Listings', style: TextStyle(color: textColor, fontSize: 28, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: const [
-          Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.notifications_none, color: kText)),
+          Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.notifications_none, color: textColor)),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(75),
@@ -82,12 +84,12 @@ class _ListingsPageState extends State<ListingsPage> {
         decoration: BoxDecoration(
           color: selected ? kOrange : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? kOrange : kHint),
+          border: Border.all(color: selected ? kOrange : hintText),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.black : kText,
+            color: selected ? Colors.black : textColor,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -98,8 +100,24 @@ class _ListingsPageState extends State<ListingsPage> {
 }
 
 //add product form 
-class AddProductForm extends StatelessWidget {
+class AddProductForm extends StatefulWidget {
   const AddProductForm({super.key});
+  @override
+  State<AddProductForm> createState() => _AddProductFormState();
+}
+
+class _AddProductFormState extends State<AddProductForm> {
+  // stores the selected images
+  final List<File?> _images = [null, null, null];
+
+  // opens gallery and saves selected image
+  Future<void> _pickImage(int index) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() => _images[index] = File(picked.path));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,31 +130,43 @@ class AddProductForm extends StatelessWidget {
           //title
           const Text(
             'Add Product — Details',
-            style: TextStyle(color: kText, fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 28),
 
           //image upload boxes
           Row(
             children: List.generate(3, (i) => Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
-                height: 120,
-                decoration: BoxDecoration(color: kCard, borderRadius: BorderRadius.circular(10),
-                border: Border.all(color:Colors.white, width:1),
-                ),
+              child: GestureDetector(
+                onTap: () => _pickImage(i),   // opens gallery on tap
+                child: Container(
+                  margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
 
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image_outlined, color: kHint, size: 32),
-                    SizedBox(height: 6),
-                    Text('Images', style: TextStyle(color: kHint, fontSize: 13)),
-                  ],
+                  // show selected image
+                  child: _images[i] != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(_images[i]!, fit: BoxFit.cover),
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image_outlined, color: hintText, size: 32),
+                            SizedBox(height: 6),
+                            Text('Images', style: TextStyle(color: hintText, fontSize: 13)),
+                          ],
+                        ),
                 ),
               ),
             )),
           ),
+
           const SizedBox(height: 10),
 
          //camera icon
@@ -234,12 +264,12 @@ class AddProductForm extends StatelessWidget {
 
   // reusable dark text field for boxes
   Widget _field(String hint) => TextField(
-        style: const TextStyle(color: kText),
+        style: const TextStyle(color: textColor),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: kHint, fontSize: 13),
+          hintStyle: const TextStyle(color: hintText, fontSize: 13),
           filled: true,
-          fillColor: kCard,
+          fillColor: cardColor,
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
