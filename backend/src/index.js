@@ -43,7 +43,7 @@ const server = http.createServer(app);
 // Attach Socket.io to the HTTP server
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:8080"],
+    origin: ["*"],
   },
 });
 

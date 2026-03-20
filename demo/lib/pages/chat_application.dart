@@ -29,12 +29,10 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
   void initState() {
     super.initState();
     _chatNotifier = ref.read(chatProvider.notifier);
-    // Load message history + set up socket listeners
-    // Future.microtask ensures this runs after the widget is built
-    Future.microtask(
-      () =>
-          ref.read(chatProvider.notifier).loadMessages(widget.conversation.id),
-    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _chatNotifier.loadMessages(widget.conversation.id);
+    });
   }
 
   @override
@@ -42,7 +40,7 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
     _chatNotifier.leaveChat();
     // Clean up when user leaves the chat screen
     // This removes socket listeners so we don't get duplicate messages
-   
+
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -68,13 +66,12 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
 
     _messageController.clear();
 
-    
     _chatNotifier.sendMessage(
-          conversationId: widget.conversation.id,
-          text: text,
-          currentUserId: widget.currentUserId,
-          currentUserName: widget.currentUserName,
-        );
+      conversationId: widget.conversation.id,
+      text: text,
+      currentUserId: widget.currentUserId,
+      currentUserName: widget.currentUserName,
+    );
 
     _scrollToBottom();
   }
@@ -99,24 +96,46 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            // Show product name in the app bar
-            Text(
-              widget.conversation.productName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: accentColor.withOpacity(0.2),
+              child: Icon(Icons.store, color: accentColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Shop Name (Primary)
+                  Text(
+                    widget
+                        .conversation
+                        .shopName, // Ensure this exists in your model!
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Product Name (Secondary)
+                  Text(
+                    widget.conversation.productName,
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Show typing indicator under the name
+                  if (chatState.isTyping)
+                    const Text(
+                      'typing...',
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
+                ],
               ),
             ),
-            // Show typing indicator under the name
-            if (chatState.isTyping)
-              const Text(
-                'typing...',
-                style: TextStyle(color: Colors.white60, fontSize: 12),
-              ),
           ],
         ),
       ),
