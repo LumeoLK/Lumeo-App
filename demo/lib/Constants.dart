@@ -8,4 +8,6 @@ class Constants {
   static String productsUri = '$baseUrl/api/products';
   static String chatUri = '$baseUrl/api/chat';
   static String wishlistUri = '$baseUrl/api/wishlist';
+  static String ordersUri = '$baseUrl/api/orders';  
+  
 }

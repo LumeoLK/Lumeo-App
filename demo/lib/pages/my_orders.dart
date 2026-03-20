@@ -1,47 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../providers/order_provider.dart';
+import '../model/order.dart' as order_model;
 
-class MyOrders extends StatefulWidget {
+class MyOrders extends ConsumerStatefulWidget {
   const MyOrders({super.key});
 
   @override
-  State<MyOrders> createState() => MyOrdersState();
+  ConsumerState<MyOrders> createState() => MyOrdersState();
 }
 
 final TextStyle myOrderNormalStyle = const TextStyle(
   color: Colors.white,
   fontSize: 15,
-
   fontWeight: FontWeight.w300,
 );
 
-class MyOrdersState extends State<MyOrders> {
-  bool isClicked = false;
+class MyOrdersState extends ConsumerState<MyOrders> {
   String selectedBtn = "Delivered";
 
-  Widget orderProgress() {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(orderProvider.notifier).fetchMyOrders());
+  }
+
+  // Map tab names to backend status values
+  List<order_model.Order> _getOrdersForTab(OrderState orderState) {
     switch (selectedBtn) {
       case "Delivered":
-        return deliveredOrders();
+        return orderState.byStatus("delivered");
       case "Processing":
-        return inProgressOrders();
+        // Show pending + processing + shipped all under "Processing"
+        return orderState.orders.where((o) =>
+          o.status == "pending" || o.status == "processing" || o.status == "shipped"
+        ).toList();
       case "Cancelled":
-        return cancelledOrders();
+        return orderState.byStatus("cancelled");
       default:
-        return SizedBox();
+        return [];
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final orderState = ref.watch(orderProvider);
+
     return Scaffold(
-      appBar: AppBar(title: Text('My Orders')),
+      appBar: AppBar(
+        title: const Text('My Orders'),
+        backgroundColor: Colors.black,
+      ),
       backgroundColor: Colors.black,
       body: Container(
         margin: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "My Orders",
               style: TextStyle(
                 color: Colors.white,
@@ -49,7 +66,9 @@ class MyOrdersState extends State<MyOrders> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+
+            // Tab buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: ["Delivered", "Processing", "Cancelled"].map((
@@ -67,9 +86,8 @@ class MyOrdersState extends State<MyOrders> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected
-                            ? Colors.white
-                            : Colors.black,
+                        backgroundColor:
+                            isSelected ? Colors.white : Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -89,232 +107,147 @@ class MyOrdersState extends State<MyOrders> {
                 );
               }).toList(),
             ),
-            orderProgress(),
-            SizedBox(height: 25),
+
+            const SizedBox(height: 20),
+
+            // Order list content
+            Expanded(
+              child: orderState.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: Color(0xFFFBB040)),
+                    )
+                  : orderState.error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Something went wrong',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () => ref
+                                    .read(orderProvider.notifier)
+                                    .fetchMyOrders(),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        const Color(0xFFFBB040)),
+                                child: const Text('Retry',
+                                    style: TextStyle(color: Colors.black)),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildOrderList(_getOrdersForTab(orderState)),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget deliveredOrders() {
-    return Container(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildOrderList(List<order_model.Order> orders) {
+    if (orders.isEmpty) {
+      return Center(
+        child: Text(
+          'No $selectedBtn orders',
+          style: const TextStyle(color: Colors.white54, fontSize: 16),
+        ),
+      );
+    }
 
-            children: [
-              Text(
-                "Order N.1947034",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text("05-12-2025", style: myOrderNormalStyle),
-            ],
-          ),
-          SizedBox(height: 25),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children: [
-                Row(
-                  children: [
-                    Text("Quantity: ", style: myOrderNormalStyle),
-                    Text(
-                      "3",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text("Total Amount: ", style: myOrderNormalStyle),
-                    Text(
-                      "112",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Icon(Icons.attach_money, color: Colors.white, size: 25),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: Text("Details ", style: myOrderNormalStyle),
-                ),
-
-                Text(
-                  "Delivered ",
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 123, 252, 128),
-                    fontSize: 20,
-
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return ListView.builder(
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderCard(orders[index]);
+      },
     );
   }
 
-  Widget inProgressOrders() {
+  Widget _buildOrderCard(order_model.Order order) {
+    // Format date
+    final dateStr = DateFormat('dd-MM-yyyy').format(order.createdAt);
+
+    // Status color
+    Color statusColor;
+    switch (order.status) {
+      case "delivered":
+        statusColor = const Color.fromARGB(255, 123, 252, 128);
+        break;
+      case "cancelled":
+        statusColor = Colors.redAccent;
+        break;
+      default:
+        statusColor = const Color(0xFFFBB040); // amber for processing
+    }
+
+    // Status display text
+    String statusText;
+    switch (order.status) {
+      case "pending":
+        statusText = "Pending";
+        break;
+      case "processing":
+        statusText = "Processing";
+        break;
+      case "shipped":
+        statusText = "Shipped";
+        break;
+      case "delivered":
+        statusText = "Delivered";
+        break;
+      case "cancelled":
+        statusText = "Cancelled";
+        break;
+      default:
+        statusText = order.status;
+    }
+
     return Container(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-            children: [
-              Text(
-                "Order N.1947034",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text("05-12-2025", style: myOrderNormalStyle),
-            ],
-          ),
-          SizedBox(height: 25),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children: [
-                Row(
-                  children: [
-                    Text("Quantity: ", style: myOrderNormalStyle),
-                    Text(
-                      "3",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text("Total Amount: ", style: myOrderNormalStyle),
-                    Text(
-                      "112",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Icon(Icons.attach_money, color: Colors.white, size: 25),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: Text("Details ", style: myOrderNormalStyle),
-                ),
-
-                Text(
-                  "In Progress ",
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 123, 252, 128),
-                    fontSize: 20,
-
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1a1a1a),
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget cancelledOrders() {
-    return Container(
       child: Column(
         children: [
+          // Order ID + Date
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
             children: [
-              Text(
-                "Order N.1947034",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  "Order #${order.id.substring(order.id.length > 8 ? order.id.length - 8 : 0)}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text("05-12-2025", style: myOrderNormalStyle),
+              Text(dateStr, style: myOrderNormalStyle),
             ],
           ),
-          SizedBox(height: 25),
+          const SizedBox(height: 16),
+
+          // Quantity + Total
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
               children: [
                 Row(
                   children: [
                     Text("Quantity: ", style: myOrderNormalStyle),
                     Text(
-                      "3",
-                      style: TextStyle(
+                      "${order.totalQuantity}",
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -322,47 +255,53 @@ class MyOrdersState extends State<MyOrders> {
                 ),
                 Row(
                   children: [
-                    Text("Total Amount: ", style: myOrderNormalStyle),
+                    Text("Total: ", style: myOrderNormalStyle),
                     Text(
-                      "112",
-                      style: TextStyle(
+                      "Rs.${order.totalAmount.toStringAsFixed(0)}",
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Icon(Icons.attach_money, color: Colors.white, size: 25),
                   ],
                 ),
               ],
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 12),
+
+          // Items preview (show product names)
+          if (order.items.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  order.items
+                      .map((item) =>
+                          item.product?.title ?? 'Product')
+                      .join(', '),
+                  style: const TextStyle(color: Colors.white54, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+
+          // Status badge
           Padding(
             padding: const EdgeInsets.only(left: 10.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: Text("Details ", style: myOrderNormalStyle),
-                ),
-
                 Text(
-                  "Cancelled ",
+                  statusText,
                   style: TextStyle(
-                    color: const Color.fromARGB(255, 123, 252, 128),
-                    fontSize: 20,
-
-                    fontWeight: FontWeight.w300,
+                    color: statusColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
