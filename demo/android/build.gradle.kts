@@ -11,9 +11,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs("${project(":unityLibrary").projectDir}/libs")
-        }
+        
     }
 }
 val newBuildDir: Directory =

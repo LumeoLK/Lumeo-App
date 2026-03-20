@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+//import 'package:lumeo_v2/pages/ar_screen.dart';
 import '../model/product.dart';
 import 'ar_screen.dart';
-
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
   final Product product;

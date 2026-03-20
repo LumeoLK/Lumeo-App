@@ -24,4 +24,4 @@ plugins {
 }
 
 include(":app")
-include(":unityLibrary")
+//  include(":unityLibrary")
