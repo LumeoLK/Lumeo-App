@@ -61,7 +61,7 @@ class _ListingsPageState extends State<ListingsPage> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(75),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
             child: Row(
               children: [
                 _tabBtn('Add Product', 0),
@@ -104,7 +104,7 @@ class AddProductForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
