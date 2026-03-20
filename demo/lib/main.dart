@@ -1,22 +1,27 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 // import 'package:lumeo/pages/cart_page.dart';
-//import 'pages/wish_list_page.dart';
+import 'pages/wishlist_page.dart';
 
-
-import '../providers/user_provider.dart';
+// import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+// import 'package:lumeo_v2/pages/ar_search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import your pages
 import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'pages/onboarding_page1.dart';
-import '../providers/user_provider.dart';
+
+// import '../providers/user_provider.dart';
+import "./pages/emptyspace.dart";
+
+// import '../providers/user_provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -29,14 +34,16 @@ class MyApp extends StatelessWidget {
       title: 'Lumeo',
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.dark,
+
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: const SplashScreen(), 
+      home: const SplashScreen(),
+
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {        
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
@@ -51,9 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const OnboardingPage1(),
-        ),
+        MaterialPageRoute(builder: (context) => const OnboardingPage1()),
       );
     });
   }

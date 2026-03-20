@@ -416,6 +416,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
+
 export const searchProducts = async (req, res) => {
   try {
     const { keyword, category, minPrice, maxPrice, sortBy, page = 1, limit = 10 } = req.query;
@@ -550,3 +551,4 @@ export const getSellerDashboard = async (req, res) => {
     handleSellerError(res, error);
   }
 };
+
