@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import "../Constants.dart";
 
 final currentUserProvider = StateProvider<User?>((ref) => null);
 
@@ -23,6 +24,7 @@ class AuthService {
     required String email,
     required String name,
     required String password,
+    required WidgetRef ref,
   }) async {
     try {
       final Map<String, dynamic> userData = {
@@ -33,16 +35,33 @@ class AuthService {
 
       http.Response res = await http.post(
         Uri.parse('${Constants.authUri}/register'),
-        body: jsonEncode(userData),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        body: jsonEncode({'name': name, 'email': email, 'password': password}),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
       );
 
       httpErrorHandle(
         response: res,
         context: context,
-        onSuccess: () {
+        onSuccess: () async {
+          final body = jsonDecode(res.body);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+
+          //Save token
+          await prefs.setString('x-auth-token', body['token'] ?? '');
+
+          // Save userId
+          final userId = body['_id'] ?? body['user']?['_id'] ?? '';
+          await prefs.setString('userId', userId);
+
+          // Save user to Riverpod
+          if (body['user'] != null) {
+            ref.read(currentUserProvider.notifier).state = User.fromJson(
+              body['user'],
+            );
+          } else {
+            ref.read(currentUserProvider.notifier).state = User.fromJson(body);
+          }
+
           showSnackBar(context, 'Registered successfully!');
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const HomePage()),
@@ -77,12 +96,23 @@ class AuthService {
         onSuccess: () async {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           final body = jsonDecode(res.body);
-          if (body != null && body['user'] != null) {
+
+          // Save token
+          await prefs.setString('x-auth-token', body['token'] ?? '');
+
+          // Save userId
+          final userId = body['_id'] ?? body['user']?['_id'] ?? '';
+          await prefs.setString('userId', userId);
+
+          // Save user to Riverpod
+          if (body['user'] != null) {
             ref.read(currentUserProvider.notifier).state = User.fromJson(
               body['user'],
             );
+          } else {
+            // Backend returns flat object
+            ref.read(currentUserProvider.notifier).state = User.fromJson(body);
           }
-          await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
           navigator.pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const HomePage()),
             (route) => false,
@@ -96,6 +126,9 @@ class AuthService {
 
   void signout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('x-auth-token', '');
+    await prefs.setString('userId', ''); //  clear userId
+    await _googleSignIn.signOut();
     prefs.setString('x-auth-token', '');
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => Login()),
@@ -136,10 +169,13 @@ class AuthService {
           onSuccess: () async {
             SharedPreferences prefs = await SharedPreferences.getInstance();
 
-            await prefs.setString(
-              'x-auth-token',
-              jsonDecode(res.body)['token'],
-            );
+            final body = jsonDecode(res.body);
+
+            await prefs.setString('x-auth-token', body['token'] ?? '');
+
+            // Save userId for Google sign in
+            final userId = body['_id'] ?? body['user']?['_id'] ?? '';
+            await prefs.setString('userId', userId);
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const HomePage()),
