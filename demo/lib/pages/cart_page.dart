@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cart_provider.dart';
 import '../model/cart_item.dart';
 import 'package:lumeo_v2/widgets/search_bar.dart';
+import 'address_selection_page.dart';
 
 class CartPage extends ConsumerStatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -158,7 +159,12 @@ class _CartPageState extends ConsumerState<CartPage> {
               height: 55,
               child: ElevatedButton(
                 onPressed: cartState.items.isEmpty ? null : () {
-                  // reserve action
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddressSelectionPage(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFBB040),

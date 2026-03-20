@@ -11,76 +11,77 @@ class ReserveSuccessPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            //top space
             const SizedBox(height: 20),
+
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    "assets/images/bags.png",
+                    height: 220,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  const Text(
+                    "Success!",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      "Your order has been placed successfully!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             
-            //center content with the image
-            Column(
-                children: [ 
-                    Image.asset(
-                        "assets/images/bags.png",
-                        height: 220,
-                    ),
-                
-                    const SizedBox(height: 40),
-
-                    //text
-                    const Text(
-                        "Success!",
-                        style: TextStyle(
-                            color: Color.white,
-                            fontSize: 34,
-                            fontweight: FontWeight.bold,
-
-                        ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    //subtext
-                    const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40),
-                        child: Text(
-                            "Your reservation is confirmed!",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Color.white,
-                                fontSize: 16,
-                                height: 1.5
-
-                            ),
-                        ),
-                    ),
-                ],          
-            ),
-            //bottom button
+            // Bottom button
             Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE09D3B),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                            ),
-                        ),
-                        child: const Text(
-                            "CONTINUE SHOPPING",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                            ),
-                        ),
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFBB040),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
+                  ),
+                  child: const Text(
+                    "CONTINUE SHOPPING",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
+              ),
             ),
-
           ],
         ),
       ),
