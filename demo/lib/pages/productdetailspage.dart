@@ -144,12 +144,33 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                           color: isFavorite ? Colors.red : Colors.white,
                         ),
                         onPressed: () async {
-                          if (!await requireAuth(context, ref)) return;
+                          print('Heart tapped! isFavorite=$isFavorite, productId=${widget.product.id}');
                           
-                          if (isFavorite) {
-                            ref.read(wishlistProvider.notifier).removeFromWishlist(widget.product.id);
-                          } else {
-                            ref.read(wishlistProvider.notifier).addToWishlist(widget.product.id);
+                          if (!await requireAuth(context, ref)) {
+                            print('Auth check failed - user not logged in');
+                            return;
+                          }
+                          print('Auth check passed');
+                          
+                          try {
+                            if (isFavorite) {
+                              print('Removing from wishlist...');
+                              await ref.read(wishlistProvider.notifier).removeFromWishlist(widget.product.id);
+                            } else {
+                              print('Adding to wishlist...');
+                              await ref.read(wishlistProvider.notifier).addToWishlist(widget.product.id);
+                            }
+                            print('Wishlist operation completed');
+                          } catch (e) {
+                            print('Wishlist error: $e');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Wishlist error: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
                         },
                       ),

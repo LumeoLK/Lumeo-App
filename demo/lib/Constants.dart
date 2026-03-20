@@ -1,6 +1,8 @@
 class Constants {
   // The base address of the server
-  static String baseUrl = 'https://lumeo-app.onrender.com';
+  // For production: 'https://lumeo-app.onrender.com'
+  // For local dev: 'http://10.0.2.2:3000'
+  static String baseUrl = 'http://10.0.2.2:3000';
 
   // Specific API routes
   static String authUri = '$baseUrl/api/auth';

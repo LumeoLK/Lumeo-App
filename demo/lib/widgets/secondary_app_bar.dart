@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../pages/userProfile.dart';
-import '../pages/home_page.dart';
 import '../widgets/search_bar.dart';
 
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {

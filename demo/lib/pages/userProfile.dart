@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lumeo_v2/pages/seller-registration_info.dart';
-import 'package:lumeo_v2/pages/seller_dashboard.dart';
-import 'package:lumeo_v2/providers/auth_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:lumeo_v2/pages/customFurniture.dart';
-import 'package:lumeo_v2/pages/login.dart';
 import 'package:lumeo_v2/pages/my_orders.dart';
-import 'package:lumeo_v2/widgets/login_required_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/login_required_dialog.dart';
+import '../pages/login.dart';
 
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
@@ -30,27 +27,24 @@ class _UserprofileState extends ConsumerState<Userprofile> {
   Future<void> _checkLoginStatus() async {
     final user = ref.read(currentUserProvider);
     if (user != null && user.id.isNotEmpty) {
-      if (mounted) setState(() => _isLoggedIn = true);
+      setState(() => _isLoggedIn = true);
       return;
     }
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('x-auth-token') ?? '';
     if (token.isNotEmpty) {
-      if (mounted) setState(() => _isLoggedIn = true);
+      setState(() => _isLoggedIn = true);
       return;
     }
-    if (mounted) setState(() => _isLoggedIn = false);
+    setState(() => _isLoggedIn = false);
   }
 
   void _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('x-auth-token', '');
-    await prefs.setString('userId', '');
     await ref.read(authProvider.notifier).signout();
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const Login()),
+        MaterialPageRoute(builder: (context) => Login()),
         (route) => false,
       );
     }
@@ -58,6 +52,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
   @override
   Widget build(BuildContext context) {
+    // If not logged in, show login prompt
     if (!_isLoggedIn) {
       return Scaffold(
         backgroundColor: const Color(0xFF1E1E1E),
@@ -92,7 +87,6 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     }
 
     final user = ref.watch(currentUserProvider);
-    final bool isSeller = user?.role == 'seller';
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
@@ -104,9 +98,14 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             onPressed: () {},
             icon: const Icon(Icons.search, color: Colors.white),
           ),
-          const CircleAvatar(
-            backgroundColor: Color(0xFF2E2E2E),
-            child: Icon(Icons.person, color: Colors.orange),
+          CircleAvatar(
+            backgroundColor: const Color(0xFF2E2E2E),
+            backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
+                ? NetworkImage(user.profilePicture)
+                : null,
+            child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
+                ? const Icon(Icons.person, color: Colors.orange)
+                : null,
           ),
           const SizedBox(width: 16),
         ],
@@ -130,19 +129,11 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: const Color(0xFF2E2E2E),
-                  backgroundImage:
-                      (user?.profilePicture != null &&
-                          user!.profilePicture.isNotEmpty)
+                  backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
                       ? NetworkImage(user.profilePicture)
                       : null,
-                  child:
-                      (user?.profilePicture == null ||
-                          user!.profilePicture.isEmpty)
-                      ? const Icon(
-                          Icons.person,
-                          color: Color(0xFF1a1a1a),
-                          size: 40,
-                        )
+                  child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
+                      ? const Icon(Icons.person, color: Colors.orange, size: 40)
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -166,104 +157,37 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-
-            _buildMenuTile(
-              'My orders',
-              'Already have 12 orders',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyOrders()),
-                );
-              },
-            ),
-            _buildMenuTile(
-              'Shipping addresses',
-              '3 addresses',
-              onTap: () {
-                // TODO: Implement Shipping addresses page
-              },
-            ),
-            _buildMenuTile(
-              'Payment methods',
-              'Visa **34',
-              onTap: () {
-                // TODO: Implement Payment methods page
-              },
-            ),
-            _buildMenuTile(
-              'Settings',
-              'Account and privacy',
-              onTap: () {
-                // TODO: Implement Settings page
-              },
-            ),
-            _buildMenuTile(
-              'Custom Furniture',
-              'Create your own design',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CustomFurniturePage(),
-                  ),
-                );
-              },
-            ),
+            _buildMenuTile('My orders', 'View your order history', onTap: () {
+             Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrders()));
+            }),
+            _buildMenuTile('Shipping addresses', 'Manage your addresses', onTap: () {
+              // TODO: Navigate to addresses page
+            }),
+            _buildMenuTile('Payment methods', 'Manage your payment methods', onTap: () {
+              // TODO: Navigate to payment methods page
+            }),
 
             const SizedBox(height: 30),
 
+            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isSeller
-                      ? Colors.green
-                      : const Color(0xFFFFB347),
+                  backgroundColor: Color(0xFFFBB040),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: () {
-                  if (isSeller) {
-                    // Navigate to Seller Dashboard if they are already a seller
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const SellerDashboardPage(),
-                    //   ),
-                    // );
-                  } else {
-                    // Navigate to the Registration Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const SellerRegistrationInfoScreen(),
-                      ),
-                    );
-                  }
-                },
-                child: Text(
-                  isSeller ? 'Go to Seller Dashboard' : 'Become a Seller',
-                  style: const TextStyle(
-                    color: Colors.black,
+                onPressed: _logout,
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Re-adding logout button since it's important
-            TextButton(
-              onPressed: _logout,
-              child: const Center(
-                child: Text(
-                  'Sign Out',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
                 ),
               ),
             ),

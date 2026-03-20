@@ -42,9 +42,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Grab the products list from the whiteboard
-    final products = productState.products;
-
     // Products are ready — show the actual page
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

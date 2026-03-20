@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
 import 'package:lumeo_v2/pages/home_page.dart';
 
 class SellerVerificationPage extends StatelessWidget {

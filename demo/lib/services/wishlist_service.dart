@@ -8,6 +8,7 @@ class WishlistService {
       String token,
       String productId,
       ) async {
+    print('[WishlistService] addToWishlist called with productId=$productId, token=${token.substring(0, 10)}...');
 
     final response = await http.post(
       Uri.parse("${Constants.wishlistUri}/add"),
@@ -20,12 +21,15 @@ class WishlistService {
       }),
     );
 
+    print('[WishlistService] addToWishlist response: ${response.statusCode} - ${response.body}');
+
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception("Failed to add to wishlist: ${response.statusCode} - ${response.body}");
     }
   }
 
   static Future<List<dynamic>> getWishlist(String token) async {
+    print('[WishlistService] getWishlist called with token=${token.isNotEmpty ? token.substring(0, 10) : "EMPTY"}...');
 
     final response = await http.get(
       Uri.parse(Constants.wishlistUri),
@@ -34,11 +38,13 @@ class WishlistService {
       },
     );
 
+    print('[WishlistService] getWishlist response: ${response.statusCode} - ${response.body}');
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data["products"];
+      return data["products"] ?? [];
     } else {
-      throw Exception("Failed to load wishlist");
+      throw Exception("Failed to load wishlist: ${response.statusCode} - ${response.body}");
     }
   }
 
@@ -46,6 +52,7 @@ class WishlistService {
       String token,
       String productId,
       ) async {
+    print('[WishlistService] removeFromWishlist called with productId=$productId');
 
     final response = await http.delete(
       Uri.parse("${Constants.wishlistUri}/remove"),
@@ -58,8 +65,10 @@ class WishlistService {
       }),
     );
 
+    print('[WishlistService] removeFromWishlist response: ${response.statusCode} - ${response.body}');
+
     if (response.statusCode != 200) {
-      throw Exception("Failed to remove item");
+      throw Exception("Failed to remove item: ${response.statusCode} - ${response.body}");
     }
   }
 }
