@@ -60,6 +60,20 @@ class _CartPageState extends ConsumerState<CartPage> {
                               'Something went wrong',
                               style: TextStyle(color: Colors.white70),
                             ),
+                            if (cartState.error != null) ...[
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: Text(
+                                  cartState.error!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             ElevatedButton(
                               onPressed: () =>
@@ -206,7 +220,20 @@ class _CartPageState extends ConsumerState<CartPage> {
               color: const Color(0xFF3a3a3a),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.chair, color: Colors.white54, size: 40),
+            clipBehavior: Clip.antiAlias,
+            child: (item.productImage != null && item.productImage!.isNotEmpty)
+                ? Image.network(
+                    item.productImage!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white54,
+                        size: 36,
+                      );
+                    },
+                  )
+                : const Icon(Icons.chair, color: Colors.white54, size: 40),
           ),
 
           const SizedBox(width: 12),
@@ -220,7 +247,9 @@ class _CartPageState extends ConsumerState<CartPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        item.productId, 
+                        item.productName?.isNotEmpty == true
+                            ? item.productName!
+                            : 'Item ${item.productId}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -231,8 +260,20 @@ class _CartPageState extends ConsumerState<CartPage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                      onPressed: () {
-                        ref.read(cartProvider.notifier).removeFromCart(item.productId);
+                      onPressed: () async {
+                        final notifier = ref.read(cartProvider.notifier);
+                        await notifier.removeFromCart(item.productId);
+                        final latest = ref.read(cartProvider);
+                        if (!mounted) return;
+                        if (latest.error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(latest.error!)),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Item removed from cart')),
+                          );
+                        }
                       },
                     ),
                   ],

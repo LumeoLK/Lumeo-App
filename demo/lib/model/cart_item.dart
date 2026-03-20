@@ -14,17 +14,25 @@ class CartItem {
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
-    
     final rawProduct = json["productId"];
     String productId;
     String? productName;
     String? productImage;
 
     if (rawProduct is Map<String, dynamic>) {
-      productId = rawProduct["_id"] ?? '';
-      productName = rawProduct["title"];
+      productId = rawProduct["_id"]?.toString() ?? '';
+      productName =
+          (rawProduct["title"] ?? rawProduct["name"])?.toString();
       final images = rawProduct["images"];
-      productImage = (images is List && images.isNotEmpty) ? images[0] : null;
+      if (images is List && images.isNotEmpty) {
+        final firstImage = images.first;
+        if (firstImage is String) {
+          productImage = firstImage;
+        } else if (firstImage is Map<String, dynamic>) {
+          productImage =
+              (firstImage["url"] ?? firstImage["secure_url"])?.toString();
+        }
+      }
     } else {
       productId = rawProduct?.toString() ?? '';
     }

@@ -18,7 +18,7 @@ final TextStyle myOrderNormalStyle = const TextStyle(
 );
 
 class MyOrdersState extends ConsumerState<MyOrders> {
-  String selectedBtn = "Delivered";
+  String selectedBtn = "Processing";
 
   @override
   void initState() {
@@ -126,6 +126,18 @@ class MyOrdersState extends ConsumerState<MyOrders> {
                                 'Something went wrong',
                                 style: TextStyle(color: Colors.white70),
                               ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: Text(
+                                  orderState.error!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                               const SizedBox(height: 12),
                               ElevatedButton(
                                 onPressed: () => ref
@@ -158,11 +170,25 @@ class MyOrdersState extends ConsumerState<MyOrders> {
       );
     }
 
-    return ListView.builder(
-      itemCount: orders.length,
-      itemBuilder: (context, index) {
-        return _buildOrderCard(orders[index]);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(
+            '${orders.length} order(s) found',
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              return _buildOrderCard(orders[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -257,7 +283,7 @@ class MyOrdersState extends ConsumerState<MyOrders> {
                   children: [
                     Text("Total: ", style: myOrderNormalStyle),
                     Text(
-                      "Rs.${order.totalAmount.toStringAsFixed(0)}",
+                      "\$.${order.totalAmount.toStringAsFixed(0)}",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,

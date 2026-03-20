@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 class BottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  static const List<String> _labels = [
+    'Home',
+    'Wish List',
+    'AR View',
+    'Cart',
+    'Custom',
+  ];
 
   const BottomNav({
     super.key,
@@ -14,7 +21,13 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: onTap,
+      onTap: (index) {
+        final label = index >= 0 && index < _labels.length
+            ? _labels[index]
+            : 'Unknown';
+        print('[BottomNav] Selected index: $index, label: $label');
+        onTap(index);
+      },
       backgroundColor: Colors.black,
       selectedItemColor: Colors.white,
       unselectedItemColor: const Color(0xFFE09D3B),
