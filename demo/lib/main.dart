@@ -21,6 +21,7 @@ import "./pages/emptyspace.dart";
 // import '../providers/user_provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 
