@@ -59,3 +59,31 @@ app.*.map.json
 **/ios/UnityFramework/
 
 
+# =========================
+# Unity Standard Ignores
+# =========================
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+
+# =========================
+# Android & IL2CPP Build Artifacts
+# =========================
+# Ignores the massive C++ files generated during the build process
+**/Il2CppOutputProject/
+
+# Ignores standard Android build folders and Gradle caches
+**/.gradle/
+**/build/
+**/unityLibrary/build/
+**/unityLibrary/.cxx/
+
+# Ignores compiled Unity assets that change on every build
+*.unity3d
+global-metadata.dat
+boot.config
