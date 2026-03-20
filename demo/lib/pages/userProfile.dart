@@ -1,41 +1,9 @@
-// import 'package:flutter/material.dart';
-
-// class Userprofile extends StatefulWidget {
-//   const Userprofile({super.key});
-
-//   @override
-//   State<Userprofile> createState() => _UserprofileState();
-// }
-
-// class _UserprofileState extends State<Userprofile> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-// }
-
 import 'package:flutter/material.dart';
 
-//void main() => runApp(const MaterialApp(home: ProfilePage()));
+import 'seller_dashboard.dart';
 
-class Userprofile extends StatefulWidget {
+class Userprofile extends StatelessWidget {
   const Userprofile({super.key});
-
-  // StatefulWidgets create a 'State' object that persists
-  @override
-  State<Userprofile> createState() => _UserprofileState();
-}
-
-class _UserprofileState extends State<Userprofile> {
-  // 1. Define the variables that will change (the "State")
-  bool isSeller = false;
-
-  void toggleSellerStatus() {
-    // 2. Wrap the change in setState() to trigger a UI refresh
-    setState(() {
-      isSeller = !isSeller;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +42,8 @@ class _UserprofileState extends State<Userprofile> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://placeholder.com/150'),
+                  backgroundColor: Color(0xFF2E2E2E),
+                  child: Icon(Icons.person, color: Colors.orange, size: 36),
                 ),
                 SizedBox(width: 16),
                 Column(
@@ -100,26 +69,40 @@ class _UserprofileState extends State<Userprofile> {
             _buildMenuTile('My orders', 'Already have 12 orders'),
             _buildMenuTile('Shipping addresses', '3 addresses'),
             _buildMenuTile('Payment methods', 'Visa **34'),
-
+            _buildMenuTile(
+              'Seller dashboard',
+              'Open the live seller dashboard',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SellerDashboardPage(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 30),
-
-            // 3. The UI now reacts to the 'isSeller' variable
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isSeller
-                      ? Colors.green
-                      : const Color(0xFFFFB347),
+                  backgroundColor: const Color(0xFFFFB347),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: toggleSellerStatus,
-                child: Text(
-                  isSeller ? 'You are a Seller!' : 'Become a Seller',
-                  style: const TextStyle(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SellerDashboardPage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Open Seller Dashboard',
+                  style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -133,11 +116,16 @@ class _UserprofileState extends State<Userprofile> {
     );
   }
 
-  Widget _buildMenuTile(String title, String subtitle) {
+  static Widget _buildMenuTile(
+    String title,
+    String subtitle, {
+    VoidCallback? onTap,
+  }) {
     return Column(
       children: [
         ListTile(
           contentPadding: EdgeInsets.zero,
+          onTap: onTap,
           title: Text(
             title,
             style: const TextStyle(
