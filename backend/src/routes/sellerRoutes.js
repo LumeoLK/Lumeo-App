@@ -1,9 +1,28 @@
 import upload from "../lib/cloudinary.js";
-import { becomeSeller } from "../controller/sellerController.js";
+import {
+  becomeSeller,
+  getSellerActiveListings,
+  getSellerDashboard,
+  getSellerPerformance,
+  getSellerProfile,
+  getSellerRecentOrders,
+  getSellerSummary,
+} from "../controller/sellerController.js";
 import express from "express";
-import { JWT } from "google-auth-library";
-import { verifyToken } from "../middleware/auth.js";
+import { verifySeller, verifyToken } from "../middleware/auth.js";
 const router = express.Router();
+
+router.get("/profile", verifyToken, verifySeller, getSellerProfile);
+router.get("/summary", verifyToken, verifySeller, getSellerSummary);
+router.get("/performance", verifyToken, verifySeller, getSellerPerformance);
+router.get(
+  "/active-listings",
+  verifyToken,
+  verifySeller,
+  getSellerActiveListings,
+);
+router.get("/recent-orders", verifyToken, verifySeller, getSellerRecentOrders);
+router.get("/dashboard", verifyToken, verifySeller, getSellerDashboard);
 
 router.post(
   "/become-seller",
