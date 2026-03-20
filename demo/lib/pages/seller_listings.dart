@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 //color constants
 const kBg = Color(0xFF000000);       // background color
 const kCard = Color(0xFF1a1a1a);     // boxes color
-const kOrange = Color(0xFFE8A020);
-const kText = Colors.white;       // input texts color
+const kOrange = Color(0xFFfbb040); 
+const kText = Colors.white;   // input texts color
 const kHint = Color(0xFF888888);  //color for hints in the boxes
 
 void main() => runApp(const MaterialApp(home: ListingsPage(), debugShowCheckedModeBanner: false));
@@ -59,9 +59,9 @@ class _ListingsPageState extends State<ListingsPage> {
           Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.notifications_none, color: kText)),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
+          preferredSize: const Size.fromHeight(75),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 _tabBtn('Add Product', 0),
@@ -97,7 +97,7 @@ class _ListingsPageState extends State<ListingsPage> {
   }
 }
 
-// add product form
+//add product form 
 class AddProductForm extends StatelessWidget {
   const AddProductForm({super.key});
 
@@ -109,20 +109,23 @@ class AddProductForm extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // title
+          //title
           const Text(
             'Add Product — Details',
             style: TextStyle(color: kText, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 28),
 
-          // image upload boxes
+          //image upload boxes
           Row(
             children: List.generate(3, (i) => Expanded(
               child: Container(
                 margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
                 height: 120,
-                decoration: BoxDecoration(color: kCard, borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: kCard, borderRadius: BorderRadius.circular(10),
+                border: Border.all(color:Colors.white, width:1),
+                ),
+
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -136,7 +139,7 @@ class AddProductForm extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // camera icon
+         //camera icon
           Align(
             alignment: Alignment.centerRight,
             child: Container(
@@ -147,11 +150,11 @@ class AddProductForm extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // product name
+          //product name
           _field('Product name'),
           const SizedBox(height: 16),
 
-          // price & discount
+         //price & discount
           Row(children: [
             Expanded(child: _field('Price (LKR)')),
             const SizedBox(width: 12),
@@ -159,14 +162,14 @@ class AddProductForm extends StatelessWidget {
           ]),
           const SizedBox(height: 32),
 
-          // variants/options
+          //variants/options
           const Text(
             'Variants / Options',
             style: TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 20),
           ),
           const SizedBox(height: 16),
 
-          // variand input/ADD button
+          // variand input/ ADD button
           Row(children: [
             Expanded(child: _field('Add size / color variant')),
             const SizedBox(width: 12),
@@ -182,7 +185,7 @@ class AddProductForm extends StatelessWidget {
           ]),
           const SizedBox(height: 16),
 
-          // dimensions form
+         //dimensions form
           Row(children: [
             Expanded(child: _field('Length (cm)')),
             const SizedBox(width: 10),
@@ -192,7 +195,7 @@ class AddProductForm extends StatelessWidget {
           ]),
           const SizedBox(height: 16),
 
-          // stock
+          //stock 
           Row(children: [
             Expanded(child: _field('Stack quantity')),
             const SizedBox(width: 10),
@@ -206,7 +209,7 @@ class AddProductForm extends StatelessWidget {
           ]),
           const SizedBox(height: 40),
 
-          // save button
+          //save button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -229,7 +232,7 @@ class AddProductForm extends StatelessWidget {
     );
   }
 
-  //resuable dark text field for boxes
+  // reusable dark text field for boxes
   Widget _field(String hint) => TextField(
         style: const TextStyle(color: kText),
         decoration: InputDecoration(

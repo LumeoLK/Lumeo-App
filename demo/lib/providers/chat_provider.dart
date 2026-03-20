@@ -7,10 +7,10 @@ import '../services/socket_service.dart';
 
 // The details displayed in the UI
 class ChatState {
-  final List<Message> messages;  // all the chat bubbles
-  final bool isLoading;          // show spinner while fetching history
-  final bool isTyping;           // show "typing..." when other person types
-  final String? error;           // show error banner if something goes wrong
+  final List<Message> messages; // all the chat bubbles
+  final bool isLoading; // show spinner while fetching history
+  final bool isTyping; // show "typing..." when other person types
+  final String? error; // show error banner if something goes wrong
 
   const ChatState({
     this.messages = const [],
@@ -30,12 +30,10 @@ class ChatState {
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       isTyping: isTyping ?? this.isTyping,
-      error: error,  // null clears the error, which is what we want
+      error: error, // null clears the error, which is what we want
     );
   }
 }
-
-
 
 // The UI calls methods on this, and it updates the state
 class ChatNotifier extends StateNotifier<ChatState> {
@@ -75,9 +73,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         // through the socket too since we're in the same room
         final alreadyExists = state.messages.any((m) => m.id == newMsg.id);
         if (!alreadyExists) {
-          state = state.copyWith(
-            messages: [...state.messages, newMsg],
-          );
+          state = state.copyWith(messages: [...state.messages, newMsg]);
         }
       });
 
@@ -89,7 +85,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
       _socketService.onUserStoppedTyping((_) {
         state = state.copyWith(isTyping: false);
       });
-
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -105,7 +100,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
     required String currentUserId,
     required String currentUserName,
   }) async {
-
     // Optimistic UI
     // Add a temporary message immediately so the UI feels instant
     // The user sees their message right away without waiting for the server
@@ -139,14 +133,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
         'conversationId': conversationId,
         '_id': savedMessage.id,
         'text': savedMessage.text,
-        'sender': {
-          '_id': currentUserId,
-          'name': currentUserName,
-        },
+        'sender': {'_id': currentUserId, 'name': currentUserName},
         'conversation': conversationId,
         'createdAt': savedMessage.createdAt.toIso8601String(),
       });
-
     } catch (e) {
       // If saving failed, remove the optimistic message
       // and show an error so the user knows to try again
@@ -160,12 +150,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  // Called when user leaves the chat screen
-  // Cleans up socket listeners and resets state
   void leaveChat() {
     _socketService.offNewMessage();
     _socketService.offTyping();
-    state = const ChatState(); // reset back to empty
   }
 
   @override
@@ -176,12 +163,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 }
 
-
-// The ChatService provider — creates one instance of ChatService
 final chatServiceProvider = Provider((ref) => ChatService());
 
-// The main chat provider — the UI watches this to get state
-// and reads it to call methods like loadMessages and sendMessage
-final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
-  return ChatNotifier(ref.read(chatServiceProvider));
-});
+final chatProvider = StateNotifierProvider.autoDispose<ChatNotifier, ChatState>(
+  (ref) {
+    return ChatNotifier(ref.read(chatServiceProvider));
+  },
+);
