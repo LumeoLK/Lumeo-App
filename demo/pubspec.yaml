@@ -45,7 +45,6 @@ dependencies:
   dio: ^5.4.0
   image_picker: ^0.8.9
   permission_handler: ^11.3.0
-  dio: ^5.4.0
   google_sign_in: ^6.2.1
   camera: ^0.10.5+9
   #flutter_facebook_auth: ^7.1.2
