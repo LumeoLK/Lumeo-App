@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../model/message.dart';
+import '../model/conversation.dart';
 import '../services/chat_service.dart';
 import '../services/socket_service.dart';
+
 
 // The details displayed in the UI
 class ChatState {

@@ -1,8 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/cart_provider.dart';
+import '../providers/order_provider.dart';
 import 'reserve_success.dart';
 
-class AddShippingAddressPage extends StatelessWidget {
+class AddShippingAddressPage extends ConsumerStatefulWidget {
   const AddShippingAddressPage({super.key});
+
+  @override
+  ConsumerState<AddShippingAddressPage> createState() =>
+      _AddShippingAddressPageState();
+}
+
+class _AddShippingAddressPageState
+    extends ConsumerState<AddShippingAddressPage> {
+  bool _isSubmitting = false;
+
+  Future<void> _submitOrder() async {
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    final order = await ref.read(orderProvider.notifier).placeOrder(
+      shippingAddress: {
+        'fullName': 'Guest User',
+        'address': '3 Newbridge Court',
+        'city': 'Chino Hills',
+        'state': 'California',
+        'postalCode': '91709',
+        'country': 'United States',
+      },
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isSubmitting = false);
+
+    if (order != null) {
+      await ref.read(cartProvider.notifier).fetchCart();
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ReserveSuccessPage(),
+        ),
+      );
+      return;
+    }
+
+    final error = ref.read(orderProvider).error ?? 'Failed to place order';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,28 +95,31 @@ class AddShippingAddressPage extends StatelessWidget {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ReserveSuccessPage(),
-                      ),
-                    );
-                  },
+                  onPressed: _isSubmitting ? null : _submitOrder,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFBB040),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'SAVE ADDRESS',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : const Text(
+                          'SAVE ADDRESS',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -98,7 +157,7 @@ class AddShippingAddressPage extends StatelessWidget {
                 ),
               ),
               if (isArrow)
-                const Icon(Icons.chevron_right, color: Colors.grey)
+                const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
         ],
