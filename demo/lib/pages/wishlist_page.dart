@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_top_bar.dart';
+import '../widgets/bottom_navagiationbar.dart';
+import '../widgets/search_bar.dart';
+import 'cart_page.dart';
 
 class WishListPage extends StatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -10,6 +14,7 @@ class WishListPage extends StatefulWidget {
 class _WishListPageState extends State<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
+  bool isGridView =  false; 
 
   // sample data for testing
   final List<Map<String, dynamic>> wishListItems = [
@@ -24,6 +29,7 @@ class _WishListPageState extends State<WishListPage> {
       'discount': null,
       'soldOut': false,
       'category': 'Chairs',
+
     },
     {
       'id': 2,
@@ -66,55 +72,31 @@ class _WishListPageState extends State<WishListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a1a),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a1a),
-        elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2a2a2a),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const TextField(
-            style: TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Search store',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // search functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
-            onPressed: () {
-              // profile page
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.black,
+      appBar: const AppTopBar(),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Wish List',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Wish List',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
             ),
           ),
+        ),
+
+        const Padding(  // adding search bar
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: SearchBarWidget(
+            hintText: 'Search wish list items...',
+          ),
+        ),
+
+        const SizedBox(height: 16),
           
           // category filter chips
           SizedBox(
@@ -167,9 +149,14 @@ class _WishListPageState extends State<WishListPage> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.view_list, color: Colors.white),
-                  onPressed: () {
-                    // toggle list/grid view
+                  icon: Icon(
+                    isGridView ? Icons.view_list : Icons.grid_view,
+                    color: Colors.white,
+                  ),
+                  onPressed: () { // grid view
+                    setState(() {
+                      isGridView = !isGridView;  // switch between true and false
+                    });
                   },
                 ),
               ],
@@ -187,17 +174,29 @@ class _WishListPageState extends State<WishListPage> {
                                 style: TextStyle(color: Colors.grey, fontSize: 16),
                               ),
                             )
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _getFilteredItems().length,
-                              itemBuilder: (context, index) {
-                                return _buildWishListItem(_getFilteredItems()[index]);
-                              },
-                            ),  
-                        ),
+                          : isGridView
+                              ? _buildGridView()  // show grid when true
+                              : ListView.builder(  // show list when false
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  itemCount: _getFilteredItems().length,
+                                  itemBuilder: (context, index) {
+                                    return _buildWishListItem(_getFilteredItems()[index]);
+                                  },
+                                ),  
+                    ),
                   ],
                 ),
-               
+                bottomNavigationBar: BottomNav(
+                  currentIndex: 1,  //1 to highlight wishlist
+                  onTap: (index) {
+                    if (index == 3) {  // cart is at index 3
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartPage()),
+                      );
+                    }
+  },
+),
               );
             }
 
@@ -268,7 +267,7 @@ class _WishListPageState extends State<WishListPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2a2a2a),
+        color: const Color(0xFF1a1a1a),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -432,7 +431,196 @@ class _WishListPageState extends State<WishListPage> {
     );
   }
 
-  
+  Widget _buildGridView() {
+  return GridView.builder(
+    padding: const EdgeInsets.all(16),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,  // 2 items per row
+      crossAxisSpacing: 12,  // space between columns
+      mainAxisSpacing: 12,  // space between rows
+      childAspectRatio: 0.57,  // height ratio
+    ),
+    itemCount: _getFilteredItems().length,
+    itemBuilder: (context, index) {
+      return _buildGridItem(_getFilteredItems()[index]);
+    },
+  );
+}
+
+  Widget _buildGridItem(Map<String, dynamic> item) {
+  return Container(
+    decoration: BoxDecoration(
+      color: const Color(0xFF1a1a1a),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // image section
+        Stack(
+          children: [
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3a3a3a),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                child: item['soldOut']
+                    ? ColorFiltered(
+                        colorFilter: const ColorFilter.mode(
+                          Colors.grey,
+                          BlendMode.saturation,
+                        ),
+                        child: Image.asset(
+                          item['image'],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                      )
+                    : Image.asset(
+                        item['image'],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
+              ),
+            ),
+            
+            // badges (NEW or discount)
+            if (item['isNew'])
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'NEW',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            if (item['discount'] != null)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '-${item['discount']}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        
+        // product details
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item['seller'],
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item['name'],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item['material'],
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${item['price']}\$',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFBB040),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.shopping_cart, color: Colors.white, size: 16),
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(),
+                      onPressed: item['soldOut']
+                          ? null
+                          : () {
+                              print('Add to cart: ${item['name']}');
+                            },
+                    ),
+                  ),
+                ],
+              ),
+              if (item['soldOut'])
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Sold out',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 //filtering options
   void _showFilterDialog() {

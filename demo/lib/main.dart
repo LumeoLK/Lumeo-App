@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 // import 'package:lumeo/pages/cart_page.dart';
-//import 'pages/wish_list_page.dart';
+import 'pages/wishlist_page.dart';
 
 
 // import '../providers/user_provider.dart';
