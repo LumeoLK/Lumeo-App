@@ -58,4 +58,15 @@ app.*.map.json
 
 **/ios/UnityFramework/
 
+**/Il2CppOutputProject/
 
+# Ignores standard Android build folders and Gradle caches
+**/.gradle/
+**/build/
+**/unityLibrary/build/
+**/unityLibrary/.cxx/
+
+# Ignores compiled Unity assets that change on every build
+*.unity3d
+global-metadata.dat
+boot.config
