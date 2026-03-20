@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/pages/seller-registration_info.dart';
+import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/pages/customFurniture.dart';
@@ -15,7 +17,6 @@ class Userprofile extends ConsumerStatefulWidget {
 }
 
 class _UserprofileState extends ConsumerState<Userprofile> {
-  bool isSeller = false;
   bool _isLoggedIn = false;
 
   @override
@@ -55,13 +56,6 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     }
   }
 
-  void toggleSellerStatus() {
-    // 2. Wrap the change in setState() to trigger a UI refresh
-    setState(() {
-      isSeller = !isSeller;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (!_isLoggedIn) {
@@ -98,6 +92,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     }
 
     final user = ref.watch(currentUserProvider);
+    final bool isSeller = user?.role == 'seller';
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
@@ -135,11 +130,19 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: const Color(0xFF2E2E2E),
-                  backgroundImage: (user?.profilePicture != null && user!.profilePicture.isNotEmpty)
+                  backgroundImage:
+                      (user?.profilePicture != null &&
+                          user!.profilePicture.isNotEmpty)
                       ? NetworkImage(user.profilePicture)
                       : null,
-                  child: (user?.profilePicture == null || user!.profilePicture.isEmpty)
-                      ? const Icon(Icons.person, color: Color(0xFF1a1a1a), size: 40)
+                  child:
+                      (user?.profilePicture == null ||
+                          user!.profilePicture.isEmpty)
+                      ? const Icon(
+                          Icons.person,
+                          color: Color(0xFF1a1a1a),
+                          size: 40,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -163,22 +166,50 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ],
             ),
             const SizedBox(height: 30),
-      
-            _buildMenuTile('My orders', 'Already have 12 orders', onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrders()));
-            }),
-            _buildMenuTile('Shipping addresses', '3 addresses', onTap: () {
-              // TODO: Implement Shipping addresses page
-            }),
-            _buildMenuTile('Payment methods', 'Visa **34', onTap: () {
-              // TODO: Implement Payment methods page
-            }),
-            _buildMenuTile('Settings', 'Account and privacy', onTap: () {
-              // TODO: Implement Settings page
-            }),
-            _buildMenuTile('Custom Furniture', 'Create your own design', onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomFurniturePage()));
-            }),
+
+            _buildMenuTile(
+              'My orders',
+              'Already have 12 orders',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyOrders()),
+                );
+              },
+            ),
+            _buildMenuTile(
+              'Shipping addresses',
+              '3 addresses',
+              onTap: () {
+                // TODO: Implement Shipping addresses page
+              },
+            ),
+            _buildMenuTile(
+              'Payment methods',
+              'Visa **34',
+              onTap: () {
+                // TODO: Implement Payment methods page
+              },
+            ),
+            _buildMenuTile(
+              'Settings',
+              'Account and privacy',
+              onTap: () {
+                // TODO: Implement Settings page
+              },
+            ),
+            _buildMenuTile(
+              'Custom Furniture',
+              'Create your own design',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CustomFurniturePage(),
+                  ),
+                );
+              },
+            ),
 
             const SizedBox(height: 30),
 
@@ -194,9 +225,28 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                onPressed: toggleSellerStatus,
+                onPressed: () {
+                  if (isSeller) {
+                    // Navigate to Seller Dashboard if they are already a seller
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => const SellerDashboardPage(),
+                    //   ),
+                    // );
+                  } else {
+                    // Navigate to the Registration Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const SellerRegistrationInfoScreen(),
+                      ),
+                    );
+                  }
+                },
                 child: Text(
-                  isSeller ? 'You are a Seller!' : 'Become a Seller',
+                  isSeller ? 'Go to Seller Dashboard' : 'Become a Seller',
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,
@@ -206,7 +256,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Re-adding logout button since it's important
             TextButton(
               onPressed: _logout,
@@ -223,6 +273,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
       ),
     );
   }
+
   Widget _buildMenuTile(String title, String subtitle, {VoidCallback? onTap}) {
     return Column(
       children: [
