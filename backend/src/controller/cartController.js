@@ -5,7 +5,7 @@ import Product from "../models/Product.js";
 export const getCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({ userId: req.user.id })
-        .populate("items.productId", "title images price"); // Show product details
+        .populate("items.productId", "title images price"); 
 
     if (!cart) {
       // If no cart exists, return an empty one logic (or create one)
@@ -22,32 +22,39 @@ export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
-    // Fetch product to get the REAL price (Security)
+    if(!quantity || quantity <= 0) {
+      return res.status(400).json({ msg: "Quantity must be at least 1" });
+    }
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ msg: "Product not found" });
+
+    if(product.stock < quantity) {
+      return res.status(400).json({ msg: "Not enough stock available" });
+    }
+  
 
     let cart = await Cart.findOne({ userId: req.user.id });
 
     if (cart) {
-      // Cart exists for user
+      
       const itemIndex = cart.items.findIndex(p => p.productId == productId);
 
       if (itemIndex > -1) {
-        // Product exists in cart, update quantity
+        
         let productItem = cart.items[itemIndex];
         productItem.quantity += quantity;
         cart.items[itemIndex] = productItem;
       } else {
-        // Product does not exist in cart, add new item
+        
         cart.items.push({ productId, quantity, price: product.price });
       }
       
-      // Recalculate Total Price
+      
       cart.totalPrice += product.price * quantity;
       cart = await cart.save();
       return res.json(cart);
     } else {
-      // No cart for user, create new cart
+      
       const newCart = await Cart.create({
         userId: req.user.id,
         items: [{ productId, quantity, price: product.price }],

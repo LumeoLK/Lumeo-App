@@ -1,6 +1,5 @@
 import Review from "../models/review.js";
 import Product from "../models/Product.js";
-import Order from "../models/order.js"; // Optional: To check if they bought it
 
 export const addReview = async (req, res) => {
   try {
