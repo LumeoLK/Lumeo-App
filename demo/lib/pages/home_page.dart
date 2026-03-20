@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
     // WishlistPage(),
     // ARScreen(),
     CartPage(),
-    CustomFurniturePage(),
+    // CustomFurniturePage(),
   ];
 
   @override

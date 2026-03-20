@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:lumeo_v2/pages/ar_search_page.dart';
+// import 'package:lumeo_v2/pages/ar_search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import your pages
@@ -25,12 +25,7 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.dark,
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: RecommendationResultsPage(
-        roomType: 'general',
-        measuredWidth: 100,
-        measuredDepth: 100,
-        recommendations: [],
-      ), //const SplashScreen(),
+      home: const ARSearchPage(), //const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
