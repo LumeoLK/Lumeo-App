@@ -45,7 +45,17 @@ class OrderService {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => Order.fromJson(e)).toList();
     } else {
-      throw Exception('Failed to load orders');
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['msg'] ??
+              'Failed to load orders: ${response.statusCode} - ${response.body}',
+        );
+      } catch (_) {
+        throw Exception(
+          'Failed to load orders: ${response.statusCode} - ${response.body}',
+        );
+      }
     }
   }
 }

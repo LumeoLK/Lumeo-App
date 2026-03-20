@@ -18,11 +18,12 @@ class CartState {
     List<CartItem>? items,
     bool? isLoading,
     String? error,
+    bool clearError = false,
   }) {
     return CartState(
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: clearError ? null : (error ?? this.error),
     );
   }
 
@@ -41,12 +42,12 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   Future<void> fetchCart() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final token = await _getToken();
       final rawItems = await CartService.getCart(token);
       final items = rawItems.map((e) => CartItem.fromJson(e)).toList();
-      state = state.copyWith(items: items, isLoading: false);
+      state = state.copyWith(items: items, isLoading: false, clearError: true);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -54,6 +55,7 @@ class CartNotifier extends StateNotifier<CartState> {
 
   Future<void> addToCart(String productId, double price) async {
     try {
+      state = state.copyWith(clearError: true);
       final token = await _getToken();
       print('[CartProvider] Token: ${token.isNotEmpty ? "${token.substring(0, 20)}..." : "EMPTY"}');
       print('[CartProvider] Adding product: $productId, price: $price');
@@ -68,10 +70,14 @@ class CartNotifier extends StateNotifier<CartState> {
 
   Future<void> removeFromCart(String productId) async {
     try {
+      state = state.copyWith(clearError: true);
       final token = await _getToken();
+      print('[CartProvider] Removing product: $productId');
       await CartService.removeFromCart(token, productId);
+      print('[CartProvider] Remove from cart succeeded!');
       await fetchCart(); // Refresh cart after removing
     } catch (e) {
+      print('[CartProvider] Remove from cart FAILED: $e');
       state = state.copyWith(error: e.toString());
     }
   }

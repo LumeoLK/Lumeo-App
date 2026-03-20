@@ -49,9 +49,12 @@ class CartService {
       String token,
       String productId,
       ) async {
+    final uri = Uri.parse("${Constants.cartUri}/remove").replace(
+      queryParameters: {"productId": productId},
+    );
 
     final response = await http.delete(
-      Uri.parse("${Constants.cartUri}/remove"),
+      uri,
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
@@ -62,7 +65,9 @@ class CartService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception("Failed to remove item");
+      throw Exception(
+        "Failed to remove item: ${response.statusCode} - ${response.body}",
+      );
     }
   }
 }

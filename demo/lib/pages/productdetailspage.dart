@@ -42,8 +42,10 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            await Navigator.maybePop(context);
+          },
         ),
         title: Text(
           widget.product.name,
