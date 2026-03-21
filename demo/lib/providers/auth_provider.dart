@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'package:lumeo_v2/Constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/user.dart';
 import '../services/auth_service.dart';
@@ -95,6 +99,32 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> resetPassword(String email) async {
     await _service.resetPassword(email: email);
+  }
+
+  Future<void> updateUser(Map<String, dynamic> userData) async {
+    state = state.copyWith(
+      status: AuthStatus.authenticated,
+      user: User.fromJson(userData),
+    );
+  }
+
+  Future<void> checkSellerVerification() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token') ?? '';
+      if (token.isEmpty) return;
+
+      final res = await http.get(
+        Uri.parse('${Constants.sellersUri}/profile'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final isVerified = body['data']?['isVerified'] ?? false;
+        final prefs2 = await SharedPreferences.getInstance();
+        await prefs2.setBool('seller_is_verified', isVerified);
+      }
+    } catch (_) {}
   }
 }
 
