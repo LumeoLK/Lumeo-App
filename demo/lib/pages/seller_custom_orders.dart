@@ -162,6 +162,7 @@ class OrdersFeedBody extends StatefulWidget {
 
 class _OrdersFeedBodyState extends State<OrdersFeedBody> {
   String sortBy = 'budget_low_to_high';  // current sort option
+  bool isGridView = false; //current grid view is false
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +222,14 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
                   const Spacer(),
 
                   // grid view
-                  const Icon(Icons.grid_view, color: textColor, size: 20),
+                  GestureDetector(
+                    onTap: () => setState(() => isGridView = !isGridView),
+                    child: Icon(
+                      isGridView ? Icons.view_list : Icons.grid_view,
+                      color: textColor,
+                      size: 20,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -230,7 +238,7 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
 
         //orders list
         Expanded(
-          child: ListView.builder(
+          child: isGridView ? _buildGridView() : ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: _getFilteredOrders().length,
             itemBuilder: (context, index) => OrderCard(order: _getFilteredOrders()[index]),
@@ -238,6 +246,67 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
         ),
       ],
     );
+  }
+
+  Widget _buildGridView() {
+  return GridView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.75,
+    ),
+    itemCount: _getFilteredOrders().length,
+    itemBuilder: (context, index) {
+      final order = _getFilteredOrders()[index];
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(order.name,
+                style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(order.timeAgo,
+                style: const TextStyle(color: hintText, fontSize: 10)),
+            const SizedBox(height: 8),
+            Text(order.title,
+                style: const TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 12),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 6),
+            Text(order.description,
+                style: const TextStyle(color: hintText, fontSize: 11),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+            const Spacer(),
+            Text('Budget: ${order.budget}',
+                style: const TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.w600)),
+            Text('Deadline: ${order.deadline}',
+                style: const TextStyle(color: textColor, fontSize: 11)),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kOrange,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('View Details',
+                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 11)),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
   }
 
   List<OrderRequest> _getFilteredOrders() {
