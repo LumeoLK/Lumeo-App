@@ -257,3 +257,27 @@ export const getProductsForML = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+export const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, msg: "Product not found." });
+    }
+
+    // Check if the authenticated seller owns the product
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller || product.sellerId.toString() !== seller._id.toString()) {
+      return res.status(403).json({ success: false, msg: "Unauthorized to delete this product." });
+    }
+
+    await Product.findByIdAndDelete(productId);
+
+    res.status(200).json({ success: true, msg: "Product deleted successfully." });
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};
