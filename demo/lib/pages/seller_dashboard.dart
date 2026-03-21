@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/seller_dashboard_service.dart';
+import 'home_page.dart';
+import "productpage.dart";
 
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
@@ -17,56 +20,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   String? _error;
   Map<String, dynamic> _dashboard = const {};
   int _activeNav = 0;
-
-  // ── Sample listings data ──────────────────────────────────
-  final List<Map<String, dynamic>> listings = [
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair2.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-  ];
-
-  // ── Sample orders data ────────────────────────────────────
-  final List<Map<String, dynamic>> orders = [
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03458',
-      'price': '₦250,000',
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03459',
-      'price': '₦250,000',
-      'image': 'assets/images/chair2.avif',
-    },
-  ];
 
   // ── Chart data ────────────────────────────────────────────
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
@@ -145,6 +98,17 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () {
+            // Option B: If you want to FORCE them to a specific page (e.g., HomePage)
+            Get.offAll(() => const HomePage()); // Using your 'Get' library
+          },
+        ),
+        title: const Text('Seller Dashboard'),
+        backgroundColor: const Color(0xFF1a1a1a),
+      ),
       backgroundColor: const Color(0xFF1a1a1a),
       body: Stack(
         children: [
@@ -438,7 +402,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   // ─────────────────────────────────────────────────────────
   Widget _buildActiveListings() {
     // Use API data if available, otherwise fall back to sample data
-    final items = _activeListings.isNotEmpty ? _activeListings : listings;
+    final items = _activeListings;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,7 +438,16 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return _buildListingCard(items[index]);
+              final item = items[index];
+              return GestureDetector(
+                onTap: () {
+                  final productId = item['id']?.toString() ?? '';
+                  if (productId.isNotEmpty) {
+                    Get.to(() => ProductDetailPage(productId: productId));
+                  }
+                },
+                child: _buildListingCard(item),
+              );
             },
           ),
         ),
@@ -483,7 +456,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 
   Widget _buildListingCard(Map<String, dynamic> item) {
-    final imageUrl = _text(item['image']);
+    print(item);
+    final imageUrl = _text(item['images'][0]);
     final isAsset = imageUrl.startsWith('assets/');
 
     return Container(
@@ -655,7 +629,24 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   // ─────────────────────────────────────────────────────────
   Widget _buildNewOrders() {
     // Use API data if available, otherwise fall back to sample data
-    final items = _newOrders.isNotEmpty ? _newOrders : orders;
+    final items = _newOrders.isNotEmpty
+        ? _newOrders
+        : [
+            {
+              'id': 'order1',
+              'productName': 'Modern Chair',
+              'customerName': 'John Doe',
+              'status': 'Processing',
+              'image': 'assets/chair.jpg',
+            },
+            {
+              'id': 'order2',
+              'productName': 'Wooden Table',
+              'customerName': 'Jane Smith',
+              'status': 'Shipped',
+              'image': 'assets/chair.jpg',
+            },
+          ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

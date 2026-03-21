@@ -243,8 +243,6 @@ const buildSellerPerformance = (sellerOrders) => {
 
 const buildActiveListings = (seller, products, limit) =>
   products
-    .filter((product) => Number(product.stock) > 0)
-    .slice(0, limit)
     .map((product) => ({
       id: product._id,
       name: product.title,
@@ -257,10 +255,11 @@ const buildActiveListings = (seller, products, limit) =>
       active: Number(product.stock) > 0,
       stock: product.stock,
       category: product.category,
-      image: product.images?.[0] || "",
+      images: product.images|| "",
       averageRating: roundToOneDecimal(product.averageRating),
       numReviews: product.numReviews || 0,
       model3DStatus: product.model3D?.status || "pending",
+      modelurl: product.model3D?.url || "",
       createdAt: product.createdAt,
     }));
 
@@ -323,7 +322,7 @@ const handleSellerError = (res, error) => {
     .status(error.statusCode || 500)
     .json({ success: false, msg: error.message });
 };
-
+//----------------------------------------------
 export const becomeSeller = async (req, res) => {
   try {
     const { shopName, displayName, businessAddress, phoneNumber, businessRegNumber } = req.body;
@@ -385,7 +384,7 @@ export const becomeSeller = async (req, res) => {
   }
 
 };
-
+//----------------------------------------------
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock, length, width, height } = req.body;

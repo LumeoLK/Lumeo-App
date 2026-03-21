@@ -37,6 +37,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final body = await _service.login(email: email, password: password);
       await _saveSession(body);
+      print("hi");
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: User.fromJson(body['user'] ?? body),

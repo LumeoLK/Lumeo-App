@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
 
       // Senior Tip: Point "home" to SplashScreen so the app flow starts correctly
-      home: const SellerVerificationPage(),
+      home: const SplashScreen(),
 
       debugShowCheckedModeBanner: false,
     );

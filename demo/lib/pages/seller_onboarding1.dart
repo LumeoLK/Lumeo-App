@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo_v2/pages/seller_onboarding2.dart';
+import 'seller_onboarding2.dart';
 import 'package:video_player/video_player.dart';
 
 class SellerOnboardingPage extends StatefulWidget {

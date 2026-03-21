@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-
+import 'seller-registration_info.dart';
 class SellerOnboardingPage3 extends StatefulWidget {
   const SellerOnboardingPage3({Key? key}) : super(key: key);
 
@@ -111,9 +112,11 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage3> {
                     width: double.infinity, //full width button
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // continue function
-
+                      onPressed: () {  //go to page 3
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder:(_)=> const SellerRegistrationInfoScreen()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFBB040), 
