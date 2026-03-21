@@ -61,7 +61,7 @@ export const addReview = async (req, res) => {
   }
 };
 
-// Get Reviews for a Product
+
 export const getProductReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ productId: req.params.productId })

@@ -240,31 +240,27 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
             const SizedBox(height: 30),
 
+            // from HEAD: role-aware button — shows dashboard for sellers,
+            // registration flow for regular users
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isSeller
-                      ? Colors.green
-                      : const Color(0xFFFFB347),
+                  backgroundColor: const Color(0xFFFFB347),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 onPressed: () {
                   if (isSeller) {
-                    print('[UserProfile] Seller navigating to Seller Dashboard');
-                    // Navigate to Seller Dashboard if they are already a seller
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const SellerDashboardPage(),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SellerDashboardPage(),
+                      ),
+                    );
                   } else {
-                    print('[UserProfile] User navigating to Seller Registration');
-                    // Navigate to the Registration Page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -284,9 +280,9 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
 
-            // Re-adding logout button since it's important
             TextButton(
               onPressed: _logout,
               child: const Center(
@@ -303,6 +299,8 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     );
   }
 
+  // from HEAD: kept as instance method (not static) since it's used
+  // inside build() and may need context/ref access in the future
   Widget _buildMenuTile(String title, String subtitle, {VoidCallback? onTap}) {
     return Column(
       children: [
@@ -320,7 +318,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-          onTap: onTap,
+          onTap: onTap, // also fixed: was duplicated in original
         ),
         const Divider(color: Colors.white12, height: 1),
       ],

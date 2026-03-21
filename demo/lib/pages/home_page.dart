@@ -4,10 +4,10 @@ import '../widgets/bottom_navagiationbar.dart';
 import 'home_content.dart';
 
 import 'wishlist_page.dart';
-import 'ar_view_page.dart';
+import 'ar_screen.dart';
 import 'cart_page.dart';
 import 'customFurniture.dart';
-
+import 'emptyspace.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -21,9 +21,13 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> pages = const [
     HomeContent(),
     WishListPage(),
-    ARViewPage(),
+    ARSearchPage(),
     CartPage(),
-    CustomFurniturePage(),
+  ];
+
+  late final List<Widget> _pagesWithCustom = [
+    ...pages,
+    const CustomFurniturePage(),
   ];
 
   @override
@@ -31,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: const AppTopBar(),
 
-      body: pages[_selectedNavIndex],
+      body: _pagesWithCustom[_selectedNavIndex],
       bottomNavigationBar: BottomNav(
         currentIndex: _selectedNavIndex,
         onTap: (index) {

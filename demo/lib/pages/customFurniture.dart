@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../Constants.dart';
 
-class CustomFurniturePage extends StatefulWidget {
+class CustomFurniturePage extends ConsumerStatefulWidget {
   const CustomFurniturePage({super.key});
 
   @override
-  State<CustomFurniturePage> createState() => _CustomFurniturePageState();
+  ConsumerState<CustomFurniturePage> createState() =>
+      _CustomFurniturePageState();
 }
 
-class _CustomFurniturePageState extends State<CustomFurniturePage> {
+class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _budgetController = TextEditingController();
@@ -117,6 +120,13 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final hasProfileImage = user != null && user.profilePicture.isNotEmpty;
+    final displayName =
+      (user != null && user.name.isNotEmpty) ? user.name : 'Guest User';
+    final displayEmail =
+      (user != null && user.email.isNotEmpty) ? user.email : 'guest@lumeo.app';
+
     // Define colors from the design
     const Color backgroundColor = Color(0xFF1E1E1E);
     const Color cardColor = Color(0xFF2C2C2C);
@@ -149,27 +159,30 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
                 // --- User Profile Section ---
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 25,
-                      backgroundImage: NetworkImage(
-                        'https://i.pravatar.cc/150?img=5',
-                      ), // Placeholder image
+                      backgroundImage:
+                          hasProfileImage ? NetworkImage(user!.profilePicture) : null,
+                      child: !hasProfileImage
+                          ? const Icon(Icons.person, color: Colors.white70)
+                          : null,
                     ),
                     const SizedBox(width: 15),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          "Matilda Brown",
-                          style: TextStyle(
+                          displayName,
+                          style: const TextStyle(
                             color: primaryText,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          "matildabrown@mail.com",
-                          style: TextStyle(color: secondaryText, fontSize: 14),
+                          displayEmail,
+                          style:
+                              const TextStyle(color: secondaryText, fontSize: 14),
                         ),
                       ],
                     ),
@@ -367,10 +380,11 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
                 SizedBox(
                   width: double.infinity,
                   height: 55,
+
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submitCustomOrder,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
+                      backgroundColor: const Color(0xFFE09D3B),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
