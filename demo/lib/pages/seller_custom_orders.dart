@@ -154,8 +154,14 @@ class _CustomOrdersFeedPageState extends State<CustomOrdersFeedPage> {
 }
 
 //ORDERS FEED body
-class OrdersFeedBody extends StatelessWidget {
+class OrdersFeedBody extends StatefulWidget {
   const OrdersFeedBody({super.key});
+  @override
+  State<OrdersFeedBody> createState() => _OrdersFeedBodyState();
+}
+
+class _OrdersFeedBodyState extends State<OrdersFeedBody> {
+  String sortBy = 'budget_low_to_high';  // current sort option
 
   @override
   Widget build(BuildContext context) {
@@ -188,19 +194,29 @@ class OrdersFeedBody extends StatelessWidget {
               Row(
                 children: [
                   // filters button
-                  Row(children: const [
-                    Icon(Icons.filter_list, color: textColor, size: 16),
-                    SizedBox(width: 4),
-                    Text('Filters', style: TextStyle(color: textColor, fontSize: 13)),
-                  ]),
+                  GestureDetector(
+                    onTap: _showFilterDialog,
+                    child: Row(children: const [
+                      Icon(Icons.filter_list, color: textColor, size: 16),
+                      SizedBox(width: 4),
+                      Text('Filters', style: TextStyle(color: textColor, fontSize: 13)),
+                    ]),
+                  ),
                   const SizedBox(width: 16),
 
                   // price sort
-                  Row(children: const [
-                    Icon(Icons.swap_vert, color: textColor, size: 16),
-                    SizedBox(width: 4),
-                    Text('Price: lowest to high', style: TextStyle(color: textColor, fontSize: 13)),
-                  ]),
+                  Row(children: [
+                  const Icon(Icons.swap_vert, color: textColor, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    sortBy == 'budget_high_to_low'
+                        ? 'Budget: highest to low'
+                        : sortBy == 'deadline'
+                            ? 'Deadline'
+                            : 'Budget: lowest to high',
+                    style: const TextStyle(color: textColor, fontSize: 13),
+                  ),
+                ]),
 
                   const Spacer(),
 
@@ -216,13 +232,86 @@ class OrdersFeedBody extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: sampleOrders.length,
-            itemBuilder: (context, index) => OrderCard(order: sampleOrders[index]),
+            itemCount: _getFilteredOrders().length,
+            itemBuilder: (context, index) => OrderCard(order: _getFilteredOrders()[index]),
           ),
         ),
       ],
     );
   }
+
+  List<OrderRequest> _getFilteredOrders() {
+  List<OrderRequest> filtered = List.from(sampleOrders);
+
+  if (sortBy == 'budget_low_to_high') {
+  filtered.sort((a, b) => a.budget.compareTo(b.budget));
+} else if (sortBy == 'budget_high_to_low') {
+  filtered.sort((a, b) => b.budget.compareTo(a.budget));
+} else if (sortBy == 'deadline') {
+  filtered.sort((a, b) => a.deadline.compareTo(b.deadline));
+}
+
+  return filtered; 
+}
+
+void _showFilterDialog() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: cardColor,
+        title: const Text('Sort & Filter', style: TextStyle(color: textColor)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Budget: Low to High', style: TextStyle(color: textColor)),
+              leading: Radio<String>(
+                value: 'budget_low_to_high',
+                groupValue: sortBy,
+                activeColor: kOrange,
+                onChanged: (value) {
+                  setState(() => sortBy = value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Budget: High to Low', style: TextStyle(color: textColor)),
+              leading: Radio<String>(
+                value: 'budget_high_to_low',
+                groupValue: sortBy,
+                activeColor: kOrange,
+                onChanged: (value) {
+                  setState(() => sortBy = value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Deadline', style: TextStyle(color: textColor)),
+              leading: Radio<String>(
+                value: 'deadline',
+                groupValue: sortBy,
+                activeColor: kOrange,
+                onChanged: (value) {
+                  setState(() => sortBy = value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: kOrange)),
+          ),
+        ],
+      );
+    },
+  );
+}
 }
 
 // ORDER CARD
