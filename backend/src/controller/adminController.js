@@ -23,6 +23,57 @@ export async function adminRegister() {
         console.log("Admin created successfully!");
 }
    
+//SELLER VERIFICATION LOGIC
+
+// @desc    Get all pending seller applications
+// @route   GET /api/admin/sellers/pending
+export const getPendingSellers = async (req, res) => {
+  try {
+    const pendingSellers = await Seller.find({ isVerified: false })
+      .populate("userId", "name email") 
+      .sort({ createdAt: -1 });
+    res.status(200).json(pendingSellers);
+  } catch (error) {
+    console.error("Error fetching pending sellers:", error);
+    res.status(500).json({ message: "Server error while fetching sellers." });
+  }
+};
+
+// @desc    Approve a seller application
+// @route   PUT /api/admin/sellers/:id/approve
+export const approveSeller = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedSeller = await Seller.findByIdAndUpdate(
+      id,
+      { isVerified: true },
+      { new: true } 
+    );
+    if (!updatedSeller) {
+      return res.status(404).json({ message: "Seller application not found." });
+    }
+    res.status(200).json({ message: "Seller approved successfully!", seller: updatedSeller });
+  } catch (error) {
+    console.error("Error approving seller:", error);
+    res.status(500).json({ message: "Server error while approving seller." });
+  }
+};
+
+// @desc    Reject and delete a seller application
+// @route   DELETE /api/admin/sellers/:id/reject
+export const rejectSeller = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedSeller = await Seller.findByIdAndDelete(id);
+    if (!deletedSeller) {
+      return res.status(404).json({ message: "Seller application not found." });
+    }
+    res.status(200).json({ message: "Seller application rejected." });
+  } catch (error) {
+    console.error("Error rejecting seller:", error);
+    res.status(500).json({ message: "Server error while rejecting seller." });
+  }
+};
 
 // @desc    Get all products across the platform (Includes AR model data)
 // @route   GET /api/admin/products
