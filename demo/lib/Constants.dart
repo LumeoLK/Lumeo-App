@@ -1,13 +1,7 @@
-
-class Constants{
-
-
-  
-
-
+class Constants {
   // The base address of the server
+
   static String baseUrl = 'https://lumeo-app.onrender.com';
-  static String get sellerUri => '$baseUrl/api/seller';
 
   // Specific API routes
   static String authUri = '$baseUrl/api/auth';
@@ -18,5 +12,7 @@ class Constants{
   static String cartUri = '$baseUrl/api/cart';
   static String productsUri = '$baseUrl/api/products';
   static String chatUri = '$baseUrl/api/chat';
-
+  static String wishlistUri = '$baseUrl/api/wishlist';
+  static String ordersUri = '$baseUrl/api/orders';
+  static String sellersUri = '$baseUrl/api/seller';
 }

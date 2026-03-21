@@ -131,7 +131,7 @@ class _OnboardingPage2State extends State<OnboardingPage2> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Color(0xFFE09D3B),
                       ),
                       child: const Text(
                         "Get Started",

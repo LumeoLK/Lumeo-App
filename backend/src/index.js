@@ -22,6 +22,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
 import mlRoutes from "./routes/mlRoutes.js";
 import blueprintRoutes from "./routes/blueprint-to-3dRoutes.js";
 
@@ -46,7 +47,8 @@ app.use("/api/requests", customRequestRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use("/api", webhookRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+
 app.use("/api/internal/ml", mlRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/webhooks", webhookRoutes);
@@ -59,7 +61,7 @@ const server = http.createServer(app);
 // Attach Socket.io to the HTTP server
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:8080"],
+    origin: ["*"],
   },
 });
 

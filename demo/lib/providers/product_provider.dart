@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import '../model/product.dart';
 import '../services/product_service.dart';
 
@@ -13,6 +12,31 @@ class ProductState {
     this.isLoading = false,
     this.error,
   });
+
+  // lowest priced products
+  List<Product> get saleProducts {
+    final sorted = [...products];
+    sorted.sort((a, b) => a.price.compareTo(b.price));
+    return sorted.take(10).toList();
+  }
+
+  //  most recently added
+  List<Product> get newArrivals {
+    final sorted = [...products];
+    sorted.sort((a, b) {
+      if (a.createdAt == null || b.createdAt == null) return 0;
+      return b.createdAt!.compareTo(a.createdAt!);
+    });
+    return sorted.take(10).toList();
+  }
+
+  // most viewed / popular
+  List<Product> get forYou {
+    final sorted = [...products];
+    sorted.sort((a, b) => b.views.compareTo(a.views));
+    return sorted.take(10).toList();
+  }
+
   ProductState copyWith({
     List<Product>? products,
     bool? isLoading,
@@ -26,18 +50,20 @@ class ProductState {
   }
 }
 
-class ProductNotifier extends StateNotifier<ProductState> {
-  final ProductService _service;
 
-  ProductNotifier(this._service) : super(const ProductState());
+class ProductNotifier extends Notifier<ProductState> {
+  late final ProductService _service;
+
+  @override
+  ProductState build() {
+    _service = ref.read(productServiceProvider);
+    return const ProductState();
+  }
 
   Future<void> fetchProducts() async {
     state = state.copyWith(isLoading: true, error: null);
-
     try {
-      // Tell service to fetch
       final products = await _service.getAllProducts();
-
       state = state.copyWith(products: products, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -47,8 +73,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
 
 final productServiceProvider = Provider((ref) => ProductService());
 
-final productProvider = StateNotifierProvider<ProductNotifier, ProductState>((
-  ref,
-) {
-  return ProductNotifier(ref.watch(productServiceProvider));
-});
+final productProvider = NotifierProvider<ProductNotifier, ProductState>(
+  () => ProductNotifier(),
+);
