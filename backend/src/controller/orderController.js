@@ -143,15 +143,11 @@ export const placeOrder = async (req, res) => {
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })
+      .setOptions({ strictPopulate: false })
       .populate({
-        path: "items.productId", 
-        select: "title price images sellerId", 
-        populate: { 
-          path: "sellerId", // 2. Inside that Product, go populate the Seller
-          model: "Seller",    // (Optional) Explicitly state the model if generic
-          select: "shopName phoneNumber" // Select fields from Seller
-      }
-  })
+        path: "items.productId",
+        select: "title price images sellerId",
+      })
       .populate("items.customRequestId", "title")  // Show custom request title
                 // Show Shop Name
       .sort({ createdAt: -1 });
@@ -202,6 +198,7 @@ export const updateOrderStatus = async (req, res) => {
 export const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })
+      .setOptions({ strictPopulate: false })
       .populate({
         path: "items.productId",
         select: "title images price" // Only get necessary fields

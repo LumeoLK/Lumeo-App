@@ -8,6 +8,12 @@ const orderSchema = mongoose.Schema({
     required: true,
   },
 
+  // Optional for compatibility with seller-centric order queries.
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Seller",
+  },
+
   
 
   // 3. The Products
@@ -15,6 +21,7 @@ const orderSchema = mongoose.Schema({
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // For standard items
       customRequestId: { type: mongoose.Schema.Types.ObjectId, ref: "CustomRequest" }, // For custom jobs
+      sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller" },
       quantity: { type: Number, default: 1 },
       priceAtPurchase: { type: Number, required: true } // Store price here in case it changes later
     }
