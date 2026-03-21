@@ -23,7 +23,11 @@ class _HomePageState extends State<HomePage> {
     WishListPage(),
     ARSearchPage(),
     CartPage(),
-    CustomFurniturePage(),
+  ];
+
+  late final List<Widget> _pagesWithCustom = [
+    ...pages,
+    const CustomFurniturePage(),
   ];
 
   @override
@@ -31,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: const AppTopBar(),
 
-      body: pages[_selectedNavIndex],
+      body: _pagesWithCustom[_selectedNavIndex],
       bottomNavigationBar: BottomNav(
         currentIndex: _selectedNavIndex,
         onTap: (index) {
