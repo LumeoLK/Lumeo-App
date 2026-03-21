@@ -1,32 +1,37 @@
 import 'dart:io'; // Needed for the File class
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Needed for picking images
-
-class SellerRegistrationInfoScreen extends StatefulWidget {
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/auth_provider.dart';
+import '../Constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
+class SellerRegistrationInfoScreen extends ConsumerStatefulWidget {
   const SellerRegistrationInfoScreen({super.key});
 
   @override
-  State<SellerRegistrationInfoScreen> createState() =>
+  ConsumerState<SellerRegistrationInfoScreen> createState() =>
       _SellerRegistrationInfoScreenState();
 }
 
 class _SellerRegistrationInfoScreenState
-    extends State<SellerRegistrationInfoScreen> {
+    extends ConsumerState<SellerRegistrationInfoScreen> {
   // --- Text Controllers ---
   final TextEditingController shopNameController = TextEditingController();
   final TextEditingController displayNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
-  final TextEditingController businessAddressController =
-      TextEditingController();
+  final TextEditingController businessAddressController =TextEditingController();
   final TextEditingController businessRegController = TextEditingController();
 
-  // --- STEP 2: Image State Variables ---
-  // We use File? because initially, no image is selected (it's null).
   File? logoImage;
   File? nicFrontImage;
   File? nicBackImage;
 
   final ImagePicker _picker = ImagePicker();
+
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -62,6 +67,129 @@ class _SellerRegistrationInfoScreenState
       // In a real app, we might show a SnackBar here to tell the user something went wrong.
     }
   }
+
+  Future<void> _submitSellerRegistration() async {
+    // 1. Basic Validation (Make sure everything is filled!)
+    if (shopNameController.text.isEmpty || 
+        displayNameController.text.isEmpty || 
+        phoneNumberController.text.isEmpty || 
+        businessAddressController.text.isEmpty || 
+        businessRegController.text.isEmpty || 
+        logoImage == null || 
+        nicFrontImage == null || 
+        nicBackImage == null) {
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields and upload all images.")),
+      );
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final String myAuthToken = prefs.getString('x-auth-token') ?? "";
+
+    if (myAuthToken.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Authentication error. Please log in again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return; // Stop here if we don't have a token
+    }
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      var uri = Uri.parse('${Constants.sellersUri}/become-seller');
+      
+      var request = http.MultipartRequest('POST', uri);
+
+      // 2. Add Headers (The authorization token)
+      request.headers.addAll({
+        'Authorization': 'Bearer $myAuthToken',
+      });
+
+      request.fields['shopName'] = shopNameController.text;
+      request.fields['displayName'] = displayNameController.text;
+      request.fields['phoneNumber'] = phoneNumberController.text;
+      request.fields['businessAddress'] = businessAddressController.text;
+      request.fields['businessRegNumber'] = businessRegController.text;
+
+      // 5. Add the Image Files WITH explicit Media Types
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'logo',
+          logoImage!.path,
+          contentType: MediaType(
+            'image',
+            'jpeg',
+          ), // Forces the backend to recognize it as an image
+        ),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'NICfront',
+          nicFrontImage!.path,
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'NICback',
+          nicBackImage!.path,
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+
+      // 5. Send the Request!
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      print("Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+      var responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final String newToken = responseData['token'];
+
+        // 2. Overwrite the old token in the device's local vault
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('x-auth-token', newToken);
+
+        // Success! Tell the user the good news
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Seller registration successful! Welcome aboard."),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        Navigator.pop(context);
+      } else {
+        // Backend returned an error (e.g., "Seller with same Business Registration Number already exist")
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'] ?? "Registration failed."), backgroundColor: Colors.red),
+        );
+      }
+      } catch (e) {
+      print("Error during submission: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("An error occurred. Please check your connection."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      // Stop the loading spinner whether it succeeded or failed
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +280,7 @@ class _SellerRegistrationInfoScreenState
                   print("Logo Selected: ${logoImage != null}");
                   print("NIC Front Selected: ${nicFrontImage != null}");
                   print("NIC Back Selected: ${nicBackImage != null}");
+                  _submitSellerRegistration();
                 },
                 child: Container(
                   width: double.infinity,

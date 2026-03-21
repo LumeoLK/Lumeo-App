@@ -11,5 +11,5 @@ class Constants {
   static String chatUri = '$baseUrl/api/chat';
   static String wishlistUri = '$baseUrl/api/wishlist';
   static String ordersUri = '$baseUrl/api/orders';
-  static String sellersUri = '$baseUrl/api/sellers';
+  static String sellersUri = '$baseUrl/api/seller';
 }
