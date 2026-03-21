@@ -1,65 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShieldCheck, Check, X, FileImage } from 'lucide-react';
-
-// Dummy data matching your Sri Lankan furniture stores
-const applicants = [
-  {
-    id: 1,
-    storeName: 'Colombo Woodworks',
-    applicant: 'Kasun Perera',
-    date: '2023-10-24',
-    status: 'Pending',
-    email: 'kasun@colombowood.lk',
-    phone: '+94 77 123 4567',
-    address: '123 Galle Road, Colombo 03',
-    businessType: 'Sole Proprietorship',
-    documents: ['NIC Front', 'NIC Back', 'Business Registration', 'Bank Statement']
-  },
-  {
-    id: 2,
-    storeName: 'Kandy Cane Furniture',
-    applicant: 'Amara Silva',
-    date: '2023-10-23',
-    status: 'Pending',
-    email: 'amara@kandycane.lk',
-    phone: '+94 71 987 6543',
-    address: '45 Dalada Vidiya, Kandy',
-    businessType: 'Partnership',
-    documents: ['NIC Front', 'NIC Back']
-  },
-  {
-    id: 3,
-    storeName: 'Fazil Modern Home',
-    applicant: 'Mohamed Fazil',
-    date: '2023-10-22',
-    status: 'Pending',
-    email: 'contact@fazilmodern.lk',
-    phone: '+94 76 555 1234',
-    address: '88 Main Street, Galle',
-    businessType: 'Private Limited',
-    documents: ['NIC Front', 'NIC Back', 'BR Certificate']
-  },
-  {
-    id: 4,
-    storeName: 'Shop 4',
-    applicant: 'Applicant 4',
-    date: '2023-10-20',
-    status: 'Pending',
-    email: 'shop4@example.com',
-    phone: '+94 70 000 0000',
-    address: 'Placeholder Address',
-    businessType: 'Sole Proprietorship',
-    documents: ['NIC Front']
-  }
-];
 
 const SellerVerification = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  // State to track which applicant is actively being viewed (defaults to the first one)
-  const [selectedId, setSelectedId] = useState(applicants[0].id);
+  const [applicants, setApplicants] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 1. Fetch pending sellers from the backend when the page loads
+  useEffect(() => {
+    fetchPendingSellers();
+  }, []);
+
+  const fetchPendingSellers = async () => {
+    try {
+      // Replace with your actual backend port (e.g., 5000 or 8080)
+      const response = await fetch('http://localhost:5000/api/admin/sellers/pending');
+      const data = await response.json();
+      setApplicants(data);
+      if (data.length > 0) {
+        setSelectedId(data[0]._id); // Select the first one by default
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch sellers:", error);
+      setIsLoading(false);
+    }
+  };
+
+  // 2. Handle Approving a Seller
+  const handleApprove = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/sellers/${id}/approve`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+        // Remove the approved seller from the screen
+        const updatedList = applicants.filter(app => app._id !== id);
+        setApplicants(updatedList);
+        setSelectedId(updatedList.length > 0 ? updatedList[0]._id : null);
+      }
+    } catch (error) {
+      console.error("Error approving seller", error);
+    }
+  };
+
+  // 3. Handle Rejecting a Seller
+  const handleReject = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/sellers/${id}/reject`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        // Remove the rejected seller from the screen
+        const updatedList = applicants.filter(app => app._id !== id);
+        setApplicants(updatedList);
+        setSelectedId(updatedList.length > 0 ? updatedList[0]._id : null);
+      }
+    } catch (error) {
+      console.error("Error rejecting seller", error);
+    }
+  };
 
   // Find the full details of the currently selected applicant
-  const selectedSeller = applicants.find(app => app.id === selectedId);
+  const selectedSeller = applicants.find(app => app._id === selectedId);
+
+  // Filter for the search bar
+  const filteredApplicants = applicants.filter(app => 
+    app.shopName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    app.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) {
+    return <div className="text-white p-8">Loading applicants...</div>;
+  }
 
   return (
     <div className="w-full flex flex-col h-[calc(100vh-6rem)]">
@@ -77,8 +91,6 @@ const SellerVerification = () => {
         
         {/* LEFT COLUMN: Applicant List */}
         <div className="w-[350px] bg-[#111111] border border-zinc-800 rounded-2xl flex flex-col overflow-hidden">
-          
-          {/* Search Bar Container - Fixed at top */}
           <div className="p-4 border-b border-zinc-800/50">
             <div className="relative">
               <input 
@@ -91,33 +103,39 @@ const SellerVerification = () => {
             </div>
           </div>
 
-          {/* Scrollable List */}
           <div className="flex-1 overflow-y-auto">
-            {applicants.map((seller) => (
-              <button
-                key={seller.id}
-                onClick={() => setSelectedId(seller.id)}
-                className={`w-full text-left p-5 border-b border-zinc-800/50 transition-colors flex flex-col gap-2
-                  ${selectedId === seller.id 
-                    ? 'bg-[#18181b] border-l-4 border-l-brand' // Active state uses your brand color
-                    : 'hover:bg-[#18181b]/50 border-l-4 border-l-transparent'
-                  }`}
-              >
-                <div className="flex justify-between items-start">
-                  <h3 className={`font-semibold ${selectedId === seller.id ? 'text-white' : 'text-zinc-200'}`}>
-                    {seller.storeName}
-                  </h3>
-                  <span className="text-zinc-500 text-xs">{seller.date}</span>
-                </div>
-                
-                <p className="text-zinc-400 text-sm">{seller.applicant}</p>
-                
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-brand/20 bg-brand/10 text-brand text-xs font-medium w-fit mt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
-                  {seller.status}
-                </span>
-              </button>
-            ))}
+            {filteredApplicants.length === 0 ? (
+              <p className="p-5 text-zinc-500 text-sm">No pending applications.</p>
+            ) : (
+              filteredApplicants.map((seller) => (
+                <button
+                  key={seller._id}
+                  onClick={() => setSelectedId(seller._id)}
+                  className={`w-full text-left p-5 border-b border-zinc-800/50 transition-colors flex flex-col gap-2
+                    ${selectedId === seller._id 
+                      ? 'bg-[#18181b] border-l-4 border-l-brand'
+                      : 'hover:bg-[#18181b]/50 border-l-4 border-l-transparent'
+                    }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className={`font-semibold ${selectedId === seller._id ? 'text-white' : 'text-zinc-200'}`}>
+                      {seller.shopName}
+                    </h3>
+                    {/* Format the MongoDB timestamp */}
+                    <span className="text-zinc-500 text-xs">
+                      {new Date(seller.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <p className="text-zinc-400 text-sm">{seller.displayName}</p>
+                  
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-brand/20 bg-brand/10 text-brand text-xs font-medium w-fit mt-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                    Pending
+                  </span>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -125,34 +143,51 @@ const SellerVerification = () => {
         {selectedSeller && (
           <div className="flex-1 bg-[#111111] border border-zinc-800 rounded-2xl flex flex-col overflow-hidden">
             
-            {/* Header - Fixed */}
+            {/* Header */}
             <div className="p-8 border-b border-zinc-800 flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">{selectedSeller.storeName}</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{selectedSeller.shopName}</h2>
                 <div className="flex items-center gap-2 text-zinc-400">
                   <ShieldCheck className="w-4 h-4 text-brand" />
-                  <span>{selectedSeller.applicant}</span>
+                  <span>{selectedSeller.displayName}</span>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-brand/20 bg-brand/10 text-brand text-sm font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
-                {selectedSeller.status}
-              </span>
             </div>
 
-            {/* Content Body - Scrollable */}
+            {/* Content Body */}
             <div className="flex-1 overflow-y-auto p-8 space-y-10">
               
-              {/* Documents Section */}
+              {/* Documents Section (Now supports real images from Cloudinary!) */}
               <div>
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Submitted Documents</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {selectedSeller.documents.map((doc, idx) => (
-                    <div key={idx} className="h-40 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500 hover:border-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer bg-[#09090b]/50">
-                      <FileImage className="w-8 h-8 mb-3 opacity-50" />
-                      <span className="text-sm font-medium">{doc}</span>
+                  
+                  {/* NIC Front */}
+                  {selectedSeller.NICfront ? (
+                    <div className="rounded-xl border border-zinc-800 overflow-hidden bg-[#09090b]">
+                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">NIC Front</p>
+                      <img src={selectedSeller.NICfront} alt="NIC Front" className="w-full h-32 object-cover" />
                     </div>
-                  ))}
+                  ) : (
+                    <div className="h-40 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
+                      <FileImage className="w-8 h-8 mb-2 opacity-50" />
+                      <span className="text-sm">No NIC Front</span>
+                    </div>
+                  )}
+
+                  {/* NIC Back */}
+                  {selectedSeller.NICback ? (
+                    <div className="rounded-xl border border-zinc-800 overflow-hidden bg-[#09090b]">
+                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">NIC Back</p>
+                      <img src={selectedSeller.NICback} alt="NIC Back" className="w-full h-32 object-cover" />
+                    </div>
+                  ) : (
+                    <div className="h-40 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
+                      <FileImage className="w-8 h-8 mb-2 opacity-50" />
+                      <span className="text-sm">No NIC Back</span>
+                    </div>
+                  )}
+
                 </div>
               </div>
 
@@ -161,48 +196,53 @@ const SellerVerification = () => {
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Applicant Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   
-                  {/* Info Cards */}
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Full Name</p>
-                    <p className="text-white font-medium">{selectedSeller.applicant}</p>
+                    <p className="text-white font-medium">{selectedSeller.displayName}</p>
                   </div>
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Email Address</p>
-                    <p className="text-white font-medium">{selectedSeller.email}</p>
+                    <p className="text-white font-medium">{selectedSeller.userId?.email || 'N/A'}</p>
                   </div>
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Phone Number</p>
-                    <p className="text-white font-medium">{selectedSeller.phone}</p>
+                    <p className="text-white font-medium">{selectedSeller.phoneNumber}</p>
                   </div>
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Business Address</p>
-                    <p className="text-white font-medium">{selectedSeller.address}</p>
+                    <p className="text-white font-medium">{selectedSeller.businessAddress}</p>
                   </div>
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-xs mb-1">Business Type</p>
-                    <p className="text-white font-medium">{selectedSeller.businessType}</p>
+                    <p className="text-zinc-500 text-xs mb-1">Reg Number</p>
+                    <p className="text-white font-medium">{selectedSeller.businessRegNumber || 'N/A'}</p>
                   </div>
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Application Date</p>
-                    <p className="text-white font-medium">{selectedSeller.date}</p>
+                    <p className="text-white font-medium">{new Date(selectedSeller.createdAt).toLocaleDateString()}</p>
                   </div>
 
                 </div>
               </div>
             </div>
 
-            {/* Footer Actions - Fixed */}
+            {/* Footer Actions */}
             <div className="p-6 border-t border-zinc-800 bg-[#09090b]/50 flex justify-between items-center">
               <p className="text-sm font-medium text-zinc-400">
                 Status: <span className="text-brand">Pending Review</span>
               </p>
               
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 font-medium text-sm transition-colors">
+                <button 
+                  onClick={() => handleReject(selectedSeller._id)}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 font-medium text-sm transition-colors"
+                >
                   <X className="w-4 h-4" />
                   Reject
                 </button>
-                <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FBB040] text-black hover:bg-[#FBB040]/90 font-bold text-sm transition-colors">
+                <button 
+                  onClick={() => handleApprove(selectedSeller._id)}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FBB040] text-black hover:bg-[#FBB040]/90 font-bold text-sm transition-colors"
+                >
                   <Check className="w-4 h-4" />
                   Approve Application
                 </button>
