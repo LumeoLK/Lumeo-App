@@ -40,8 +40,16 @@ android {
             // let Android auto-handle debug signing
         }
         getByName("release") {
-            signingConfig = signingConfigs.getByName("debug")
-        }
+        // Your existing signing config (usually defaults to debug keys locally)
+        signingConfig = signingConfigs.getByName("debug") 
+        
+        // Add these two lines with correct Kotlin syntax:
+        isMinifyEnabled = true
+        proguardFiles(
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            "proguard-rules.pro"
+        )
+    }
     }
 }
 
@@ -50,6 +58,6 @@ flutter {
 }
 
 // Add this dependencies block at the end
-dependencies {
-    implementation(project(":unityLibrary"))
-}
+ dependencies {
+     implementation(project(":unityLibrary"))
+ }

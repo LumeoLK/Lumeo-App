@@ -4,6 +4,7 @@ class User {
   final String email;
   final String token;
   final String profilePicture;
+  final String role;
 
   User({
     required this.id,
@@ -11,6 +12,7 @@ class User {
     required this.email,
     required this.token,
     required this.profilePicture,
+    required this.role,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class User {
       'email': email,
       'token': token,
       'profilePicture': profilePicture,
+      'role': role,
     };
   }
 
@@ -30,6 +33,7 @@ class User {
       email: json['email'] ?? '',
       token: json['token'] ?? '',
       profilePicture: json['profilePicture'] ?? '',
+      role: json['role'] ?? 'user',
     );
   }
 }

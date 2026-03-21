@@ -116,7 +116,7 @@ class _OnboardingPage1State extends State<OnboardingPage1> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Color(0xFFE09D3B),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
