@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldCheck, Check, X, FileImage } from 'lucide-react';
+import { Search, ShieldCheck, Check, X, FileImage, User as UserIcon } from 'lucide-react';
 
 const SellerVerification = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -7,19 +7,18 @@ const SellerVerification = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Fetch pending sellers from the backend when the page loads
+  // Fetch pending sellers from the backend
   useEffect(() => {
     fetchPendingSellers();
   }, []);
 
   const fetchPendingSellers = async () => {
     try {
-      // Replace with your actual backend port (e.g., 5000 or 8080)
-      const response = await fetch('http://localhost:5000/api/admin/sellers/pending');
+      const response = await fetch('http://localhost:3000/api/admin/sellers/pending');
       const data = await response.json();
       setApplicants(data);
       if (data.length > 0) {
-        setSelectedId(data[0]._id); // Select the first one by default
+        setSelectedId(data[0]._id);
       }
       setIsLoading(false);
     } catch (error) {
@@ -28,14 +27,10 @@ const SellerVerification = () => {
     }
   };
 
-  // 2. Handle Approving a Seller
   const handleApprove = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/sellers/${id}/approve`, {
-        method: 'PUT'
-      });
+      const response = await fetch(`http://localhost:3000/api/admin/sellers/${id}/approve`, { method: 'PUT' });
       if (response.ok) {
-        // Remove the approved seller from the screen
         const updatedList = applicants.filter(app => app._id !== id);
         setApplicants(updatedList);
         setSelectedId(updatedList.length > 0 ? updatedList[0]._id : null);
@@ -45,14 +40,10 @@ const SellerVerification = () => {
     }
   };
 
-  // 3. Handle Rejecting a Seller
   const handleReject = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/sellers/${id}/reject`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(`http://localhost:3000/api/admin/sellers/${id}/reject`, { method: 'DELETE' });
       if (response.ok) {
-        // Remove the rejected seller from the screen
         const updatedList = applicants.filter(app => app._id !== id);
         setApplicants(updatedList);
         setSelectedId(updatedList.length > 0 ? updatedList[0]._id : null);
@@ -62,10 +53,8 @@ const SellerVerification = () => {
     }
   };
 
-  // Find the full details of the currently selected applicant
   const selectedSeller = applicants.find(app => app._id === selectedId);
 
-  // Filter for the search bar
   const filteredApplicants = applicants.filter(app => 
     app.shopName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     app.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -86,7 +75,6 @@ const SellerVerification = () => {
         </span>
       </div>
 
-      {/* Main Split Layout */}
       <div className="flex gap-6 flex-1 min-h-0">
         
         {/* LEFT COLUMN: Applicant List */}
@@ -121,7 +109,6 @@ const SellerVerification = () => {
                     <h3 className={`font-semibold ${selectedId === seller._id ? 'text-white' : 'text-zinc-200'}`}>
                       {seller.shopName}
                     </h3>
-                    {/* Format the MongoDB timestamp */}
                     <span className="text-zinc-500 text-xs">
                       {new Date(seller.createdAt).toLocaleDateString()}
                     </span>
@@ -143,13 +130,24 @@ const SellerVerification = () => {
         {selectedSeller && (
           <div className="flex-1 bg-[#111111] border border-zinc-800 rounded-2xl flex flex-col overflow-hidden">
             
-            {/* Header */}
-            <div className="p-8 border-b border-zinc-800 flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">{selectedSeller.shopName}</h2>
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <ShieldCheck className="w-4 h-4 text-brand" />
-                  <span>{selectedSeller.displayName}</span>
+            {/* Header with Profile Picture (Logo) */}
+            <div className="p-8 border-b border-zinc-800 flex justify-between items-center">
+              <div className="flex items-center gap-5">
+                {/* Display Profile Picture / Logo */}
+                {selectedSeller.logo ? (
+                  <img src={selectedSeller.logo} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-zinc-700" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-[#09090b] border border-zinc-800 flex items-center justify-center">
+                    <UserIcon className="w-8 h-8 text-zinc-600" />
+                  </div>
+                )}
+                
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">{selectedSeller.shopName}</h2>
+                  <div className="flex items-center gap-2 text-zinc-400">
+                    <ShieldCheck className="w-4 h-4 text-brand" />
+                    <span>{selectedSeller.displayName}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -157,68 +155,80 @@ const SellerVerification = () => {
             {/* Content Body */}
             <div className="flex-1 overflow-y-auto p-8 space-y-10">
               
-              {/* Documents Section (Now supports real images from Cloudinary!) */}
+              {/* Identity Documents Section */}
               <div>
-                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Submitted Documents</h3>
+                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Identity Documents</h3>
                 <div className="grid grid-cols-2 gap-4">
                   
                   {/* NIC Front */}
                   {selectedSeller.NICfront ? (
                     <div className="rounded-xl border border-zinc-800 overflow-hidden bg-[#09090b]">
-                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">NIC Front</p>
-                      <img src={selectedSeller.NICfront} alt="NIC Front" className="w-full h-32 object-cover" />
+                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">ID / NIC (Front Side)</p>
+                      <img src={selectedSeller.NICfront} alt="NIC Front" className="w-full h-40 object-cover" />
                     </div>
                   ) : (
-                    <div className="h-40 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
+                    <div className="h-48 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
                       <FileImage className="w-8 h-8 mb-2 opacity-50" />
-                      <span className="text-sm">No NIC Front</span>
+                      <span className="text-sm">No NIC Front Uploaded</span>
                     </div>
                   )}
 
                   {/* NIC Back */}
                   {selectedSeller.NICback ? (
                     <div className="rounded-xl border border-zinc-800 overflow-hidden bg-[#09090b]">
-                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">NIC Back</p>
-                      <img src={selectedSeller.NICback} alt="NIC Back" className="w-full h-32 object-cover" />
+                      <p className="text-xs text-zinc-400 p-2 border-b border-zinc-800">ID / NIC (Back Side)</p>
+                      <img src={selectedSeller.NICback} alt="NIC Back" className="w-full h-40 object-cover" />
                     </div>
                   ) : (
-                    <div className="h-40 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
+                    <div className="h-48 rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-500">
                       <FileImage className="w-8 h-8 mb-2 opacity-50" />
-                      <span className="text-sm">No NIC Back</span>
+                      <span className="text-sm">No NIC Back Uploaded</span>
                     </div>
                   )}
 
                 </div>
               </div>
 
-              {/* Information Section */}
+              {/* Information Section (Matched Exactly to Mobile App) */}
               <div>
-                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Applicant Information</h3>
+                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Registration Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Full Name</p>
-                    <p className="text-white font-medium">{selectedSeller.displayName}</p>
+                    {/* Maps to fullName if you added it to your schema, or falls back to name */}
+                    <p className="text-white font-medium">{selectedSeller.fullName || selectedSeller.userId?.name || 'N/A'}</p>
                   </div>
+
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-xs mb-1">Email Address</p>
-                    <p className="text-white font-medium">{selectedSeller.userId?.email || 'N/A'}</p>
+                    <p className="text-zinc-500 text-xs mb-1">Shop Name</p>
+                    <p className="text-white font-medium">{selectedSeller.shopName || 'N/A'}</p>
                   </div>
+
+                  <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
+                    <p className="text-zinc-500 text-xs mb-1">Display Name</p>
+                    <p className="text-white font-medium">{selectedSeller.displayName || 'N/A'}</p>
+                  </div>
+
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
                     <p className="text-zinc-500 text-xs mb-1">Phone Number</p>
-                    <p className="text-white font-medium">{selectedSeller.phoneNumber}</p>
+                    <p className="text-white font-medium">{selectedSeller.phoneNumber || 'N/A'}</p>
                   </div>
+
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-xs mb-1">Business Address</p>
-                    <p className="text-white font-medium">{selectedSeller.businessAddress}</p>
+                    <p className="text-zinc-500 text-xs mb-1">Email</p>
+                    {/* Appears the mobile app collects email directly. Checks seller doc first, then user doc */}
+                    <p className="text-white font-medium">{selectedSeller.email || selectedSeller.userId?.email || 'N/A'}</p>
                   </div>
+
                   <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-xs mb-1">Reg Number</p>
+                    <p className="text-zinc-500 text-xs mb-1">Business Registration Number</p>
                     <p className="text-white font-medium">{selectedSeller.businessRegNumber || 'N/A'}</p>
                   </div>
-                  <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-xs mb-1">Application Date</p>
-                    <p className="text-white font-medium">{new Date(selectedSeller.createdAt).toLocaleDateString()}</p>
+
+                  <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/50 col-span-2">
+                    <p className="text-zinc-500 text-xs mb-1">Business Address</p>
+                    <p className="text-white font-medium">{selectedSeller.businessAddress || 'N/A'}</p>
                   </div>
 
                 </div>

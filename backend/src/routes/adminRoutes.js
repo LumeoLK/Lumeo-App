@@ -12,9 +12,8 @@ import {
   updatePaymentStatus,
   deleteOrder,
   getDashboardStats,
-  getDashboardStats,
   getRevenueChartData
-} from "../controllers/adminController.js";
+} from "../controller/adminController.js";
 
 const router = express.Router();
 
