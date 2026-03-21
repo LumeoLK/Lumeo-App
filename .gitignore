@@ -58,6 +58,12 @@ app.*.map.json
 
 **/ios/UnityFramework/
 
+**/Il2CppOutputProject/
+
+
+**/Il2CppOutputProject/
+
+
 
 # =========================
 # Unity Standard Ignores
@@ -71,11 +77,9 @@ app.*.map.json
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
 
-# =========================
-# Android & IL2CPP Build Artifacts
-# =========================
-# Ignores the massive C++ files generated during the build process
-**/Il2CppOutputProject/
+
+
+
 
 # Ignores standard Android build folders and Gradle caches
 **/.gradle/

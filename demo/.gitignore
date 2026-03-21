@@ -137,5 +137,6 @@ $RECYCLE.BIN/
 .idea/
 .vscode/
 
+lib/Constants.dart
 # FVM Version Cache
 .fvm/

@@ -1,18 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../model/conversation.dart';
+import '../providers/chat_provider.dart';
 
-class ChatApplication extends StatefulWidget {
-  const ChatApplication({super.key});
+class ChatApplication extends ConsumerStatefulWidget {
+  final Conversation conversation; // the chat room we're in
+  final String currentUserId; // logged in user's id
+  final String currentUserName; // logged in user's name
+
+  const ChatApplication({
+    super.key,
+    required this.conversation,
+    required this.currentUserId,
+    required this.currentUserName,
+  });
 
   @override
-  State<ChatApplication> createState() => _ChatApplicationState();
+  ConsumerState<ChatApplication> createState() => _ChatApplicationState();
 }
 
-class _ChatApplicationState extends State<ChatApplication> {
-  final Color accentColor = const Color(0xFFFDB04B); // Your yellow/orange
+class _ChatApplicationState extends ConsumerState<ChatApplication> {
+  final Color accentColor = const Color(0xFFFDB04B);
   final Color darkBg = const Color(0xFF1E1E1E);
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  late ChatNotifier _chatNotifier;
+  @override
+  void initState() {
+    super.initState();
+    _chatNotifier = ref.read(chatProvider.notifier);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _chatNotifier.loadMessages(widget.conversation.id);
+    });
+  }
+
+  @override
+  void dispose() {
+    _chatNotifier.leaveChat();
+    // Clean up when user leaves the chat screen
+    // This removes socket listeners so we don't get duplicate messages
+
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Scrolls to the bottom of the message list
+  // Called every time a new message arrives
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return; // don't send empty messages
+
+    _messageController.clear();
+
+    _chatNotifier.sendMessage(
+      conversationId: widget.conversation.id,
+      text: text,
+      currentUserId: widget.currentUserId,
+      currentUserName: widget.currentUserName,
+    );
+
+    _scrollToBottom();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Watch the provider — UI rebuilds whenever state changes
+    // e.g. new message arrives, loading state changes, error occurs
+    final chatState = ref.watch(chatProvider);
+
+    // Auto scroll when new messages arrive
+    if (chatState.messages.isNotEmpty) {
+      _scrollToBottom();
+    }
+
     return Scaffold(
       backgroundColor: darkBg,
       appBar: AppBar(
@@ -22,43 +96,113 @@ class _ChatApplicationState extends State<ChatApplication> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Nathon James",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: accentColor.withOpacity(0.2),
+              child: Icon(Icons.store, color: accentColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Shop Name (Primary)
+                  Text(
+                    widget
+                        .conversation
+                        .shopName, // Ensure this exists in your model!
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Product Name (Secondary)
+                  Text(
+                    widget.conversation.productName,
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Show typing indicator under the name
+                  if (chatState.isTyping)
+                    const Text(
+                      'typing...',
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       body: Column(
         children: [
-          // 1. The White Chat Container
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(15),
-                children: [
-                  _buildMessage("M", "Hello!", isMe: false),
-                  _buildMessage(
-                    "J",
-                    "Hello sir! How can I help you?",
-                    isMe: true,
-                  ),
-                  _buildMessage(
-                    "M",
-                    "Can I customize this color into white?",
-                    isMe: false,
-                  ),
-                  _buildMessage("J", "Of course sir.", isMe: true),
-                  _buildMessage("M", "Typing...", isMe: false),
-                ],
+          // Error banner — shows if something went wrong
+          if (chatState.error != null)
+            Container(
+              width: double.infinity,
+              color: Colors.red.withOpacity(0.8),
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                chatState.error!,
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
               ),
             ),
+
+          // Message list
+          Expanded(
+            child: chatState.isLoading
+                // Show spinner while loading history
+                ? const Center(child: CircularProgressIndicator())
+                : Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: chatState.messages.isEmpty
+                        // Show empty state if no messages yet
+                        ? const Center(
+                            child: Text(
+                              'No messages yet.\nSay hello!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.black38),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(15),
+                            itemCount: chatState.messages.length,
+                            itemBuilder: (context, index) {
+                              final message = chatState.messages[index];
+
+                              // Compare senderId to know which side to show
+                              // your messages on the right, theirs on the left
+                              final isMe =
+                                  message.senderId == widget.currentUserId;
+
+                              return _buildMessage(
+                                // First letter of sender's name for avatar
+                                message.senderName.isNotEmpty
+                                    ? message.senderName[0].toUpperCase()
+                                    : '?',
+                                message.text,
+                                isMe: isMe,
+                              );
+                            },
+                          ),
+                  ),
           ),
 
-          // 2. The Input Area
+          // Input area
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
@@ -71,23 +215,29 @@ class _ChatApplicationState extends State<ChatApplication> {
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: TextField(
-                        style: TextStyle(color: Colors.white70),
-                        decoration: InputDecoration(
-                          hintText: "Thank You! I'll place my order now",
+                        controller: _messageController,
+                        style: const TextStyle(color: Colors.white70),
+                        decoration: const InputDecoration(
+                          hintText: 'Type a message...',
                           hintStyle: TextStyle(
                             color: Colors.white38,
                             fontSize: 14,
                           ),
                           border: InputBorder.none,
                         ),
+                        // Allow sending with keyboard done button
+                        onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 15),
-                Icon(Icons.send, color: Colors.white, size: 28),
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: const Icon(Icons.send, color: Colors.white, size: 28),
+                ),
               ],
             ),
           ),
@@ -96,7 +246,6 @@ class _ChatApplicationState extends State<ChatApplication> {
     );
   }
 
-  // 3. Message Bubble Helper
   Widget _buildMessage(String initial, String text, {required bool isMe}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
