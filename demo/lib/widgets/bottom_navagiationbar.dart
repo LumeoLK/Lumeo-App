@@ -11,11 +11,7 @@ class BottomNav extends StatelessWidget {
     'Custom',
   ];
 
-  const BottomNav({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const BottomNav({super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +27,8 @@ class BottomNav extends StatelessWidget {
       backgroundColor: Colors.black,
       selectedItemColor: Colors.white,
       unselectedItemColor: const Color(0xFFE09D3B),
+      type: BottomNavigationBarType.fixed,
+      elevation: 0,
       items: [
         _item('assets/icons/menu.png', 'Home', 0),
         _item('assets/icons/wishlist.png', 'Wish List', 1),

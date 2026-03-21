@@ -8,6 +8,7 @@ import 'package:lumeo_v2/providers/wishlist_provider.dart';
 import 'package:lumeo_v2/utils/auth_guard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
+import '../widgets/search_bar.dart';
 
 class WishListPage extends ConsumerStatefulWidget {
   const WishListPage({Key? key}) : super(key: key);
@@ -19,7 +20,8 @@ class WishListPage extends ConsumerStatefulWidget {
 class _WishListPageState extends ConsumerState<WishListPage> {
   String selectedCategory = '';
   String sortBy = 'low_to_high';
-  bool _isLoggedIn = false;
+  bool _isLoggedIn = false; // from HEAD: auth state
+  bool isGridView = false; // from dev: grid/list toggle
 
   @override
   void initState() {
@@ -49,6 +51,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
 
   @override
   Widget build(BuildContext context) {
+    // from HEAD: show login prompt if not authenticated
     if (!_isLoggedIn) {
       return Scaffold(
         backgroundColor: const Color(0xFF1a1a1a),
@@ -71,9 +74,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                onPressed: () {
-                  LoginRequiredDialog.show(context);
-                },
+                onPressed: () => LoginRequiredDialog.show(context),
                 child: const Text('Login'),
               ),
             ],
@@ -91,142 +92,129 @@ class _WishListPageState extends ConsumerState<WishListPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a1a),
-        elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2a2a2a),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const TextField(
-            style: TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Search store',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Wish List',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // search functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
-            onPressed: () {
-              // profile page
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Wish List',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
 
-          // category filter chips
-          SizedBox(
-            height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
+            // from dev: SearchBarWidget
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: SearchBarWidget(hintText: 'Search wish list items...'),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Category filter chips
+            SizedBox(
+              height: 50,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  _buildCategoryChip('Chairs'),
+                  _buildCategoryChip('Beds'),
+                  _buildCategoryChip('Tables'),
+                  _buildCategoryChip('Sofas'),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Filters and sorting row
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _buildCategoryChip('Chairs'),
-                _buildCategoryChip('Beds'),
-                _buildCategoryChip('Tables'),
-                _buildCategoryChip('Sofas'),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // filters and sorting row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: () {
-                    _showFilterDialog();
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.tune, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Filters',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(Icons.swap_vert, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        _getSortText(),
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.view_list, color: Colors.white),
-                  onPressed: () {
-                    // toggle list/grid view
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // list of items
-          Expanded(
-            child: _getFilteredItems(items).isEmpty
-                ? const Center(
-                    child: Text(
-                      'No items',
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: _showFilterDialog,
+                    child: Row(
+                      children: const [
+                        Icon(Icons.tune, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Filters',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      ],
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _getFilteredItems(items).length,
-                    itemBuilder: (context, index) {
-                      return _buildWishListItem(_getFilteredItems(items)[index]);
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.swap_vert,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getSortText(),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // from dev: functional grid/list toggle
+                  IconButton(
+                    icon: Icon(
+                      isGridView ? Icons.view_list : Icons.grid_view,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() => isGridView = !isGridView);
                     },
                   ),
-          ),
-        ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // List or Grid of items
+            Expanded(
+              child: _getFilteredItems(items).isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No items',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    )
+                  : isGridView
+                  ? _buildGridView(items)
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _getFilteredItems(items).length,
+                      itemBuilder: (context, index) {
+                        return _buildWishListItem(
+                          _getFilteredItems(items)[index],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
+  // from HEAD: filters real Product objects
   List<Product> _getFilteredItems(List<Product> items) {
     List<Product> filtered;
 
@@ -234,7 +222,9 @@ class _WishListPageState extends ConsumerState<WishListPage> {
       filtered = List.from(items);
     } else {
       filtered = items.where((item) {
-        return item.description.toLowerCase().contains(selectedCategory.toLowerCase());
+        return item.description.toLowerCase().contains(
+          selectedCategory.toLowerCase(),
+        );
       }).toList();
     }
 
@@ -243,35 +233,33 @@ class _WishListPageState extends ConsumerState<WishListPage> {
     } else if (sortBy == 'high_to_low') {
       filtered.sort((a, b) => b.price.compareTo(a.price));
     }
+    // Note: 'available' filter is in the dialog but not applicable to the
+    // Product model directly — extend Product with a soldOut field if needed.
 
     return filtered;
   }
 
   String _getSortText() {
-    if (sortBy == 'low_to_high') {
-      return 'Price: lowest to high';
-    } else if (sortBy == 'high_to_low') {
-      return 'Price: highest to low';
-    } else if (sortBy == 'available') {
-      return 'Available only';
+    switch (sortBy) {
+      case 'high_to_low':
+        return 'Price: highest to low';
+      case 'available':
+        return 'Available only';
+      default:
+        return 'Price: lowest to high';
     }
-    return 'Price: lowest to high';
   }
 
   Widget _buildCategoryChip(String category) {
-    bool isSelected = selectedCategory == category;
+    final isSelected = selectedCategory == category;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
         label: Text(category),
         selected: isSelected,
-        onSelected: (selected) {
+        onSelected: (_) {
           setState(() {
-            if (selectedCategory == category) {
-              selectedCategory = ''; // deselect if clicking same category
-            } else {
-              selectedCategory = category; // select new category
-            }
+            selectedCategory = selectedCategory == category ? '' : category;
           });
         },
         backgroundColor: const Color(0xFF2a2a2a),
@@ -285,6 +273,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
     );
   }
 
+  // from HEAD: uses real Product model + cart/wishlist providers
   Widget _buildWishListItem(Product product) {
     final cartState = ref.watch(cartProvider);
     return Container(
@@ -296,29 +285,23 @@ class _WishListPageState extends ConsumerState<WishListPage> {
       ),
       child: Row(
         children: [
-          // product image with badges
-          Stack(
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3a3a3a),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: product.images.isNotEmpty
-                      ? Image.network(product.images[0], fit: BoxFit.cover)
-                      : Container(color: Colors.grey),
-                ),
-              ),
-            ],
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3a3a3a),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: product.images.isNotEmpty
+                  ? Image.network(product.images[0], fit: BoxFit.cover)
+                  : Container(color: Colors.grey),
+            ),
           ),
 
           const SizedBox(width: 12),
 
-          // product info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,10 +319,6 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
-                  '',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
                 const SizedBox(height: 8),
                 Text(
                   '\$${product.price}',
@@ -353,13 +332,11 @@ class _WishListPageState extends ConsumerState<WishListPage> {
             ),
           ),
 
-          // action buttons
           Column(
             children: [
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white, size: 20),
                 onPressed: () {
-                  // remove from wishlist
                   ref
                       .read(wishlistProvider.notifier)
                       .removeFromWishlist(product.id);
@@ -378,38 +355,32 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                     size: 20,
                   ),
                   onPressed: cartState.isLoading
-                          ? null
-                          : () async {
-                              // Check if user is logged in first
-                              if (!await requireAuth(context, ref)) return;
+                      ? null
+                      : () async {
+                          if (!await requireAuth(context, ref)) return;
+                          await ref
+                              .read(cartProvider.notifier)
+                              .addToCart(product.id, product.price);
 
-                              // User is authenticated — proceed with adding to cart
-                              await ref
-                                  .read(cartProvider.notifier)
-                                  .addToCart(
-                                    product.id,
-                                    product.price,
-                                  );
-
-                              final error = ref.read(cartProvider).error;
-                              if (context.mounted) {
-                                if (error == null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const CartPage(),
-                                    ),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Failed: $error'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
+                          final error = ref.read(cartProvider).error;
+                          if (context.mounted) {
+                            if (error == null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const CartPage(),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed: $error'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
                 ),
               ),
             ],
@@ -419,7 +390,113 @@ class _WishListPageState extends ConsumerState<WishListPage> {
     );
   }
 
-  //filtering options
+  // from dev: grid layout adapted for real Product model
+  Widget _buildGridView(List<Product> items) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.57,
+      ),
+      itemCount: _getFilteredItems(items).length,
+      itemBuilder: (context, index) {
+        return _buildGridItem(_getFilteredItems(items)[index]);
+      },
+    );
+  }
+
+  Widget _buildGridItem(Product product) {
+    final cartState = ref.watch(cartProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2a2a2a),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+            child: SizedBox(
+              height: 150,
+              width: double.infinity,
+              child: product.images.isNotEmpty
+                  ? Image.network(product.images[0], fit: BoxFit.cover)
+                  : Container(color: const Color(0xFF3a3a3a)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.shopName,
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  product.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '\$${product.price}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFBB040),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        padding: const EdgeInsets.all(6),
+                        constraints: const BoxConstraints(),
+                        onPressed: cartState.isLoading
+                            ? null
+                            : () async {
+                                if (!await requireAuth(context, ref)) return;
+                                await ref
+                                    .read(cartProvider.notifier)
+                                    .addToCart(product.id, product.price);
+                              },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showFilterDialog() {
     showDialog(
       context: context,
@@ -443,9 +520,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                   groupValue: sortBy,
                   activeColor: const Color(0xFFFBB040),
                   onChanged: (value) {
-                    setState(() {
-                      sortBy = value!;
-                    });
+                    setState(() => sortBy = value!);
                     Navigator.pop(context);
                   },
                 ),
@@ -460,9 +535,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                   groupValue: sortBy,
                   activeColor: const Color(0xFFFBB040),
                   onChanged: (value) {
-                    setState(() {
-                      sortBy = value!;
-                    });
+                    setState(() => sortBy = value!);
                     Navigator.pop(context);
                   },
                 ),
@@ -477,9 +550,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
                   groupValue: sortBy,
                   activeColor: const Color(0xFFFBB040),
                   onChanged: (value) {
-                    setState(() {
-                      sortBy = value!;
-                    });
+                    setState(() => sortBy = value!);
                     Navigator.pop(context);
                   },
                 ),
@@ -488,9 +559,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text(
                 'Close',
                 style: TextStyle(color: Color(0xFFFBB040)),

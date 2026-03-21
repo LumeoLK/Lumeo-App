@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/banner_carousel.dart';

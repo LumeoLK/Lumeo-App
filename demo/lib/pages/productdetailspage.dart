@@ -8,18 +8,17 @@ import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';
 import '../providers/wishlist_provider.dart';
+// Note: Make sure to import your ARScreen!
+// import '../pages/ar_screen.dart';
 
-// Step 1: ConsumerStatefulWidget instead of StatefulWidget
 class ProductDetailsPage extends ConsumerStatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
-
   final Product product;
 
   @override
   ConsumerState<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
-// Step 2: ConsumerState instead of State — this is what gives us access to "ref"
 class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
   final Color backgroundColor = const Color(0xFF1E1E1E);
   final Color cardColor = const Color(0xFF2A2A2A);
@@ -29,12 +28,13 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final images = widget.product.images;
+    final product = widget.product;
+    final images = product.images;
 
-    // Step 3: ref.watch — reads cartState and rebuilds button when isLoading changes
+    // State watchers
     final cartState = ref.watch(cartProvider);
     final wishlistState = ref.watch(wishlistProvider);
-    final isFavorite = wishlistState.items.any((item) => item.id == widget.product.id);
+    final isFavorite = wishlistState.items.any((item) => item.id == product.id);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -47,10 +47,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
             await Navigator.maybePop(context);
           },
         ),
-        title: Text(
-          widget.product.name,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(product.name, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -63,33 +60,76 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 350,
-              width: double.infinity,
-              color: Colors.grey[800],
-              child: images.isNotEmpty
-                  ? Image.network(
-                      images[_selectedImageIndex],
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(child: CircularProgressIndicator());
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
+            // --- RESOLVED CONFLICT 1: Combined Image Viewer & AR Button ---
+            Stack(
+              children: [
+                Container(
+                  height: 350,
+                  width: double.infinity,
+                  color: Colors.grey[800],
+                  child: images.isNotEmpty
+                      ? Image.network(
+                          images[_selectedImageIndex],
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 50,
+                                color: Colors.white24,
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
                           child: Icon(
-                            Icons.image_not_supported,
+                            Icons.image,
                             size: 50,
                             color: Colors.white24,
                           ),
-                        );
-                      },
-                    )
-                  : const Center(
-                      child: Icon(Icons.image, size: 50, color: Colors.white24),
+                        ),
+                ),
+
+                // AR Button from 'dev' branch
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Make sure ARScreen is imported at the top!
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => ARScreen(modelUrl: product.modelUrl),
+                      //   ),
+                      // );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Image.asset(
+                        'assets/icons/ar.png',
+                        width: 30,
+                        height: 30,
+                        color: Colors.white,
+                      ),
                     ),
+                  ),
+                ),
+              ],
             ),
 
+            // Thumbnail selector
             if (images.length > 1)
               SizedBox(
                 height: 70,
@@ -146,25 +186,19 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                           color: isFavorite ? Colors.red : Colors.white,
                         ),
                         onPressed: () async {
-                          print('Heart tapped! isFavorite=$isFavorite, productId=${widget.product.id}');
-                          
-                          if (!await requireAuth(context, ref)) {
-                            print('Auth check failed - user not logged in');
-                            return;
-                          }
-                          print('Auth check passed');
-                          
+                          if (!await requireAuth(context, ref)) return;
+
                           try {
                             if (isFavorite) {
-                              print('Removing from wishlist...');
-                              await ref.read(wishlistProvider.notifier).removeFromWishlist(widget.product.id);
+                              await ref
+                                  .read(wishlistProvider.notifier)
+                                  .removeFromWishlist(product.id);
                             } else {
-                              print('Adding to wishlist...');
-                              await ref.read(wishlistProvider.notifier).addToWishlist(widget.product.id);
+                              await ref
+                                  .read(wishlistProvider.notifier)
+                                  .addToWishlist(product.id);
                             }
-                            print('Wishlist operation completed');
                           } catch (e) {
-                            print('Wishlist error: $e');
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -184,10 +218,11 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // --- RESOLVED CONFLICT 2: Kept 'Expanded' to protect layout ---
                       Expanded(
                         child: Text(
-                          widget.product.name,
-                          style: TextStyle(
+                          product.name,
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -196,8 +231,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        widget.product.price.toString(),
-                        style: TextStyle(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -205,14 +240,10 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       ),
                     ],
                   ),
-                  Text(
-                    widget.product.shopName,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
                   const SizedBox(height: 15),
 
                   Text(
-                    widget.product.description,
+                    product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
@@ -228,20 +259,14 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      // Disabled while loading so user can't double-tap
                       onPressed: cartState.isLoading
                           ? null
                           : () async {
-                              // Check if user is logged in first
                               if (!await requireAuth(context, ref)) return;
 
-                              // User is authenticated — proceed with adding to cart
                               await ref
                                   .read(cartProvider.notifier)
-                                  .addToCart(
-                                    widget.product.id,
-                                    widget.product.price,
-                                  );
+                                  .addToCart(product.id, product.price);
 
                               final error = ref.read(cartProvider).error;
                               if (context.mounted) {
@@ -285,58 +310,54 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
                   const Divider(color: Colors.white24),
 
-                  _buildListTile("Ask For Customizations", () async {
-                    // Check user is logged in
-                    if (!await requireAuth(context, ref)) return;
+                  _buildListTile(
+                    "Ask For Customizations",
+                    onTap: () async {
+                      if (!await requireAuth(context, ref)) return;
 
-                    // Get logged in user from Riverpod
-                    final currentUser = ref.read(currentUserProvider);
-                    if (currentUser == null) return;
+                      final currentUser = ref.read(currentUserProvider);
+                      if (currentUser == null) return;
 
-                    // Show loading spinner while fetching/creating conversation
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) =>
-                          const Center(child: CircularProgressIndicator()),
-                    );
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
 
-                    try {
-                      // Hit POST /api/chat/conversations on your backend
-                      final conversation = await ref
-                          .read(chatServiceProvider)
-                          .startConversation(
-                            sellerId: widget.product.sellerId,
-                            productId: widget.product.id,
-                          );
-                      print('=== conversationId: ${conversation.id} ===');
-                      print('=== productId: ${conversation.productId} ===');
-                      print('=== sellerId: ${widget.product.sellerId} ===');
-                      if (context.mounted) {
-                        Navigator.pop(context); // dismiss spinner
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatApplication(
-                              conversation: conversation,
-                              currentUserId: currentUser.id,
-                              currentUserName: currentUser.name,
+                      try {
+                        final conversation = await ref
+                            .read(chatServiceProvider)
+                            .startConversation(
+                              sellerId: product.sellerId,
+                              productId: product.id,
+                            );
+                        if (context.mounted) {
+                          Navigator.pop(context); // dismiss spinner
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatApplication(
+                                conversation: conversation,
+                                currentUserId: currentUser.id,
+                                currentUserName: currentUser.name,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context); // dismiss spinner
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Could not start chat: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
-                    } catch (e) {
-                      if (context.mounted) {
-                        Navigator.pop(context); // dismiss spinner
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Could not start chat: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  }),
+                    },
+                  ),
                   const SizedBox(height: 30),
 
                   const Text(
@@ -382,7 +403,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
     );
   }
 
-  Widget _buildListTile(String title, VoidCallback onTap) {
+  // --- FIXED: Added 'onTap' parameter to prevent syntax error ---
+  Widget _buildListTile(String title, {VoidCallback? onTap}) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
