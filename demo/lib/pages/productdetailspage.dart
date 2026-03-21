@@ -8,8 +8,8 @@ import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';
 import '../providers/wishlist_provider.dart';
-// Note: Make sure to import your ARScreen!
-// import '../pages/ar_screen.dart';
+
+import '../pages/ar_screen.dart';
 
 class ProductDetailsPage extends ConsumerStatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
@@ -102,18 +102,18 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                   right: 20,
                   child: GestureDetector(
                     onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => ARScreen(modelUrl: product.modelUrl),
-                      //   ),
-                      // );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('AR feature coming soon!'),
-                          backgroundColor: Color(0xFFFDB04B),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(
+                      //     content: Text('AR feature coming soon!'),
+                      //     backgroundColor: Color(0xFFFDB04B),
+                      //   ),
+                      // );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
