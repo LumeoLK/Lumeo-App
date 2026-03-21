@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 const bgColor = Color(0xFF000000);
 const cardColor = Color(0xFF1a1a1a);
@@ -66,8 +68,25 @@ class _SendProposalPageState extends State<SendProposalPage> {
       );
 }
 
-class SendProposalBody extends StatelessWidget {
+class SendProposalBody extends StatefulWidget {
   const SendProposalBody({super.key});
+  @override
+  State<SendProposalBody> createState() => _SendProposalBodyState();
+}
+
+class _SendProposalBodyState extends State<SendProposalBody> {
+
+  //stores the selected images
+  final List<File?> _attachments = [null, null, null];
+
+  //opens gallery and save selected image
+  Future<void> _pickAttachment(int index) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() => _attachments[index] = File(picked.path));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,15 +154,23 @@ class SendProposalBody extends StatelessWidget {
           // attachment boxes
           Row(
             children: List.generate(3, (i) => Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
-                height: 80,
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: hintText.withOpacity(0.3)),
+              child: GestureDetector(
+                onTap: () => _pickAttachment(i),
+                child: Container(
+                  margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: hintText.withOpacity(0.3)),
+                  ),
+                  child: _attachments[i] != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(_attachments[i]!, fit: BoxFit.cover),
+                        )
+                      : const Icon(Icons.add, color: hintText, size: 28),
                 ),
-                child: const Icon(Icons.add, color: hintText, size: 28),
               ),
             )),
           ),
