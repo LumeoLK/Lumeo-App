@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import Order from "../models/order.js";
 
 export async function adminRegister() {
     const existingAdmin = await User.findOne({ email: "admin@lumeo.com" });
@@ -87,5 +88,104 @@ export const updateModelStatus = async (req, res) => {
   } catch (error) {
     console.error("Error updating model status:", error);
     res.status(500).json({ message: "Server error while updating model status." });
+  }
+};
+
+
+
+//ORDER MANAGEMENT LOGIC
+
+// @desc    Get all orders across the platform
+// @route   GET /api/admin/orders
+export const getAllOrders = async (req, res) => {
+  try {
+    // Populate the buyer's name/email AND the titles/images of the products they bought
+    const orders = await Order.find({})
+      .populate("buyerId", "name email") 
+      .populate("items.productId", "title images price category")
+      .populate("items.customRequestId", "title status") // Just in case it's a custom job
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Server error while fetching orders." });
+  }
+};
+
+// @desc    Update the fulfillment status of an order
+// @route   PUT /api/admin/orders/:id/status
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; 
+
+    const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid order status provided." });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    res.status(200).json({ message: `Order status updated to ${status}`, order: updatedOrder });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Server error while updating order status." });
+  }
+};
+
+// @desc    Update the payment status of an order (Great for COD)
+// @route   PUT /api/admin/orders/:id/payment
+export const updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentStatus } = req.body; 
+
+    const validStatuses = ["pending", "paid", "failed"];
+    if (!validStatuses.includes(paymentStatus)) {
+      return res.status(400).json({ message: "Invalid payment status provided." });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { paymentStatus: paymentStatus },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    res.status(200).json({ message: `Payment marked as ${paymentStatus}`, order: updatedOrder });
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    res.status(500).json({ message: "Server error while updating payment status." });
+  }
+};
+
+// @desc    Delete an order entirely (Admin override)
+// @route   DELETE /api/admin/orders/:id
+export const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedOrder = await Order.findByIdAndDelete(id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    res.status(200).json({ message: "Order permanently deleted from the platform." });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    res.status(500).json({ message: "Server error while deleting order." });
   }
 };
