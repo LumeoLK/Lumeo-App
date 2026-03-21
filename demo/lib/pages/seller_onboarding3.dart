@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:lumeo_v2/pages/seller_onboarding3.dart';
 
-
-class SellerOnboardingPage2 extends StatefulWidget {
-  const SellerOnboardingPage2({Key? key}) : super(key: key);
+class SellerOnboardingPage3 extends StatefulWidget {
+  const SellerOnboardingPage3({Key? key}) : super(key: key);
 
   @override
-  State<SellerOnboardingPage2> createState() => _SellerOnboardingPageState();
+  State<SellerOnboardingPage3> createState() => _SellerOnboardingPageState();
 }
 
-class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
+class _SellerOnboardingPageState extends State<SellerOnboardingPage3> {
   // video manager
   late VideoPlayerController _videoController;
 
@@ -79,7 +77,7 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
               children: [
                 // Title
                 const Text(
-                  'Custom Orders & \nPersonalization',
+                  'Blueprint to 3D Model',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 26,
@@ -94,7 +92,7 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
                 const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: 
-                    Text("Buyers customize furniture with size, color and material. Sellers get detailed requests and deliver exactly what's wanted.",
+                    Text("Sellers can turn furniture blueprints into detailed 3D models, ready for AR previews and custom orders.",
                     style: TextStyle(
                     color: Colors.white70,
                     fontSize: 15,
@@ -113,13 +111,10 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
                     width: double.infinity, //full width button
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () {  //go to page 3
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(builder:(_)=> const SellerOnboardingPage3()),
-                        );
+                      onPressed: () {
+                        // continue function
+
                       },
-                      
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFBB040), 
                         foregroundColor: Colors.black,
@@ -129,7 +124,7 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
                         elevation: 0,
                       ),
                       child: const Text(
-                        'NEXT',
+                        'CONTINUE',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
