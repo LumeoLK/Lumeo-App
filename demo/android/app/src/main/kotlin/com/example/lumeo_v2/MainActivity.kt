@@ -1,6 +1,6 @@
 package com.example.lumeo_v2
 
-import com.learntoflutter.flutter_embed_unity_android.unity.FakeUnityPlayerActivity
+import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity : FakeUnityPlayerActivity() {
+class MainActivity : FlutterActivity() {
 }
