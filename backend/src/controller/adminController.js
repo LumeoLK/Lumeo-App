@@ -1,3 +1,5 @@
+import User from "../models/User.js";
+import Seller from "../models/seller.js";
 import Product from "../models/Product.js";
 import Order from "../models/order.js";
 
@@ -187,5 +189,78 @@ export const deleteOrder = async (req, res) => {
   } catch (error) {
     console.error("Error deleting order:", error);
     res.status(500).json({ message: "Server error while deleting order." });
+  }
+};
+
+
+//DASHBOARD ANALYTICS LOGIC
+
+// @desc    Get aggregate stats for the main admin dashboard
+// @route   GET /api/admin/dashboard-stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    // 1. Calculate Total Revenue (Sum of all orders that aren't cancelled)
+    const revenueResult = await Order.aggregate([
+      { $match: { status: { $ne: "cancelled" } } },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+    ]);
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+
+    // 2. Count Total Users (Assuming standard buyers/customers)
+    const totalUsers = await User.countDocuments({ role: { $ne: "admin" } });
+
+    // 3. Count Active Sellers (Approved shops)
+    const activeSellers = await Seller.countDocuments({ isVerified: true });
+
+    // 4. Count Pending Seller Requests
+    const pendingRequests = await Seller.countDocuments({ isVerified: false });
+
+    // Send it all back in one neat package
+    res.status(200).json({
+      totalRevenue,
+      totalUsers,
+      activeSellers,
+      pendingRequests
+    });
+
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({ message: "Server error while fetching dashboard stats." });
+  }
+};
+
+
+// @desc    Get revenue data for the chart (Last 7 Days)
+// @route   GET /api/admin/revenue-chart
+export const getRevenueChartData = async (req, res) => {
+  try {
+    // 1. Get the date for exactly 7 days ago
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // 2. Aggregate the data
+    const revenueData = await Order.aggregate([
+      // Match only valid orders from the last 7 days
+      {
+        $match: {
+          status: { $ne: "cancelled" },
+          createdAt: { $gte: sevenDaysAgo }
+        }
+      },
+      // Group them by the date string (YYYY-MM-DD) and sum the totalAmount
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" }
+        }
+      },
+      // Sort them chronologically
+      { $sort: { _id: 1 } } 
+    ]);
+
+    res.status(200).json(revenueData);
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ message: "Server error fetching chart data." });
   }
 };
