@@ -10,7 +10,6 @@ import OrderManagement from './pages/OrderManagement.jsx';
 import ProductManagement from './pages/ProductManagement.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
 import SellerVerification from './pages/SellerVerification.jsx';
-import CustomRequests from './pages/CustomRequests.jsx';
 import Settings from './pages/Settings.jsx';
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
           <Route path="/products" element={<ProductManagement />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/sellers" element={<SellerVerification />} />
-          <Route path="/requests" element={<CustomRequests />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
 
