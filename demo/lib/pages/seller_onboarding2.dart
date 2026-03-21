@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo_v2/pages/seller_onboarding2.dart';
 import 'package:video_player/video_player.dart';
 
-class SellerOnboardingPage extends StatefulWidget {
-  const SellerOnboardingPage({Key? key}) : super(key: key);
+
+class SellerOnboardingPage2 extends StatefulWidget {
+  const SellerOnboardingPage2({Key? key}) : super(key: key);
 
   @override
-  State<SellerOnboardingPage> createState() => _SellerOnboardingPageState();
+  State<SellerOnboardingPage2> createState() => _SellerOnboardingPageState();
 }
 
-class _SellerOnboardingPageState extends State<SellerOnboardingPage> {
+class _SellerOnboardingPageState extends State<SellerOnboardingPage2> {
   // video manager
   late VideoPlayerController _videoController;
-  //bool _initialized = false;
 
   @override
   void initState() {
@@ -26,7 +25,6 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage> {
 
         setState(() {});
         _videoController.play();
-        
       });
   }
 
@@ -80,43 +78,29 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage> {
               children: [
                 // Title
                 const Text(
-                  'Become a Seller',
+                  'Custom Orders & \nPersonalization',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
 
                 const SizedBox(height: 12), //space between title and subtitle
 
                 //Subtitle
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40),
-                  child: Text.rich(
-                    TextSpan(
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                        height: 1.5, //line spacing
-                      ),
-                      children: [
-                        TextSpan(text: 'Join '),
-                        TextSpan(
-                          text: 'LUMEO',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        TextSpan(
-                          text:
-                              ' to showcase your furniture designs, manage your inventory, and take custom orders from local buyers.',
-                        ),
-                      ],
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: 
+                    Text("Buyers customize furniture with size, color and material. Sellers get detailed requests and deliver exactly what's wanted.",
+                    style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 15,
+                    height: 1.5,
                     ),
                     textAlign: TextAlign.center,
-                  ),
+                ),
                 ),
 
                 const SizedBox(height: 32),
@@ -127,14 +111,11 @@ class _SellerOnboardingPageState extends State<SellerOnboardingPage> {
                   child: SizedBox(
                     width: double.infinity, //full width button
                     height: 54,
-                    child: ElevatedButton( //go to the next page
-                      onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder:(_)=> const SellerOnboardingPage2()),
-                        ); 
+                    child: ElevatedButton(
+                      onPressed: () {  //go to page 3
+                        
                       },
-
+                      
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFBB040), 
                         foregroundColor: Colors.black,
