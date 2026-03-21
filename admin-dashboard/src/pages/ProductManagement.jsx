@@ -17,7 +17,7 @@ const ProductManagement = () => {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/admin/products');
+      const response = await fetch('http://localhost:3000/api/admin/products');
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -34,7 +34,7 @@ const ProductManagement = () => {
     if (!window.confirm("Are you sure you want to permanently delete this product?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/admin/products/${id}`, {
         method: 'DELETE'
       });
       
