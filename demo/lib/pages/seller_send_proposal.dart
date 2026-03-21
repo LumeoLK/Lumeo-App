@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'seller_upload_success.dart';
 
 const bgColor = Color(0xFF000000);
 const cardColor = Color(0xFF1a1a1a);
@@ -197,7 +198,12 @@ class _SendProposalBodyState extends State<SendProposalBody> {
               // submit button 
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UploadSuccessPage()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kOrange,
                     padding: const EdgeInsets.symmetric(vertical: 14),
