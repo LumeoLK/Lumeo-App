@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+
+import '../widgets/seller_bottom_navigation_bar.dart';
 
 //color constants
 const bgColor = Color(0xFF000000);       // background color
@@ -21,15 +24,6 @@ class _ListingsPageState extends State<ListingsPage> {
   int _tab = 0;       // 0-Add Product, 1-Products List
   int _navIndex = 1;  // listings's index is 1st in navbar
 
-  final _navItems = const [
-    BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Overview'),
-    BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Listings'),
-    BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Orders'),
-    BottomNavigationBarItem(icon: Icon(Icons.view_in_ar), label: 'Blueprint 3D'),
-    BottomNavigationBarItem(icon: Icon(Icons.tune), label: 'Custom'),
-    BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,17 +31,15 @@ class _ListingsPageState extends State<ListingsPage> {
       appBar: _buildAppBar(),
       body: _tab == 0
           ? const AddProductForm()
-          : const Center(child: Text('Products List', style: TextStyle(color: textColor))),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: cardColor,
-        selectedItemColor: kOrange,
-        unselectedItemColor: hintText,
+          : const Center(
+              child: Text(
+                'Products List',
+                style: TextStyle(color: textColor),
+              ),
+            ),
+      bottomNavigationBar: SellerBottomNavigationBar(
         currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
-        type: BottomNavigationBarType.fixed,
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        items: _navItems,
+        onTap: (index) => setState(() => _navIndex = index),
       ),
     );
   }

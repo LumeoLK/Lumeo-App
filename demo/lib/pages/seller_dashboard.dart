@@ -5,6 +5,9 @@ import '../services/seller_dashboard_service.dart';
 import 'home_page.dart';
 import "productpage.dart";
 
+import '../widgets/seller_bottom_navigation_bar.dart';
+
+
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
 
@@ -133,7 +136,15 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
           ),
 
           // Fixed bottom nav
-          Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SellerBottomNavigationBar(
+              currentIndex: _activeNav,
+              onTap: (index) => setState(() => _activeNav = index),
+            ),
+          ),
         ],
       ),
     );
@@ -783,81 +794,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────
-  //  BOTTOM NAV
-  // ─────────────────────────────────────────────────────────
-  Widget _buildBottomNav() {
-    final navItems = [
-      {'label': 'Overview', 'icon': Icons.grid_view_rounded},
-      {'label': 'Listings', 'icon': Icons.format_list_bulleted_rounded},
-      {'label': 'Orders', 'icon': Icons.shopping_bag_outlined},
-      {'label': 'BluePrint 3D', 'icon': Icons.view_in_ar_rounded},
-      {'label': 'Custom', 'icon': Icons.tune_rounded},
-      {'label': 'Profile', 'icon': Icons.person_outline_rounded},
-    ];
-
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
-      ),
-      child: Row(
-        children: List.generate(navItems.length, (i) {
-          final active = i == _activeNav;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _activeNav = i),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  if (active)
-                    Container(
-                      height: 2.5,
-                      width: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFBB040),
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(3),
-                        ),
-                      ),
-                    ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        navItems[i]['icon'] as IconData,
-                        size: 20,
-                        color: active
-                            ? const Color(0xFFFBB040)
-                            : const Color(0xFF555555),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        navItems[i]['label'] as String,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: active
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: active
-                              ? const Color(0xFFFBB040)
-                              : const Color(0xFF555555),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
