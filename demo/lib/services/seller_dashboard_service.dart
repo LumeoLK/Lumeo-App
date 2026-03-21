@@ -21,7 +21,7 @@ class SellerDashboardService {
     int ordersLimit = 10,
   }) async {
     final uri = Uri.parse(
-      '${Constants.sellerUri}/dashboard'
+      '${Constants.sellersUri}/dashboard'
       '?listingsLimit=$listingsLimit&ordersLimit=$ordersLimit',
     );
 
