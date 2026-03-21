@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
 
+import adminRoutes from "./routes/adminRoutes.js";
+
 
 import { Server } from "socket.io";
 import setupSocket from "./socket/socketHandler.js";
@@ -14,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(cookieParser());
 
+app.use("/api/admin", adminRoutes);
 
 import authRouter from "./routes/auth.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
