@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'seller_request_details.dart';
 
 //color constrants
 const bgColor = Color(0xFF000000);  //background color
@@ -292,7 +293,12 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kOrange,
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -468,7 +474,12 @@ class OrderCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: kOrange,
                 padding: const EdgeInsets.symmetric(vertical: 12),
