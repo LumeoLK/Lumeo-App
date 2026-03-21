@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/seller-registration_info.dart';
 import 'package:lumeo_v2/pages/seller_dashboard.dart';
+import 'package:lumeo_v2/pages/seller_verification_page.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:lumeo_v2/providers/order_provider.dart';
 import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
@@ -22,7 +23,7 @@ class Userprofile extends ConsumerStatefulWidget {
 
 class _UserprofileState extends ConsumerState<Userprofile> {
   bool _isLoggedIn = false;
-
+  bool _isVerified = false;
   @override
   void initState() {
     super.initState();
@@ -30,11 +31,24 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     Future.microtask(() async {
       print('[UserProfile] Checking login status...');
       await _checkLoginStatus();
+
+      await ref
+          .read(authProvider.notifier)
+          .checkSellerVerification(); // fetch fresh from API
+      await _loadVerifiedStatus(); // read updated prefs
+
       print('[UserProfile] Fetching orders...');
       if (_isLoggedIn) {
         ref.read(orderProvider.notifier).fetchMyOrders();
       }
+
     });
+  }
+
+  Future<void> _loadVerifiedStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final verified = prefs.getBool('seller_is_verified') ?? false;
+    if (mounted) setState(() => _isVerified = verified);
   }
 
   Future<void> _checkLoginStatus() async {
@@ -114,6 +128,10 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     final user = ref.watch(currentUserProvider);
     final orderState = ref.watch(orderProvider);
     final bool isSeller = user?.role == 'seller';
+
+    final bool isPending = isSeller && !_isVerified;
+    final bool isVerifiedSeller = isSeller && _isVerified;
+
     final int orderCount = orderState.orders.length;
 
     print('[UserProfile] Building profile - Order count: $orderCount');
@@ -122,6 +140,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     if (orderState.error != null) {
       print('[UserProfile] Order fetch error: ${orderState.error}');
     }
+
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
@@ -247,17 +266,29 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFB347),
+                  backgroundColor: isPending
+                      ? Colors
+                            .grey
+                            .shade800 // muted for pending
+                      : const Color(0xFFFFB347), // orange for active
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 onPressed: () {
-                  if (isSeller) {
+                  if (isVerifiedSeller) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const SellerDashboardPage(),
+                      ),
+                    );
+                  } else if (isPending) {
+                    // Take them back to the pending screen to see status
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SellerVerificationPage(),
                       ),
                     );
                   } else {
@@ -271,7 +302,11 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                   }
                 },
                 child: Text(
-                  isSeller ? 'Go to Seller Dashboard' : 'Become a Seller',
+                  isVerifiedSeller
+                      ? 'Go to Seller Dashboard'
+                      : isPending
+                      ? '⏳ Verification Pending'
+                      : 'Become a Seller',
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,
