@@ -102,13 +102,18 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                   right: 20,
                   child: GestureDetector(
                     onTap: () {
-                      // Make sure ARScreen is imported at the top!
                       // Navigator.push(
                       //   context,
                       //   MaterialPageRoute(
                       //     builder: (context) => ARScreen(modelUrl: product.modelUrl),
                       //   ),
                       // );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('AR feature coming soon!'),
+                          backgroundColor: Color(0xFFFDB04B),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
