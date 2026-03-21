@@ -89,6 +89,38 @@ class _SendProposalBodyState extends State<SendProposalBody> {
     }
   }
 
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _deliveryController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+
+  bool _priceError = false;
+  bool _deliveryError = false;
+  bool _messageError = false;
+
+  void _submitProposal() {
+    setState(() {
+      _priceError = _priceController.text.trim().isEmpty;
+      _deliveryError = _deliveryController.text.trim().isEmpty;
+      _messageError = _messageController.text.trim().isEmpty;
+    });
+
+    // only navigate if all fields are filled
+    if (!_priceError && !_deliveryError && !_messageError) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const UploadSuccessPage()),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _deliveryController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -103,7 +135,7 @@ class _SendProposalBodyState extends State<SendProposalBody> {
           const Text('Your Price ( LKR )',
               style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 10),
-          _inputField(hint: ''),
+          _inputField(hint: '', controller: _priceController, hasError: _priceError),
           const SizedBox(height: 20),
 
           // delivery time field + chat icon
@@ -112,7 +144,7 @@ class _SendProposalBodyState extends State<SendProposalBody> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: _inputField(hint: '')),
+              Expanded(child: _inputField(hint: '', controller: _deliveryController, hasError: _deliveryError)),
               const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -129,6 +161,7 @@ class _SendProposalBodyState extends State<SendProposalBody> {
           const SizedBox(height: 10),
           TextField(
             maxLines: 6,
+            controller: _messageController,
             style: const TextStyle(color: textColor),
             decoration: InputDecoration(
               hintText: 'Write a personalized message outlining\nscope, materials, and timeline...',
@@ -139,6 +172,13 @@ class _SendProposalBodyState extends State<SendProposalBody> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: _messageError ? Colors.red : Colors.transparent,
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -198,12 +238,7 @@ class _SendProposalBodyState extends State<SendProposalBody> {
               // submit button 
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const UploadSuccessPage()),
-                    );
-                  },
+                  onPressed: _submitProposal,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kOrange,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -233,20 +268,28 @@ class _SendProposalBodyState extends State<SendProposalBody> {
   }
 
   // reusable input field
-  Widget _inputField({required String hint, String? prefixText}) => TextField(
-        style: const TextStyle(color: textColor, fontSize: 16),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: hintText),
-          prefixText: prefixText,
-          prefixStyle: const TextStyle(color: textColor, fontSize: 16),
-          filled: true,
-          fillColor: cardColor,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
+  Widget _inputField({required String hint, String? prefixText, TextEditingController? controller, bool hasError = false}) => TextField(
+      controller: controller,
+      style: const TextStyle(color: textColor, fontSize: 16),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: hintText),
+        prefixText: prefixText,
+        prefixStyle: const TextStyle(color: textColor, fontSize: 16),
+        filled: true,
+        fillColor: cardColor,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : Colors.transparent,
+            width: 1.5,
           ),
         ),
-      );
+      ),
+    );
 }
