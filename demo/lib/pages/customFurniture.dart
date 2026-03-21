@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+import '../Constants.dart';
 
 class CustomFurniturePage extends StatefulWidget {
   const CustomFurniturePage({super.key});
@@ -8,6 +14,107 @@ class CustomFurniturePage extends StatefulWidget {
 }
 
 class _CustomFurniturePageState extends State<CustomFurniturePage> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _budgetController = TextEditingController();
+  bool _isSubmitting = false;
+  String _searchQuery = '';
+
+  bool _matchesSearch(String input) {
+    if (_searchQuery.isEmpty) return true;
+    return input.toLowerCase().contains(_searchQuery.toLowerCase());
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _budgetController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitCustomOrder() async {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+    final budget = double.tryParse(_budgetController.text.trim());
+
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title for your custom order')),
+      );
+      return;
+    }
+
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a description')),
+      );
+      return;
+    }
+
+    if (budget == null || budget <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid budget amount')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token') ?? '';
+
+      if (token.isEmpty) {
+        throw Exception('Please login first');
+      }
+
+      final response = await http.post(
+        Uri.parse('${Constants.requestsUri}/create'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'title': title,
+          'description': description,
+          'budget': budget,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        print('[CustomFurniturePage] Custom order submitted successfully');
+        if (!mounted) return;
+
+        _titleController.clear();
+        _descriptionController.clear();
+        _budgetController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Custom order submitted successfully')),
+        );
+        return;
+      }
+
+      throw Exception(data['msg'] ?? 'Failed to submit custom order');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Define colors from the design
@@ -23,41 +130,10 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
+
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,           
               children: [
-                // --- Top Header (Search & Profile) ---
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 45,
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const TextField(
-                          decoration: InputDecoration(
-                            hintText: "Office Chairs",
-                            hintStyle: TextStyle(color: Colors.white24),
-                            prefixIcon: Icon(Icons.search, color: Colors.white),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          style: TextStyle(color: primaryText),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 15),
-                    const CircleAvatar(
-                      backgroundColor: cardColor,
-                      child: Icon(Icons.person, color: accentColor),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 25),
-
                 // --- Page Title ---
                 const Text(
                   "Custom Furniture",
@@ -113,35 +189,107 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
 
                 const SizedBox(height: 25),
 
-                // --- Description Field ---
-                const Text(
-                  "Description",
-                  style: TextStyle(
-                    color: primaryText,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                if (_matchesSearch("order title") || _matchesSearch("custom"))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Order Title",
+                        style: TextStyle(
+                          color: primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: TextField(
+                          controller: _titleController,
+                          style: const TextStyle(color: primaryText),
+                          decoration: const InputDecoration(
+                            hintText: 'E.g. L-shaped study table',
+                            hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(15),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const TextField(
-                    maxLines: 5,
-                    style: TextStyle(color: primaryText),
-                    decoration: InputDecoration(
-                      hintText:
-                          "Describe the furniture you want. Mention style, purpose, materials, and any special features.",
-                      hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(15),
-                    ),
-                  ),
-                ),
 
-                const SizedBox(height: 25),
+                if (_matchesSearch("description") || _matchesSearch("furniture"))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Description",
+                        style: TextStyle(
+                          color: primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: TextField(
+                          controller: _descriptionController,
+                          maxLines: 5,
+                          style: const TextStyle(color: primaryText),
+                          decoration: const InputDecoration(
+                            hintText:
+                                "Describe the furniture you want. Mention style, purpose, materials, and any special features.",
+                            hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(15),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                    ],
+                  ),
+
+                if (_matchesSearch("budget"))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Budget",
+                        style: TextStyle(
+                          color: primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: TextField(
+                          controller: _budgetController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: const TextStyle(color: primaryText),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your budget amount',
+                            hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(15),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                    ],
+                  ),
 
                 // --- Upload Image Section ---
                 const Text(
@@ -220,23 +368,30 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Handle submit logic
-                    },
+                    onPressed: _isSubmitting ? null : _submitCustomOrder,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accentColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
-                      "Submit Custom Order",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            "Submit Custom Order",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
 

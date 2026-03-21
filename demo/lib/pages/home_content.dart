@@ -13,6 +13,27 @@ class HomeContent extends ConsumerStatefulWidget {
 }
 
 class _HomeContentState extends ConsumerState<HomeContent> {
+  String _searchQuery = '';
+
+  bool _matchesSearch(dynamic product, String query) {
+    if (query.isEmpty) return true;
+    final normalized = query.toLowerCase();
+    final name = (product.name ?? '').toString().toLowerCase();
+    final category = (product.category ?? '').toString().toLowerCase();
+    final description = (product.description ?? '').toString().toLowerCase();
+    final shopName = (product.shopName ?? '').toString().toLowerCase();
+
+    return name.contains(normalized) ||
+        category.contains(normalized) ||
+        description.contains(normalized) ||
+        shopName.contains(normalized);
+  }
+
+  List<dynamic> _filterProducts(List<dynamic> products) {
+    if (_searchQuery.trim().isEmpty) return products;
+    return products.where((product) => _matchesSearch(product, _searchQuery.trim())).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -43,20 +64,41 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     }
 
     // Products are ready — show the actual page
+    final filteredProducts = _filterProducts(productState.products);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const BannerCarousel(images: ["assets/banner.png"]),
-          const SearchBarWidget(hintText: "Search products"),
-          const SizedBox(height: 25),
-          ProductSection(title: "Sale", products: productState.saleProducts),
-          ProductSection(
-            title: "New Arrivals",
-            products: productState.newArrivals,
+          SearchBarWidget(
+            hintText: "Search products",
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
           ),
-          ProductSection(title: "For You", products: productState.forYou),
+          const SizedBox(height: 25),
+          if (_searchQuery.trim().isEmpty) ...[
+            ProductSection(title: "Sale", products: productState.saleProducts),
+            ProductSection(
+              title: "New Arrivals",
+              products: productState.newArrivals,
+            ),
+            ProductSection(title: "For You", products: productState.forYou),
+          ] else if (filteredProducts.isEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                "No products found",
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+            ),
+          ] else ...[
+            ProductSection(title: "Search Results", products: filteredProducts),
+          ],
         ],
       ),
     );

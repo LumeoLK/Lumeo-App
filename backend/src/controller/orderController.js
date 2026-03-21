@@ -41,6 +41,28 @@ export const placeOrder = async (req, res) => {
     const userId = req.user.id;
     const { shippingAddress, paymentMethod } = req.body;
 
+    if (!shippingAddress || typeof shippingAddress !== "object") {
+      return res.status(400).json({ msg: "shippingAddress is required" });
+    }
+
+    const normalizedShippingAddress = {
+      address: shippingAddress.address,
+      city: shippingAddress.city,
+      postalCode: shippingAddress.postalCode,
+      phone: shippingAddress.phone || shippingAddress.phoneNumber,
+    };
+
+    if (
+      !normalizedShippingAddress.address ||
+      !normalizedShippingAddress.city ||
+      !normalizedShippingAddress.postalCode ||
+      !normalizedShippingAddress.phone
+    ) {
+      return res.status(400).json({
+        msg: "shippingAddress requires address, city, postalCode and phone",
+      });
+    }
+
     
     if (!["cod", "card"].includes(paymentMethod)) {
       return res.status(400).json({ msg: "Invalid payment method" });
@@ -88,7 +110,7 @@ export const placeOrder = async (req, res) => {
       buyerId: userId,
       items: orderItems,
       totalAmount,
-      shippingAddress,
+      shippingAddress: normalizedShippingAddress,
       paymentMethod,
       paymentStatus: "pending",
       orderStatus: paymentMethod === "COD" ? "confirmed" : "pending"
@@ -188,7 +210,6 @@ export const getUserOrders = async (req, res) => {
         path: "items.customRequestId",
         select: "title description" // Get details for custom jobs
       })
-      .populate("sellerId", "shopName") // Show which shop they bought from
       .sort({ createdAt: -1 }); // Newest orders first
 
     res.json(orders);

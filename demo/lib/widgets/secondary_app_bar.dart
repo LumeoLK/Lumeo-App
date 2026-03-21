@@ -2,15 +2,29 @@ import 'package:flutter/material.dart';
 import '../pages/userProfile.dart';
 import '../widgets/search_bar.dart';
 
-class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppTopBar({super.key});
+class SecondaryAppTopBar extends StatelessWidget implements PreferredSizeWidget {
+  final ValueChanged<String>? onSearchChanged;
+  final VoidCallback? onSearchTap;
+  final String searchHintText;
+
+  const SecondaryAppTopBar({
+    super.key,
+    this.onSearchChanged,
+    this.onSearchTap,
+    this.searchHintText = 'Search...',
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.black,
       elevation: 0,
-      title: const SearchBarWidget(hintText: ''),
+      title: SearchBarWidget(
+        hintText: searchHintText,
+        readOnly: onSearchChanged == null && onSearchTap == null,
+        onTap: onSearchTap,
+        onChanged: onSearchChanged,
+      ),
 
       actions: [
         IconButton(

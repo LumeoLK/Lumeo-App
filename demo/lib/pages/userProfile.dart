@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/seller-registration_info.dart';
 import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
+import 'package:lumeo_v2/providers/order_provider.dart';
+import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/pages/customFurniture.dart';
 import 'package:lumeo_v2/pages/login.dart';
 import 'package:lumeo_v2/pages/my_orders.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
+import 'settings_page.dart';
+import '../widgets/secondary_app_bar.dart';
 
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
@@ -22,33 +26,47 @@ class _UserprofileState extends ConsumerState<Userprofile> {
   @override
   void initState() {
     super.initState();
+    print('[UserProfile] Initializing UserProfile page');
     Future.microtask(() async {
+      print('[UserProfile] Checking login status...');
       await _checkLoginStatus();
+      print('[UserProfile] Fetching orders...');
+      if (_isLoggedIn) {
+        ref.read(orderProvider.notifier).fetchMyOrders();
+      }
     });
   }
 
   Future<void> _checkLoginStatus() async {
+    print('[UserProfile] Checking login status...');
     final user = ref.read(currentUserProvider);
     if (user != null && user.id.isNotEmpty) {
+      print('[UserProfile] User authenticated via provider - ID: ${user.id}');
       if (mounted) setState(() => _isLoggedIn = true);
       return;
     }
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('x-auth-token') ?? '';
     if (token.isNotEmpty) {
+      print('[UserProfile] User authenticated via token');
       if (mounted) setState(() => _isLoggedIn = true);
       return;
     }
+    print('[UserProfile] User not authenticated');
     if (mounted) setState(() => _isLoggedIn = false);
   }
 
   void _logout() async {
+    print('[UserProfile] Logout initiated');
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('x-auth-token', '');
     await prefs.setString('userId', '');
+    print('[UserProfile] Cleared authentication tokens');
     await ref.read(authProvider.notifier).signout();
+    print('[UserProfile] Signed out from auth provider');
 
     if (mounted) {
+      print('[UserProfile] Navigating to login screen');
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const Login()),
         (route) => false,
@@ -59,6 +77,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
   @override
   Widget build(BuildContext context) {
     if (!_isLoggedIn) {
+      print('[UserProfile] User not logged in - showing login prompt');
       return Scaffold(
         backgroundColor: const Color(0xFF1E1E1E),
         body: Center(
@@ -81,6 +100,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                   ),
                 ),
                 onPressed: () {
+                  print('[UserProfile] Login button tapped');
                   LoginRequiredDialog.show(context);
                 },
                 child: const Text('Login'),
@@ -92,24 +112,21 @@ class _UserprofileState extends ConsumerState<Userprofile> {
     }
 
     final user = ref.watch(currentUserProvider);
+    final orderState = ref.watch(orderProvider);
     final bool isSeller = user?.role == 'seller';
+    final int orderCount = orderState.orders.length;
+
+    print('[UserProfile] Building profile - Order count: $orderCount');
+    print('[UserProfile] Orders loading: ${orderState.isLoading}');
+    print('[UserProfile] Total orders fetched: ${orderState.orders.length}');
+    if (orderState.error != null) {
+      print('[UserProfile] Order fetch error: ${orderState.error}');
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: Colors.white),
-          ),
-          const CircleAvatar(
-            backgroundColor: Color(0xFF2E2E2E),
-            child: Icon(Icons.person, color: Colors.orange),
-          ),
-          const SizedBox(width: 16),
-        ],
+      appBar: SecondaryAppTopBar(
+        searchHintText: 'Search profile',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -169,8 +186,11 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
             _buildMenuTile(
               'My orders',
-              'Already have 12 orders',
+              orderState.isLoading
+                  ? 'Loading orders...'
+                  : 'Already have $orderCount order${orderCount != 1 ? 's' : ''}',
               onTap: () {
+                print('[UserProfile] Navigating to My Orders page');
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const MyOrders()),
@@ -181,27 +201,34 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               'Shipping addresses',
               '3 addresses',
               onTap: () {
-                // TODO: Implement Shipping addresses page
+                print('[UserProfile] Shipping addresses tapped (Not available for MVP)');
+                // Out of scope feature for MVP, but can implement in future iterations
               },
             ),
             _buildMenuTile(
               'Payment methods',
-              'Visa **34',
+              'COD',
               onTap: () {
-                // TODO: Implement Payment methods page
+                print('[UserProfile] Payment methods tapped (Not available for MVP)');
+                //Out of scope for MVP, but can implement in future iterations
               },
             ),
             _buildMenuTile(
               'Settings',
               'Account and privacy',
               onTap: () {
-                // TODO: Implement Settings page
+                print('[UserProfile] Navigating to Settings page');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
               },
             ),
             _buildMenuTile(
               'Custom Furniture',
               'Create your own design',
               onTap: () {
+                print('[UserProfile] Navigating to Custom Furniture page');
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -227,6 +254,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                 ),
                 onPressed: () {
                   if (isSeller) {
+                    print('[UserProfile] Seller navigating to Seller Dashboard');
                     // Navigate to Seller Dashboard if they are already a seller
                     // Navigator.push(
                     //   context,
@@ -235,6 +263,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                     //   ),
                     // );
                   } else {
+                    print('[UserProfile] User navigating to Seller Registration');
                     // Navigate to the Registration Page
                     Navigator.push(
                       context,

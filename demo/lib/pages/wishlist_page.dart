@@ -91,43 +91,6 @@ class _WishListPageState extends ConsumerState<WishListPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a1a),
-        elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2a2a2a),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const TextField(
-            style: TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Search store',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // search functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Color(0xFFFBB040)),
-            onPressed: () {
-              // profile page
-            },
-          ),
-        ],
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

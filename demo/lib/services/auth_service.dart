@@ -76,4 +76,24 @@ class AuthService {
     await prefs.setString('x-auth-token', '');
     await prefs.setString('userId', '');
   }
+
+  Future<Map<String, dynamic>> getCurrentUser({required String token}) async {
+    print('[AuthService] Fetching current user details...');
+    final res = await http.get(
+      Uri.parse('${Constants.authUri}/me'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (res.statusCode != 200) {
+      print('[AuthService] Error fetching user: ${res.statusCode}');
+      throw Exception(jsonDecode(res.body)['msg'] ?? 'Failed to fetch user details');
+    }
+
+    final data = jsonDecode(res.body);
+    print('[AuthService] User details fetched successfully: ${data['user']}');
+    return data;
+  }
 }
