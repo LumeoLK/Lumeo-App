@@ -1,13 +1,21 @@
+# =========================
+# Environment & Secrets
+# =========================
 *.env
 lib/constants.dart
 /android/app/keystore/test.jks
 
+# =========================
+# Dataset & ML files
+# =========================
 images/
 furniture_dataset_folder/
 *.csv
 .venv/
 
+# =========================
 # Miscellaneous
+# =========================
 *.class
 *.log
 *.pyc
@@ -21,73 +29,64 @@ furniture_dataset_folder/
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# =========================
+# IntelliJ / Android Studio
+# =========================
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# =========================
+# Flutter / Dart / Pub
+# =========================
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
 /coverage/
 
-# Symbolication related
+# Symbolication & Obfuscation
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# Android Studio build artifacts
 /android/app/debug
 /android/app/profile
 /android/app/release
 
-# Ignore Unity build artifacts in the Flutter project
-**/android/unityLibrary/build/
-
-**/ios/UnityFramework/
-
-**/Il2CppOutputProject/
-
-
-**/Il2CppOutputProject/
-
-
+# =========================
+# Android Gradle
+# =========================
+**/.gradle/
+**/build/
 
 # =========================
-# Unity Standard Ignores
+# Unity EXPORTED output
+# Never commit — too large (6GB)
+# Re-export from Unity project locally
+# =========================
+demo/android/unityLibrary/
+
+# =========================
+# Unity PROJECT generated files
 # =========================
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
-/[Bb]uild/
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
-
-
-
-
-
-# Ignores standard Android build folders and Gradle caches
-**/.gradle/
-**/build/
-**/unityLibrary/build/
+**/Il2CppOutputProject/
 **/unityLibrary/.cxx/
 
-# Ignores compiled Unity assets that change on every build
+# Unity compiled assets
 *.unity3d
 global-metadata.dat
 boot.config
+

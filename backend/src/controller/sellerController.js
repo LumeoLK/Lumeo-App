@@ -322,7 +322,7 @@ const handleSellerError = (res, error) => {
     .status(error.statusCode || 500)
     .json({ success: false, msg: error.message });
 };
-
+//----------------------------------------------
 export const becomeSeller = async (req, res) => {
   try {
     const { shopName, displayName, businessAddress, phoneNumber, businessRegNumber } = req.body;
@@ -384,7 +384,7 @@ export const becomeSeller = async (req, res) => {
   }
 
 };
-
+//----------------------------------------------
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock, length, width, height } = req.body;

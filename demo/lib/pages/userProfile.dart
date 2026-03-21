@@ -8,7 +8,7 @@ import 'package:lumeo_v2/pages/customFurniture.dart';
 import 'package:lumeo_v2/pages/login.dart';
 import 'package:lumeo_v2/pages/my_orders.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
-
+import 'seller_onboarding1.dart';
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
 
@@ -236,7 +236,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            const SellerRegistrationInfoScreen(),
+                            const SellerOnboardingPage(),
                       ),
                     );
                   }

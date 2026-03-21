@@ -2,12 +2,14 @@ import 'dart:io'; // Needed for the File class
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Needed for picking images
 import 'package:http/http.dart' as http;
+import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../Constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+
 class SellerRegistrationInfoScreen extends ConsumerStatefulWidget {
   const SellerRegistrationInfoScreen({super.key});
 
@@ -22,7 +24,8 @@ class _SellerRegistrationInfoScreenState
   final TextEditingController shopNameController = TextEditingController();
   final TextEditingController displayNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
-  final TextEditingController businessAddressController =TextEditingController();
+  final TextEditingController businessAddressController =
+      TextEditingController();
   final TextEditingController businessRegController = TextEditingController();
 
   File? logoImage;
@@ -70,17 +73,18 @@ class _SellerRegistrationInfoScreenState
 
   Future<void> _submitSellerRegistration() async {
     // 1. Basic Validation (Make sure everything is filled!)
-    if (shopNameController.text.isEmpty || 
-        displayNameController.text.isEmpty || 
-        phoneNumberController.text.isEmpty || 
-        businessAddressController.text.isEmpty || 
-        businessRegController.text.isEmpty || 
-        logoImage == null || 
-        nicFrontImage == null || 
+    if (shopNameController.text.isEmpty ||
+        displayNameController.text.isEmpty ||
+        phoneNumberController.text.isEmpty ||
+        businessAddressController.text.isEmpty ||
+        businessRegController.text.isEmpty ||
+        logoImage == null ||
+        nicFrontImage == null ||
         nicBackImage == null) {
-      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields and upload all images.")),
+        const SnackBar(
+          content: Text("Please fill all fields and upload all images."),
+        ),
       );
       return;
     }
@@ -102,13 +106,11 @@ class _SellerRegistrationInfoScreenState
 
     try {
       var uri = Uri.parse('${Constants.sellersUri}/become-seller');
-      
+
       var request = http.MultipartRequest('POST', uri);
 
       // 2. Add Headers (The authorization token)
-      request.headers.addAll({
-        'Authorization': 'Bearer $myAuthToken',
-      });
+      request.headers.addAll({'Authorization': 'Bearer $myAuthToken'});
 
       request.fields['shopName'] = shopNameController.text;
       request.fields['displayName'] = displayNameController.text;
@@ -165,15 +167,21 @@ class _SellerRegistrationInfoScreenState
             backgroundColor: Colors.green,
           ),
         );
-        
-        Navigator.pop(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SellerDashboardPage()),
+        );
       } else {
         // Backend returned an error (e.g., "Seller with same Business Registration Number already exist")
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData['msg'] ?? "Registration failed."), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(responseData['msg'] ?? "Registration failed."),
+            backgroundColor: Colors.red,
+          ),
         );
       }
-      } catch (e) {
+    } catch (e) {
       print("Error during submission: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -188,8 +196,6 @@ class _SellerRegistrationInfoScreenState
       });
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
