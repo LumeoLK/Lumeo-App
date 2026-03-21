@@ -19,14 +19,12 @@ class ModelDownloader {
 
     // If already downloaded before, skip re-downloading
     if (await File(filePath).exists()) {
-      print('Model already cached: $filePath');
       return filePath;
     }
 
     // Download the file
     await _dio.download(url, filePath, onReceiveProgress: onProgress);
 
-    print('Model downloaded to: $filePath');
     return filePath;
   }
 }

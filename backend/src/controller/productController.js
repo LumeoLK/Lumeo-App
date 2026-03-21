@@ -197,9 +197,88 @@ export const getProductById = async (req, res) => {
     if (!product) {
       return res.status(404).json({ msg: "Product not found." });
     }
-    res.json(product);
+    return res.status(200).json(product);
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ msg: error.message });
   }
-}
+};
+
+export const retry3dgeneration = async (req, res) => {
+
+  const { productId } = req.body;
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found." });
+    }
+    if (!product.images || product.images.length === 0) {
+      return res
+        .status(400)
+        .json({ msg: "No images available for 3D generation." });
+    }
+    if(product.model3D.status === "success"){
+      return res
+        .status(400)
+        .json({ msg: "3D model already generated successfully." });
+    }
+
+    const result = await generate3DModel(productId, product.images);
+    res
+      .status(200)
+      .json({
+        success: true,
+        msg: "3D model generation retried.",
+        jobId: result.jobId ,
+      });
+  } catch (error) {
+    console.error("Error retrying 3D model generation:", error);
+    res.status(500).json({ msg: "Failed to retry 3D model generation." });
+  }
+};
+
+
+export const getProductsForML = async (req, res) => {
+  try {
+    // Only get in-stock items
+    const filter = { stock: { $gt: 0 } };
+
+    // Fetch only the fields the AI model needs
+    const products = await Product.find(filter).select(
+      "title description price category images dimensions dominantColor averageRating imageEmbedding model3D"
+    );
+
+    res.status(200).json({
+      success: true,
+      total: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error("ML Internal Controller Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, msg: "Product not found." });
+    }
+
+    // Check if the authenticated seller owns the product
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller || product.sellerId.toString() !== seller._id.toString()) {
+      return res.status(403).json({ success: false, msg: "Unauthorized to delete this product." });
+    }
+
+    await Product.findByIdAndDelete(productId);
+
+    res.status(200).json({ success: true, msg: "Product deleted successfully." });
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};

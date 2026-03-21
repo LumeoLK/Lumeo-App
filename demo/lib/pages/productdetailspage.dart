@@ -1,29 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumeo_v2/providers/cart_provider.dart';
+import 'package:lumeo_v2/providers/chat_provider.dart';
+import 'package:lumeo_v2/providers/auth_provider.dart';
 import '../model/product.dart';
-import 'ar_screen.dart';
+import '../utils/auth_guard.dart';
+import '../pages/cart_page.dart';
+import '../providers/wishlist_provider.dart';
 
-class ProductDetailsPage extends StatefulWidget {
+import '../pages/ar_screen.dart';
+
+class ProductDetailsPage extends ConsumerStatefulWidget {
   const ProductDetailsPage({super.key, required this.product});
-
   final Product product;
 
   @override
-  State<ProductDetailsPage> createState() => _ProductDetailsPageState();
+  ConsumerState<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState extends State<ProductDetailsPage> {
+class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
   final Color backgroundColor = const Color(0xFF1E1E1E);
   final Color cardColor = const Color(0xFF2A2A2A);
   final Color accentColor = const Color(0xFFFDB04B);
   final Color secondaryTextColor = Colors.white70;
   int _selectedImageIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    final images = widget.product.images;
-    // 👇 widget.product gives you access to the product passed in
     final product = widget.product;
+    final images = product.images;
+
+    // State watchers
+    final cartState = ref.watch(cartProvider);
+    final wishlistState = ref.watch(wishlistProvider);
+    final isFavorite = wishlistState.items.any((item) => item.id == product.id);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -31,8 +42,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            await Navigator.maybePop(context);
+          },
         ),
         title: Text(product.name, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
@@ -47,35 +60,60 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Image Placeholder Section
+            // --- RESOLVED CONFLICT 1: Combined Image Viewer & AR Button ---
             Stack(
               children: [
-                // Product Image
                 Container(
                   height: 350,
                   width: double.infinity,
                   color: Colors.grey[800],
-                  child: product.images.isNotEmpty
-                      ? Image.network(product.images[0], fit: BoxFit.cover)
+                  child: images.isNotEmpty
+                      ? Image.network(
+                          images[_selectedImageIndex],
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 50,
+                                color: Colors.white24,
+                              ),
+                            );
+                          },
+                        )
                       : const Center(
-                          child: Icon(Icons.image, size: 50, color: Colors.white24),
+                          child: Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.white24,
+                          ),
                         ),
                 ),
 
-                // AR Button — bottom right corner
+                // AR Button from 'dev' branch
                 Positioned(
                   bottom: 20,
                   right: 20,
                   child: GestureDetector(
                     onTap: () {
-                      // ✅ FIXED: was "product.modelUrl", now "widget.product.modelUrl"
-                      // Both work since we did `final product = widget.product` above
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(
+                      //     content: Text('AR feature coming soon!'),
+                      //     backgroundColor: Color(0xFFFDB04B),
+                      //   ),
+                      // );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
@@ -96,6 +134,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               ],
             ),
 
+            // Thumbnail selector
             if (images.length > 1)
               SizedBox(
                 height: 70,
@@ -109,16 +148,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   itemBuilder: (context, index) {
                     final isSelected = index == _selectedImageIndex;
                     return GestureDetector(
-                      // Tap thumbnail → update main image
-                      onTap: () => setState(() {
-                        _selectedImageIndex = index;
-                      }),
+                      onTap: () => setState(() => _selectedImageIndex = index),
                       child: Container(
                         width: 55,
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          // Highlight selected thumbnail
                           border: Border.all(
                             color: isSelected
                                 ? accentColor
@@ -138,6 +173,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   },
                 ),
               ),
+
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -149,23 +185,56 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       const SizedBox(width: 10),
                       _buildDropdown("Mahogani"),
                       const Spacer(),
-                      const Icon(Icons.favorite_border, color: Colors.white),
+                      IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (!await requireAuth(context, ref)) return;
+
+                          try {
+                            if (isFavorite) {
+                              await ref
+                                  .read(wishlistProvider.notifier)
+                                  .removeFromWishlist(product.id);
+                            } else {
+                              await ref
+                                  .read(wishlistProvider.notifier)
+                                  .addToWishlist(product.id);
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Wishlist error: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
-                  // ✅ FIXED: now uses real product data
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      // --- RESOLVED CONFLICT 2: Kept 'Expanded' to protect layout ---
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 12),
                       Text(
                         '\$${product.price.toStringAsFixed(2)}',
                         style: const TextStyle(
@@ -176,19 +245,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       ),
                     ],
                   ),
-                  Text(
-                    widget.product.shopName,
-                    style: TextStyle(color: secondaryTextColor),
-                  ),
                   const SizedBox(height: 15),
 
-                  // ✅ FIXED: now uses real description
                   Text(
-                    widget.product.description,
+                    product.description,
                     style: TextStyle(color: secondaryTextColor, height: 1.5),
                   ),
                   const SizedBox(height: 25),
 
+                  // Add to Cart Button
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -199,47 +264,105 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () async {
-                        // try {
-                        //   SharedPreferences prefs = await SharedPreferences.getInstance();
-                        //   String token = prefs.getString('x-auth-token') ?? '';
-                        //   await CartService.addToCart(
-                        //     token,
-                        //     widget.product.id,
-                        //     widget.product.price,
-                        //   );
+                      onPressed: cartState.isLoading
+                          ? null
+                          : () async {
+                              if (!await requireAuth(context, ref)) return;
 
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //     const SnackBar(content: Text("Added to cart")),
-                        //   );
-                        // } catch (e) {
-                        //   print(e);
-                        // }
-                      },
-                      child: const Text(
-                        "ADD TO CART",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                              await ref
+                                  .read(cartProvider.notifier)
+                                  .addToCart(product.id, product.price);
+
+                              final error = ref.read(cartProvider).error;
+                              if (context.mounted) {
+                                if (error == null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const CartPage(),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed: $error'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                      child: cartState.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Text(
+                              "ADD TO CART",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 30),
 
-                  // 6. List tiles for Shop Info/Customization
                   const Divider(color: Colors.white24),
 
-                  _buildListTile("Ask For Customizations", () {
-                    // Navigation code to the chat application page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatApplication(),
-                      ),
-                    );
-                  }),
+                  _buildListTile(
+                    "Ask For Customizations",
+                    onTap: () async {
+                      if (!await requireAuth(context, ref)) return;
+
+                      final currentUser = ref.read(currentUserProvider);
+                      if (currentUser == null) return;
+
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      try {
+                        final conversation = await ref
+                            .read(chatServiceProvider)
+                            .startConversation(
+                              sellerId: product.sellerId,
+                              productId: product.id,
+                            );
+                        if (context.mounted) {
+                          Navigator.pop(context); // dismiss spinner
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatApplication(
+                                conversation: conversation,
+                                currentUserId: currentUser.id,
+                                currentUserName: currentUser.name,
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context); // dismiss spinner
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Could not start chat: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
                   const SizedBox(height: 30),
 
                   const Text(
@@ -285,12 +408,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
-  Widget _buildListTile(String title, VoidCallback onTap) {
+  // --- FIXED: Added 'onTap' parameter to prevent syntax error ---
+  Widget _buildListTile(String title, {VoidCallback? onTap}) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: onTap, // Triggers the navigation
+      onTap: onTap,
     );
   }
 
@@ -309,7 +433,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[700],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
               ),
             ),
           ),
@@ -318,8 +444,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Dining Chair", style: TextStyle(color: Colors.white, fontSize: 12)),
-                Text("\$12", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(
+                  "Dining Chair",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                Text(
+                  "\$12",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),

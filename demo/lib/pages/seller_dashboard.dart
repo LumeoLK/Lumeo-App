@@ -1,64 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/seller_dashboard_service.dart';
+import 'home_page.dart';
+import "productpage.dart";
+
+import '../widgets/seller_bottom_navigation_bar.dart';
+
 
 class SellerDashboardPage extends StatefulWidget {
-  const SellerDashboardPage({Key? key}) : super(key: key);
+  const SellerDashboardPage({super.key});
 
   @override
   State<SellerDashboardPage> createState() => _SellerDashboardPageState();
 }
 
 class _SellerDashboardPageState extends State<SellerDashboardPage> {
+  final SellerDashboardService _dashboardService =
+      const SellerDashboardService();
+
+  bool _isLoading = true;
+  String? _error;
+  Map<String, dynamic> _dashboard = const {};
   int _activeNav = 0;
-
-  // ── Sample listings data ──────────────────────────────────
-  final List<Map<String, dynamic>> listings = [
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair2.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-  ];
-
-  // ── Sample orders data ────────────────────────────────────
-  final List<Map<String, dynamic>> orders = [
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03458',
-      'price': '₦250,000',
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03459',
-      'price': '₦250,000',
-      'image': 'assets/images/chair2.avif',
-    },
-  ];
 
   // ── Chart data ────────────────────────────────────────────
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
@@ -66,12 +30,92 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
+  void initState() {
+    super.initState();
+    _loadDashboard();
+  }
+
+  Future<void> _loadDashboard() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token')?.trim() ?? '';
+
+      if (token.isEmpty) {
+        throw const SellerDashboardException(
+          'Please log in with a seller account first.',
+        );
+      }
+
+      final dashboard = await _dashboardService.fetchDashboard(token);
+      if (!mounted) return;
+
+      setState(() {
+        _dashboard = dashboard;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
+
+  // ── Dashboard data getters ────────────────────────────────
+  Map<String, dynamic> get _profile => _asMap(_dashboard['profile']);
+  Map<String, dynamic> get _summary => _asMap(_dashboard['summary']);
+  Map<String, dynamic> get _performance => _asMap(_dashboard['performance']);
+  List<Map<String, dynamic>> get _activeListings =>
+      _asMapList(_dashboard['activeListings']);
+  List<Map<String, dynamic>> get _newOrders =>
+      _asMapList(_dashboard['newOrders']);
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return value.map((k, v) => MapEntry('$k', v));
+    return const {};
+  }
+
+  List<Map<String, dynamic>> _asMapList(dynamic value) {
+    if (value is! List) return const [];
+    return value.map((item) => _asMap(item)).toList();
+  }
+
+  List<String> _asStringList(dynamic value) {
+    if (value is! List) return const [];
+    return value.map((item) => item.toString()).toList();
+  }
+
+  String _text(dynamic value, {String fallback = ''}) {
+    final result = value?.toString().trim() ?? '';
+    return result.isEmpty ? fallback : result;
+  }
+
+  // ── Build ─────────────────────────────────────────────────
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () {
+            // Option B: If you want to FORCE them to a specific page (e.g., HomePage)
+            Get.offAll(() => const HomePage()); // Using your 'Get' library
+          },
+        ),
+        title: const Text('Seller Dashboard'),
+        backgroundColor: const Color(0xFF1a1a1a),
+      ),
       backgroundColor: const Color(0xFF1a1a1a),
       body: Stack(
         children: [
-          // ── Scrollable body ──
+          // Scrollable body
           SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 80),
             child: Column(
@@ -91,17 +135,27 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
 
-          // ── Fixed bottom nav ──
-          Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
+          // Fixed bottom nav
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SellerBottomNavigationBar(
+              currentIndex: _activeNav,
+              onTap: (index) => setState(() => _activeNav = index),
+            ),
+          ),
         ],
       ),
     );
   }
 
   // ─────────────────────────────────────────────────────────
-  //  COVER + PROFILE  (Facebook-style)
+  //  COVER + PROFILE
   // ─────────────────────────────────────────────────────────
   Widget _buildCoverAndProfile() {
+    final logo = _text(_profile['logo']);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -137,21 +191,23 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                       width: 3.5,
                     ),
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Add Profile\nphoto',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 10,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
+                  child: logo.isNotEmpty
+                      ? ClipOval(child: Image.network(logo, fit: BoxFit.cover))
+                      : const Center(
+                          child: Text(
+                            'Add Profile\nphoto',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 10,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
                 ),
               ),
 
-              // Name + handle (pulled up under avatar)
+              // Name + handle
               Transform.translate(
                 offset: const Offset(0, -26),
                 child: Column(
@@ -159,9 +215,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   children: [
                     Row(
                       children: [
-                        const Text(
-                          'Display Name',
-                          style: TextStyle(
+                        Text(
+                          _text(
+                            _profile['displayName'],
+                            fallback: 'Display Name',
+                          ),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -169,7 +228,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // Meta-style amber verified badge
                         CustomPaint(
                           size: const Size(22, 22),
                           painter: _MetaVerifiedPainter(),
@@ -177,12 +235,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      '@shopname',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    Text(
+                      _text(_profile['handle'], fallback: '@shopname'),
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                     const SizedBox(height: 16),
-                    // Divider line like Facebook
                     Container(height: 1, color: const Color(0xFF2a2a2a)),
                   ],
                 ),
@@ -215,19 +272,19 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
           Row(
             children: [
               _buildSummaryCard(
-                '₦23,500',
+                _text(_summary['earningsThisWeekFormatted'], fallback: '₦0'),
                 'Earnings\nthis week',
                 Icons.credit_card_rounded,
               ),
               const SizedBox(width: 8),
               _buildSummaryCard(
-                '12',
+                _text(_summary['activeListings'], fallback: '0'),
                 'Active\nListings',
                 Icons.bookmark_border_rounded,
               ),
               const SizedBox(width: 8),
               _buildSummaryCard(
-                '4.2 ★',
+                _text(_summary['averageRating'], fallback: '0'),
                 'Average\nRating',
                 Icons.star_border_rounded,
               ),
@@ -285,6 +342,19 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   //  PERFORMANCE OVERVIEW
   // ─────────────────────────────────────────────────────────
   Widget _buildPerformanceOverview() {
+    final perfDays = _asStringList(_performance['days']);
+    final perfThisWeek = _asStringList(_performance['thisWeek']);
+    final perfLastWeek = _asStringList(_performance['lastWeek']);
+
+    // Use API data if available, otherwise fall back to sample data
+    final chartThisWeek = perfThisWeek.isNotEmpty
+        ? perfThisWeek.map((v) => double.tryParse(v) ?? 0.0).toList()
+        : thisWeek;
+    final chartLastWeek = perfLastWeek.isNotEmpty
+        ? perfLastWeek.map((v) => double.tryParse(v) ?? 0.0).toList()
+        : lastWeek;
+    final chartDays = perfDays.isNotEmpty ? perfDays : days;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -313,14 +383,17 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             SizedBox(
               height: 100,
               child: CustomPaint(
-                painter: _ChartPainter(thisWeek: thisWeek, lastWeek: lastWeek),
+                painter: _ChartPainter(
+                  thisWeek: chartThisWeek,
+                  lastWeek: chartLastWeek,
+                ),
                 child: const SizedBox.expand(),
               ),
             ),
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: days
+              children: chartDays
                   .map(
                     (d) => Text(
                       d,
@@ -339,10 +412,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   //  ACTIVE LISTINGS
   // ─────────────────────────────────────────────────────────
   Widget _buildActiveListings() {
+    // Use API data if available, otherwise fall back to sample data
+    final items = _activeListings;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -367,16 +442,23 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Horizontal scroll
         SizedBox(
           height: 240,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: listings.length,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              return _buildListingCard(listings[index], index);
+              final item = items[index];
+              return GestureDetector(
+                onTap: () {
+                  final productId = item['id']?.toString() ?? '';
+                  if (productId.isNotEmpty) {
+                    Get.to(() => ProductDetailPage(productId: productId));
+                  }
+                },
+                child: _buildListingCard(item),
+              );
             },
           ),
         ),
@@ -384,7 +466,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  Widget _buildListingCard(Map<String, dynamic> item, int index) {
+  Widget _buildListingCard(Map<String, dynamic> item) {
+    print(item);
+    final imageUrl = _text(item['images'][0]);
+    final isAsset = imageUrl.startsWith('assets/');
+
     return Container(
       width: 160,
       margin: const EdgeInsets.only(right: 10),
@@ -430,25 +516,28 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-
                 // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Image.asset(
-                    item['image'],
-                    height: 80,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      height: 80,
-                      color: const Color(0xFF3a3a3a),
-                      child: const Icon(
-                        Icons.chair_rounded,
-                        color: Color(0xFF8A5C2A),
-                        size: 40,
-                      ),
-                    ),
-                  ),
+                  child: imageUrl.isNotEmpty
+                      ? (isAsset
+                            ? Image.asset(
+                                imageUrl,
+                                height: 80,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _placeholderImage(),
+                              )
+                            : Image.network(
+                                imageUrl,
+                                height: 80,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _placeholderImage(),
+                              ))
+                      : _placeholderImage(),
                 ),
               ],
             ),
@@ -461,7 +550,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['name'],
+                  _text(item['name'], fallback: 'Untitled product'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -473,14 +562,17 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  item['brand'],
+                  _text(item['brand'], fallback: ''),
                   style: const TextStyle(color: Colors.grey, fontSize: 10),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  item['price'],
+                  _text(
+                    item['formattedPrice'] ?? item['price'],
+                    fallback: '₦0',
+                  ),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -488,25 +580,24 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ),
                 ),
                 const SizedBox(height: 6),
-
                 // Stats row
                 Row(
                   children: [
                     _buildStat(
                       Icons.visibility_outlined,
-                      item['views'],
+                      item['views'] is int ? item['views'] : 0,
                       Colors.grey,
                     ),
                     const SizedBox(width: 8),
                     _buildStat(
                       Icons.favorite,
-                      item['likes'],
+                      item['likes'] is int ? item['likes'] : 0,
                       const Color(0xFFFBB040),
                     ),
                     const SizedBox(width: 8),
                     _buildStat(
                       Icons.chat_bubble_outline,
-                      item['comments'],
+                      item['comments'] is int ? item['comments'] : 0,
                       Colors.grey,
                     ),
                   ],
@@ -532,14 +623,45 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
+  Widget _placeholderImage() {
+    return Container(
+      height: 80,
+      color: const Color(0xFF3a3a3a),
+      child: const Icon(
+        Icons.chair_rounded,
+        color: Color(0xFF8A5C2A),
+        size: 40,
+      ),
+    );
+  }
+
   // ─────────────────────────────────────────────────────────
   //  NEW ORDERS
   // ─────────────────────────────────────────────────────────
   Widget _buildNewOrders() {
+    // Use API data if available, otherwise fall back to sample data
+    final items = _newOrders.isNotEmpty
+        ? _newOrders
+        : [
+            {
+              'id': 'order1',
+              'productName': 'Modern Chair',
+              'customerName': 'John Doe',
+              'status': 'Processing',
+              'image': 'assets/chair.jpg',
+            },
+            {
+              'id': 'order2',
+              'productName': 'Wooden Table',
+              'customerName': 'Jane Smith',
+              'status': 'Shipped',
+              'image': 'assets/chair.jpg',
+            },
+          ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -564,16 +686,14 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Horizontal scroll
         SizedBox(
           height: 90,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: orders.length,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              return _buildOrderCard(orders[index]);
+              return _buildOrderCard(items[index]);
             },
           ),
         ),
@@ -582,6 +702,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 
   Widget _buildOrderCard(Map<String, dynamic> order) {
+    final imageUrl = _text(order['image']);
+    final isAsset = imageUrl.startsWith('assets/');
+
     return Container(
       width: 210,
       margin: const EdgeInsets.only(right: 10),
@@ -592,7 +715,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       ),
       child: Row(
         children: [
-          // Chair thumbnail
+          // Thumbnail
           Container(
             width: 48,
             height: 48,
@@ -602,15 +725,31 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                order['image'],
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.chair_rounded,
-                  color: Color(0xFF8A5C2A),
-                  size: 26,
-                ),
-              ),
+              child: imageUrl.isNotEmpty
+                  ? (isAsset
+                        ? Image.asset(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.chair_rounded,
+                              color: Color(0xFF8A5C2A),
+                              size: 26,
+                            ),
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.chair_rounded,
+                              color: Color(0xFF8A5C2A),
+                              size: 26,
+                            ),
+                          ))
+                  : const Icon(
+                      Icons.chair_rounded,
+                      color: Color(0xFF8A5C2A),
+                      size: 26,
+                    ),
             ),
           ),
           const SizedBox(width: 10),
@@ -622,7 +761,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  order['name'],
+                  _text(order['name'], fallback: 'Order item'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -631,12 +770,20 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  order['orderId'],
+                  _text(
+                    order['orderId'] ?? order['orderNumber'],
+                    fallback: 'Order',
+                  ),
                   style: const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  order['price'],
+                  _text(
+                    order['formattedTotalPrice'] ??
+                        order['formattedPrice'] ??
+                        order['price'],
+                    fallback: '₦0',
+                  ),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -647,83 +794,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────
-  //  BOTTOM NAV
-  // ─────────────────────────────────────────────────────────
-  Widget _buildBottomNav() {
-    final navItems = [
-      {'label': 'Overview', 'icon': Icons.grid_view_rounded},
-      {'label': 'Listings', 'icon': Icons.format_list_bulleted_rounded},
-      {'label': 'Orders', 'icon': Icons.shopping_bag_outlined},
-      {'label': 'BluePrint 3D', 'icon': Icons.view_in_ar_rounded},
-      {'label': 'Custom', 'icon': Icons.tune_rounded},
-      {'label': 'Profile', 'icon': Icons.person_outline_rounded},
-    ];
-
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
-      ),
-      child: Row(
-        children: List.generate(navItems.length, (i) {
-          final active = i == _activeNav;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _activeNav = i),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  // Active indicator bar
-                  if (active)
-                    Container(
-                      height: 2.5,
-                      width: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFBB040),
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(3),
-                        ),
-                      ),
-                    ),
-
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        navItems[i]['icon'] as IconData,
-                        size: 20,
-                        color: active
-                            ? const Color(0xFFFBB040)
-                            : const Color(0xFF555555),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        navItems[i]['label'] as String,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: active
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: active
-                              ? const Color(0xFFFBB040)
-                              : const Color(0xFF555555),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
@@ -738,7 +808,6 @@ class _MetaVerifiedPainter extends CustomPainter {
     final fillPaint = Paint()..color = const Color(0xFFFBB040);
     final cx = size.width / 2;
 
-    // Shield shape
     final path = Path()
       ..moveTo(cx, 0)
       ..cubicTo(cx + 2, 0, size.width, 2, size.width, size.height * 0.35)
@@ -763,7 +832,6 @@ class _MetaVerifiedPainter extends CustomPainter {
 
     canvas.drawPath(path, fillPaint);
 
-    // White checkmark
     final checkPaint = Paint()
       ..color = Colors.white
       ..strokeWidth = 1.8
@@ -794,6 +862,8 @@ class _ChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (thisWeek.length < 2) return;
+
     const maxV = 28.0;
     const padL = 24.0, padR = 6.0, padT = 4.0, padB = 4.0;
     final drawW = size.width - padL - padR;
@@ -822,7 +892,6 @@ class _ChartPainter extends CustomPainter {
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
-    // Build line path
     Path buildPath(List<double> data) {
       final p = Path();
       for (int i = 0; i < data.length; i++) {
@@ -832,7 +901,7 @@ class _ChartPainter extends CustomPainter {
       return p;
     }
 
-    // Last week dashed grey
+    // Last week — dashed grey
     _drawDashed(
       canvas,
       buildPath(lastWeek),
@@ -843,7 +912,7 @@ class _ChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // This week solid amber
+    // This week — solid amber
     canvas.drawPath(
       buildPath(thisWeek),
       Paint()
@@ -861,11 +930,13 @@ class _ChartPainter extends CustomPainter {
         3,
         Paint()..color = const Color(0xFFFBB040),
       );
-      canvas.drawCircle(
-        pt(i, lastWeek[i]),
-        2,
-        Paint()..color = const Color(0xFF555555),
-      );
+      if (i < lastWeek.length) {
+        canvas.drawCircle(
+          pt(i, lastWeek[i]),
+          2,
+          Paint()..color = const Color(0xFF555555),
+        );
+      }
     }
   }
 

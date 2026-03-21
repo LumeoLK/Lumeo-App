@@ -27,7 +27,7 @@ android {
         consumerProguardFiles "proguard-unity.txt"
         versionName "0.1.0"
         minSdk 29
-        targetSdk 36
+        targetSdk 34
         versionCode 1
 
         ndk {

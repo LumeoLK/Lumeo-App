@@ -15,7 +15,7 @@ class _CustomFurniturePageState extends State<CustomFurniturePage> {
     const Color cardColor = Color(0xFF2C2C2C);
     const Color primaryText = Colors.white;
     const Color secondaryText = Colors.white70;
-    const Color accentColor = Color(0xFFFFB74D); // Orange/Gold
+    const Color accentColor = Color(0xFF1a1a1a); // Orange/Gold
 
     return Scaffold(
       backgroundColor: backgroundColor,

@@ -5,8 +5,6 @@ import '../widgets/banner_carousel.dart';
 import '../widgets/product_section.dart';
 import '../providers/product_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/utils.dart';
-
 
 class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
@@ -27,7 +25,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    
     // Every time state changes this widget rebuilds automatically
     final productState = ref.watch(productProvider);
 
@@ -35,18 +32,16 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     ref.listen(productProvider, (previous, next) {
       // Only show snackbar when a new error appears
       if (next.error != null && next.error != previous?.error) {
-        showSnackBar(context, next.error!);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error!)));
       }
     });
-
 
     // User sees this while products are being fetched
     if (productState.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    // Grab the products list from the whiteboard
-    final products = productState.products;
 
     // Products are ready — show the actual page
     return SingleChildScrollView(
@@ -57,12 +52,14 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           const BannerCarousel(images: ["assets/banner.png"]),
           const SearchBarWidget(hintText: "Search products"),
           const SizedBox(height: 25),
-          ProductSection(title: "Sale", products: products),
-          ProductSection(title: "New Arrivals", products: products),
-          ProductSection(title: "For You", products: products),
+          ProductSection(title: "Sale", products: productState.saleProducts),
+          ProductSection(
+            title: "New Arrivals",
+            products: productState.newArrivals,
+          ),
+          ProductSection(title: "For You", products: productState.forYou),
         ],
       ),
     );
   }
 }
-

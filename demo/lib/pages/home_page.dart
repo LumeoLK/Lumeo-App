@@ -7,7 +7,7 @@ import 'wishlist_page.dart';
 import 'ar_screen.dart';
 import 'cart_page.dart';
 import 'customFurniture.dart';
-
+import 'emptyspace.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> pages = const [
     HomeContent(),
     WishListPage(),
-    ARScreen(modelUrl: 'https://res.cloudinary.com/drno34my4/raw/upload/v1773127388/lumeo_3d_models/product_69afc5c3027d16efd3341435.glb'), 
+    ARSearchPage(),
     CartPage(),
     CustomFurniturePage(),
   ];

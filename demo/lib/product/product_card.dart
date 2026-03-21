@@ -12,7 +12,7 @@ class ProductCard extends StatelessWidget {
     // Get first image from the images array
     // If no images exist show placeholder
     final String? imageUrl = product.images.isNotEmpty
-        ? product.images.first
+        ? product.images[0]
         : null;
 
     return GestureDetector(

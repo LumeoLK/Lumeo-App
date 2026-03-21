@@ -21,7 +21,14 @@ export const register = async (req, res) => {
       role: "user",
     });
     user = await user.save();
-    res.json({ success: true, user });
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" },
+    );
+
+    res.json({ success: true, token, user });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

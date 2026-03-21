@@ -6,11 +6,13 @@ import {
   getAllProducts,
   getProductById,
   searchProducts,
+  retry3dgeneration,
+  
+  getProductsForML,
+  deleteProduct
 } from "../controller/productController.js";
 
-
 const router = express.Router();
-
 
 router.post(
   "/create",
@@ -22,6 +24,8 @@ router.post(
 
 router.get("/", getAllProducts);
 router.get("/search", searchProducts);
+router.post("/retry3d", retry3dgeneration);
+router.get("/mlproducts", getProductsForML);
+router.post("/delete", verifyToken, verifySeller, deleteProduct);
 router.get("/:id", getProductById);
-
 export default router;
