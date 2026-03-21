@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'seller_send_proposal.dart';
 
 const bgColor = Color(0xFF000000);
 const cardColor = Color(0xFF1a1a1a);
@@ -52,9 +53,9 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
         title: const Column(
           children: [
             Text('Request Details',
-                style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold)),
+                style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.bold)),
             Text('Request ID • #COR-4821 • Posted 2 hrs ago',
-                style: TextStyle(color: hintText, fontSize: 14)),
+                style: TextStyle(color: hintText, fontSize: 13)),
           ],
         ),
         centerTitle: true,
@@ -224,7 +225,12 @@ class RequestDetailsBody extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {  //go to the send proposal page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SendProposalPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: kOrange,
                 padding: const EdgeInsets.symmetric(vertical: 16),
