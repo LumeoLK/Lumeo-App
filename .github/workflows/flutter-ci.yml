@@ -1,49 +1,50 @@
 name: Flutter CI Pipeline
 
-# 1. Wake the robot up when code is pushed to master or dev
 on:
   push:
-    branches:
-      - master
-      - dev
+    branches: [master, dev]
   pull_request:
-    branches:
-      - master
-      - dev
+    branches: [master, dev]
 
 jobs:
   build-and-check:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repo
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # 2. Install Java (Required to build Android apps)
+      # 2. Setup Java (Android build requirement)
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "17"
 
-      # 3. Install Flutter
+      # 3. Setup Flutter + cache
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.0" # Uses a recent stable Flutter version
+          flutter-version: "3.24.0"
           channel: "stable"
+          cache: true
 
-      # 4. Get Packages
+      # 4. Disable analytics (fix your issue)
+      - name: Disable Flutter Analytics
+        run: flutter config --no-analytics
+
+      # 5. Install dependencies
       - name: Install Dependencies
-        working-directory: ./demo # <--- CHANGE THIS if your pubspec.yaml is in a different folder!
+        working-directory: ./demo
         run: flutter pub get
 
-      # 5. The Quality Check (Fails if there are syntax errors)
+      # 6. Static analysis
       - name: Analyze Code
         working-directory: ./demo
         run: flutter analyze
 
-      # 6. The Build Test (Proves the app can actually compile)
+      # 7. Build APK
       - name: Build Android APK
         working-directory: ./demo
         run: flutter build apk --debug
