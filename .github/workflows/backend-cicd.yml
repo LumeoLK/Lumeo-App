@@ -1,17 +1,26 @@
 name: Backend CI/CD Pipeline
 
-# 1. When should this robot wake up?
 on:
   push:
     branches:
-      - master # Wakes up when code is pushed to the main branch
+      - master
     paths:
-      - "backend/**" # ONLY wakes up if files inside the 'backend' folder were changed
+      - 'backend/**'
+      - '.github/workflows/backend-cicd.yml'
 
 jobs:
   # 2. The Quality Check (CI)
   build-and-test:
     runs-on: ubuntu-latest
+    
+    # --- NEW: Spin up a temporary Redis server for the tests! ---
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+    # ------------------------------------------------------------
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -19,16 +28,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18" # Assuming Node 18, change if you use a different version
+          node-version: '18' # Assuming Node 18, change if you use a different version
 
       - name: Install Dependencies
         working-directory: ./backend
         run: npm install
 
-      # This runs your tests. If it fails, the whole pipeline stops here.
       - name: Run Tests
         working-directory: ./backend
-        run: npm test --if-present
+        run: npm test --if-present 
 
   # 3. The Delivery Truck (CD)
   deploy-to-render:
@@ -36,5 +44,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deployment
-        # We use a secret URL so nobody else can trigger your deployments
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
