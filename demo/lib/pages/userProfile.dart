@@ -217,7 +217,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               },
             ),
             _buildMenuTile(
-              'Shipping addresses',
+              'Shipping addresses (Not available for MVP)',
               '3 addresses',
               onTap: () {
                 print('[UserProfile] Shipping addresses tapped (Not available for MVP)');
@@ -225,7 +225,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               },
             ),
             _buildMenuTile(
-              'Payment methods',
+              'Payment methods (Not available for MVP)',
               'COD',
               onTap: () {
                 print('[UserProfile] Payment methods tapped (Not available for MVP)');
