@@ -11,7 +11,7 @@ class CustomRequestState {
   final Map<String, List<Bid>> bidsByRequest; // requestId -> list of bids
   final bool isLoading;
   final String? error;
- [CustomRequestProvider] Error: Exception: Failed to load my requests
+
   CustomRequestState({
     this.myRequests = const [],
     this.marketplaceRequests = const [],
