@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-cicd.yml'
 
 jobs:
   # 2. The Quality Check (CI)
