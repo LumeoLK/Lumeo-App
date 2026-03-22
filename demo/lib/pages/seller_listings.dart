@@ -12,7 +12,6 @@ const kOrange = Color(0xFFfbb040);
 const textColor = Colors.white;   // input texts color
 const hintText = Color(0xFF888888);  //color for hints in the boxes
 
-void main() => runApp(const MaterialApp(home: ListingsPage(), debugShowCheckedModeBanner: false));
 
 class ListingsPage extends StatefulWidget {
   const ListingsPage({super.key});

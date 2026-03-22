@@ -102,19 +102,21 @@ class _AddShippingAddressPageState
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-
-    final order = await ref.read(orderProvider.notifier).placeOrder(
-      shippingAddress: {
-        'fullName': _fullNameController.text.trim(),
-        'address': _addressController.text.trim(),
-        'city': _cityController.text.trim(),
-        'state': _stateController.text.trim(),
-        'postalCode': _postalCodeController.text.trim(),
-        'country': _countryController.text.trim(),
-        'phone': _phoneController.text.trim(),
-      },
-    );
-
+    print("HI");
+    final order = await ref
+        .read(orderProvider.notifier)
+        .placeOrder(
+          shippingAddress: {
+            'fullName': _fullNameController.text.trim(),
+            'address': _addressController.text.trim(),
+            'city': _cityController.text.trim(),
+            'state': _stateController.text.trim(),
+            'postalCode': _postalCodeController.text.trim(),
+            'country': _countryController.text.trim(),
+            'phone': _phoneController.text.trim(),
+          },
+        );
+    print(order);
     if (!mounted) return;
 
     setState(() => _isSubmitting = false);
@@ -126,21 +128,16 @@ class _AddShippingAddressPageState
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const ReserveSuccessPage(),
-        ),
+        MaterialPageRoute(builder: (context) => const ReserveSuccessPage()),
       );
       return;
     }
 
     final error = ref.read(orderProvider).error ?? 'Failed to place order';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(error), backgroundColor: Colors.red));
   }
 
   @override
@@ -231,8 +228,9 @@ class _AddShippingAddressPageState
                             width: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.black),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
                             ),
                           )
                         : const Text(
@@ -267,13 +265,7 @@ class _AddShippingAddressPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
@@ -314,7 +306,8 @@ class _AddShippingAddressPageState
                 borderSide: const BorderSide(color: Colors.redAccent),
               ),
             ),
-            validator: validator ??
+            validator:
+                validator ??
                 (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'This field is required';

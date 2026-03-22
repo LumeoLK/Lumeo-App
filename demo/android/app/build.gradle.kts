@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.lumeo_v2"
-        minSdk = 30  // Changed from 29 to 30 (Unity requirement)
+        minSdk = 30
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -37,19 +37,15 @@ android {
 
     buildTypes {
         getByName("debug") {
-            // let Android auto-handle debug signing
         }
         getByName("release") {
-        // Your existing signing config (usually defaults to debug keys locally)
-        signingConfig = signingConfigs.getByName("debug") 
-        
-        // Add these two lines with correct Kotlin syntax:
-        isMinifyEnabled = true
-        proguardFiles(
-            getDefaultProguardFile("proguard-android-optimize.txt"),
-            "proguard-rules.pro"
-        )
-    }
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 }
 
@@ -57,7 +53,6 @@ flutter {
     source = "../.."
 }
 
-// Add this dependencies block at the end
-//  dependencies {
-//      implementation(project(":unityLibrary"))
-//  }
+dependencies {
+    implementation(project(":unityLibrary"))
+}

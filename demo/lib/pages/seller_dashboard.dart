@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lumeo_v2/pages/chat_application.dart';
 
 import 'package:get/get.dart';
-
+import 'seller_listings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/seller_dashboard_service.dart';
 import 'home_page.dart';
@@ -203,7 +203,23 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             bottom: 0,
             child: SellerBottomNavigationBar(
               currentIndex: _activeNav,
-              onTap: (index) => setState(() => _activeNav = index),
+              onTap: (index) {
+                setState(() => _activeNav = index);
+                switch (index) {
+                  case 0:
+                    Get.back(); // ← just go back, dashboard is already there
+                    break;
+                  case 1:
+                    Get.off(
+                      () => const ListingsPage(),
+                    ); // replaces instead of stacking
+                    break;
+                  case 2:
+                    _openSellerInbox();
+                    break;
+                  // ... other tabs
+                }
+              },
             ),
           ),
         ],

@@ -4,13 +4,13 @@ import '../Constants.dart';
 import '../model/order.dart';
 
 class OrderService {
-
   // POST /api/orders/create
   // Backend reads the cart from DB, so we only send address + payment method
   static Future<Order> placeOrder(
     String token, {
     required Map<String, dynamic> shippingAddress,
   }) async {
+    print(shippingAddress);
     final response = await http.post(
       Uri.parse("${Constants.ordersUri}/create"),
       headers: {
@@ -22,7 +22,7 @@ class OrderService {
         "paymentMethod": "cod", // hardcoded for now — no payment feature yet
       }),
     );
-
+    print("Response from the order service: ${response.body}");
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       return Order.fromJson(data['order']);
@@ -36,9 +36,7 @@ class OrderService {
   static Future<List<Order>> getMyOrders(String token) async {
     final response = await http.get(
       Uri.parse("${Constants.ordersUri}/my-orders"),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
+      headers: {"Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {
@@ -52,8 +50,7 @@ class OrderService {
         throw Exception(
           msg.isNotEmpty
               ? msg
-              :
-              'Failed to load orders: ${response.statusCode} - ${response.body}',
+              : 'Failed to load orders: ${response.statusCode} - ${response.body}',
         );
       } catch (_) {
         throw Exception(
