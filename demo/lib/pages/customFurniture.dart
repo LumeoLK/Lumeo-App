@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../Constants.dart';
+import '../providers/custom_request_provider.dart';
 
 class CustomFurniturePage extends ConsumerStatefulWidget {
   const CustomFurniturePage({super.key});
@@ -39,82 +40,38 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
   Future<void> _submitCustomOrder() async {
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
-    final budget = double.tryParse(_budgetController.text.trim());
+    final budgetStr = _budgetController.text.trim();
+    final budget = double.tryParse(budgetStr);
 
-    if (title.isEmpty) {
+    if (title.isEmpty || description.isEmpty || budget == null || budget <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a title for your custom order')),
+        const SnackBar(content: Text('Please fill in all fields correctly')),
       );
       return;
     }
 
-    if (description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a description')),
-      );
-      return;
-    }
+    final success = await ref.read(customRequestProvider.notifier).submitRequest(
+      title: title,
+      description: description,
+      budget: budget,
+    );
 
-    if (budget == null || budget <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid budget amount')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('x-auth-token') ?? '';
-
-      if (token.isEmpty) {
-        throw Exception('Please login first');
-      }
-
-      final response = await http.post(
-        Uri.parse('${Constants.requestsUri}/create'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'title': title,
-          'description': description,
-          'budget': budget,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 201) {
-        print('[CustomFurniturePage] Custom order submitted successfully');
-        if (!mounted) return;
-
-        _titleController.clear();
-        _descriptionController.clear();
-        _budgetController.clear();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Custom order submitted successfully')),
-        );
-        return;
-      }
-
-      throw Exception(data['msg'] ?? 'Failed to submit custom order');
-    } catch (e) {
+    if (success) {
       if (!mounted) return;
+      _titleController.clear();
+      _descriptionController.clear();
+      _budgetController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        const SnackBar(content: Text('Custom order submitted successfully!')),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+      // Wait a bit and refresh the list
+      ref.read(customRequestProvider.notifier).fetchMyRequests();
+    } else {
+      if (!mounted) return;
+      final error = ref.read(customRequestProvider).error ?? 'Failed to submit';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
     }
   }
 
@@ -135,6 +92,10 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
     const Color accentColor = Color(0xFF1a1a1a); // Orange/Gold
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(''),
+        backgroundColor: Colors.black,
+      ),
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(

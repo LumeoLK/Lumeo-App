@@ -8,6 +8,8 @@ import 'ar_screen.dart';
 import 'cart_page.dart';
 import 'customFurniture.dart';
 import 'emptyspace.dart';
+import 'custom_request_review.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -27,7 +29,7 @@ class _HomePageState extends State<HomePage> {
 
   late final List<Widget> _pagesWithCustom = [
     ...pages,
-    const CustomFurniturePage(),
+    const CustomRequestReviewPage(),
   ];
 
   @override

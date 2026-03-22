@@ -12,6 +12,7 @@ const orderSchema = mongoose.Schema({
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Seller",
+    default: null,
   },
 
   
@@ -21,7 +22,7 @@ const orderSchema = mongoose.Schema({
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // For standard items
       customRequestId: { type: mongoose.Schema.Types.ObjectId, ref: "CustomRequest" }, // For custom jobs
-      sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller" },
+      sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
       quantity: { type: Number, default: 1 },
       priceAtPurchase: { type: Number, required: true } // Store price here in case it changes later
     }

@@ -49,7 +49,7 @@ class MyOrdersState extends ConsumerState<MyOrders> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Orders'),
+        title: const Text(''),
         backgroundColor: Colors.black,
       ),
       backgroundColor: Colors.black,
