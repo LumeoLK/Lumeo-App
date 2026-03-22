@@ -58,6 +58,6 @@ flutter {
 }
 
 // Add this dependencies block at the end
- dependencies {
-     implementation(project(":unityLibrary"))
- }
+//  dependencies {
+//      implementation(project(":unityLibrary"))
+//  }

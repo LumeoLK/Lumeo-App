@@ -9,7 +9,7 @@ void main() {
   const token = 'token-1234567890';
 
   group('WishlistService.getWishlist', () {
-    test('returns products when API returns 200', () async {
+    test('returns products on success', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'GET');
         expect(request.headers['Authorization'], 'Bearer $token');
@@ -35,7 +35,7 @@ void main() {
       expect(items.first['_id'], 'p1');
     });
 
-    test('throws when API returns non-200', () async {
+    test('throws on failed fetch', () async {
       final mockClient = MockClient((request) async {
         return http.Response('server error', 500);
       });
@@ -51,7 +51,7 @@ void main() {
   });
 
   group('WishlistService.addToWishlist', () {
-    test('accepts 201 response status', () async {
+    test('adds item successfully', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer $token');
@@ -68,7 +68,7 @@ void main() {
       );
     });
 
-    test('throws when status is not 200 or 201', () async {
+    test('throws when add fails', () async {
       final mockClient = MockClient((request) async {
         return http.Response('bad request', 400);
       });
@@ -84,7 +84,7 @@ void main() {
   });
 
   group('WishlistService.removeFromWishlist', () {
-    test('throws when API returns non-200', () async {
+    test('throws when remove fails', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'DELETE');
         return http.Response('not found', 404);

@@ -67,3 +67,46 @@ export const placeBid = async (req, res) => {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
+
+export const getBidsByRequest = async (req, res) => {
+  try {
+    const { requestId } = req.body;
+
+    const request = await CustomRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        msg: "Request not found"
+      });
+    }
+
+    const bids = await Bid.find({ requestId })
+      .populate("sellerId", "shopName displayName logo")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: bids.length,
+      bids
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      msg: error.message
+    });
+  }
+};
+
+export const getMyRequests = async (req, res) => {
+  try {
+    console.log('[BidController] Getting requests for user ID:', req.user.id);
+    const requests = await CustomRequest.find({ userId: req.user.id });
+    
+    console.log(`[BidController] Found ${requests.length} requests for user ${req.user.id}`);
+    res.json({ success: true, requests });
+  } catch (error) {
+    console.error('[BidController] Error fetching my requests:', error.message);
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};

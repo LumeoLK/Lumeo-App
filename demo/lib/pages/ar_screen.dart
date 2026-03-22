@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_embed_unity/flutter_embed_unity.dart';
+//import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
 
 class ARScreen extends StatefulWidget {
@@ -63,9 +63,9 @@ class _ARScreenState extends State<ARScreen> {
 
       // LUMEO-SUPERVISOR: On the 2nd visit, _isUnityLoaded will already be TRUE here,
       // so it will immediately load the new model without waiting for 'scene_loaded'.
-      if (_isUnityLoaded) {
-        sendToUnity('ModelLoader', 'LoadModelFromPath', path);
-      }
+      // if (_isUnityLoaded) {
+      //   sendToUnity('ModelLoader', 'LoadModelFromPath', path);
+      // }
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to download model: $e';
@@ -81,7 +81,7 @@ class _ARScreenState extends State<ARScreen> {
 
       setState(() => _isUnityLoaded = true);
       if (_localModelPath != null) {
-        sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
+        //sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
       }
     }
 
@@ -118,12 +118,12 @@ class _ARScreenState extends State<ARScreen> {
     final size = MediaQuery.of(context).size;
     final x = details.globalPosition.dx / size.width;
     final y = details.globalPosition.dy / size.height;
-    sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
+    //sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
   }
 
   void _rotate(double degrees) {
     setState(() => _currentRotation += degrees);
-    sendToUnity('ModelLoader', 'RotateModel', degrees.toString());
+    //sendToUnity('ModelLoader', 'RotateModel', degrees.toString());
   }
 
   void _reset() {
@@ -132,7 +132,7 @@ class _ARScreenState extends State<ARScreen> {
       _isModelPlaced = false;
       _isScanning = true;
     });
-    sendToUnity('ModelLoader', 'ResetModel', '');
+    //sendToUnity('ModelLoader', 'ResetModel', '');
   }
 
   @override
@@ -223,7 +223,7 @@ class _ARScreenState extends State<ARScreen> {
                 _onTap(details, context);
               }
             },
-            child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
+            //child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
           ),
 
           // Back button — top left

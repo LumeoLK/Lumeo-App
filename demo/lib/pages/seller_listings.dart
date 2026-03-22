@@ -111,6 +111,23 @@ class _AddProductFormState extends State<AddProductForm> {
     }
   }
 
+  // opens the camera
+  Future<void> _pickImageFromCamera() async {
+  final picker = ImagePicker();
+  final picked = await picker.pickImage(source: ImageSource.camera);
+  if (picked != null) {
+    setState(() {
+      // fills the first empty image slot
+      for (int i = 0; i < _images.length; i++) {
+        if (_images[i] == null) {
+          _images[i] = File(picked.path);
+          break;
+        }
+      }
+    });
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -164,10 +181,13 @@ class _AddProductFormState extends State<AddProductForm> {
          //camera icon
           Align(
             alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: const BoxDecoration(color: kOrange, shape: BoxShape.circle),
-              child: const Icon(Icons.camera_alt, color: Colors.black, size: 22),
+            child: GestureDetector(
+              onTap: _pickImageFromCamera,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(color: kOrange, shape: BoxShape.circle),
+                child: const Icon(Icons.camera_alt, color: Colors.black, size: 22),
+              ),
             ),
           ),
           const SizedBox(height: 28),

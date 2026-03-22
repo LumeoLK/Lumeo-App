@@ -4,7 +4,7 @@ import 'package:lumeo_v2/model/product.dart';
 
 void main() {
   group('Product.fromJson', () {
-    test('parses backend fields and nested values', () {
+    test('maps full product json correctly', () {
       final json = <String, dynamic>{
         '_id': 'p1',
         'title': 'Modern Chair',
@@ -33,7 +33,7 @@ void main() {
       expect(product.createdAt, isNotNull);
     });
 
-    test('uses safe defaults for missing optional fields', () {
+    test('uses defaults when fields are missing', () {
       final json = <String, dynamic>{
         '_id': 'p2',
         'title': 'Side Table',
@@ -56,7 +56,7 @@ void main() {
   });
 
   group('CartItem.fromJson', () {
-    test('parses nested product object and first image url', () {
+    test('reads nested product info', () {
       final json = <String, dynamic>{
         'productId': {
           '_id': 'prod-11',
@@ -78,7 +78,7 @@ void main() {
       expect(item.quantity, 2);
     });
 
-    test('parses string product id and leaves display fields null', () {
+    test('handles plain product id', () {
       final json = <String, dynamic>{
         'productId': 'prod-22',
         'price': 30,

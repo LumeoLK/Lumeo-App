@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+
+import 'package:lumeo_v2/pages/chat_application.dart';
+
 import 'package:get/get.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/seller_dashboard_service.dart';
 import 'home_page.dart';
 import "productpage.dart";
-
+import '../model/conversation.dart';
+import '../services/chat_service.dart';
+import '../services/seller_dashboard_service.dart';
+import '../pages/chat_application.dart';
 import '../widgets/seller_bottom_navigation_bar.dart';
-
 
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
-
   @override
   State<SellerDashboardPage> createState() => _SellerDashboardPageState();
 }
@@ -18,6 +23,8 @@ class SellerDashboardPage extends StatefulWidget {
 class _SellerDashboardPageState extends State<SellerDashboardPage> {
   final SellerDashboardService _dashboardService =
       const SellerDashboardService();
+
+  final ChatService _chatService = ChatService();
 
   bool _isLoading = true;
   String? _error;
@@ -33,6 +40,49 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   void initState() {
     super.initState();
     _loadDashboard();
+  }
+
+  Future<void> _openSellerInbox() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token')?.trim() ?? '';
+
+      if (token.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please log in first')));
+        return;
+      }
+
+      final conversations = await _chatService.getConversations();
+
+      if (!mounted) return;
+
+      final sellerUserId =
+          prefs.getString('userId') ?? prefs.getString('id') ?? '';
+      final sellerName =
+          prefs.getString('userName') ?? prefs.getString('name') ?? 'Seller';
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: const Color(0xFF1a1a1a),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (_) => SellerInboxSheet(
+          conversations: conversations,
+          sellerUserId: sellerUserId,
+          sellerName: sellerName,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load conversations: $e')),
+      );
+    }
   }
 
   Future<void> _loadDashboard() async {
@@ -100,22 +150,33 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   // ── Build ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () {
-            // Option B: If you want to FORCE them to a specific page (e.g., HomePage)
-            Get.offAll(() => const HomePage()); // Using your 'Get' library
-          },
-        ),
-        title: const Text('Seller Dashboard'),
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF1a1a1a),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
         backgroundColor: const Color(0xFF1a1a1a),
-      ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
       body: Stack(
         children: [
-          // Scrollable body
           SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 80),
             child: Column(
@@ -159,7 +220,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Cover photo
         Container(
           height: 160,
           width: double.infinity,
@@ -215,19 +275,20 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          _text(
-                            _profile['displayName'],
-                            fallback: 'Display Name',
-                          ),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.4,
+                        Expanded(
+                          child: Text(
+                            _text(
+                              _profile['displayName'],
+                              fallback: 'Display Name',
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.4,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 8),
                         CustomPaint(
                           size: const Size(22, 22),
                           painter: _MetaVerifiedPainter(),
@@ -251,9 +312,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  SELLER SUMMARY CARDS
-  // ─────────────────────────────────────────────────────────
   Widget _buildSellerSummary() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -338,15 +396,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  PERFORMANCE OVERVIEW
-  // ─────────────────────────────────────────────────────────
   Widget _buildPerformanceOverview() {
     final perfDays = _asStringList(_performance['days']);
     final perfThisWeek = _asStringList(_performance['thisWeek']);
     final perfLastWeek = _asStringList(_performance['lastWeek']);
 
-    // Use API data if available, otherwise fall back to sample data
     final chartThisWeek = perfThisWeek.isNotEmpty
         ? perfThisWeek.map((v) => double.tryParse(v) ?? 0.0).toList()
         : thisWeek;
@@ -408,11 +462,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  ACTIVE LISTINGS
-  // ─────────────────────────────────────────────────────────
   Widget _buildActiveListings() {
-    // Use API data if available, otherwise fall back to sample data
     final items = _activeListings;
 
     return Column(
@@ -468,7 +518,10 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
   Widget _buildListingCard(Map<String, dynamic> item) {
     print(item);
-    final imageUrl = _text(item['images'][0]);
+    final images = item['images'];
+    final imageUrl = (images is List && images.isNotEmpty)
+        ? _text(images[0])
+        : '';
     final isAsset = imageUrl.startsWith('assets/');
 
     return Container(
@@ -490,7 +543,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
             child: Column(
               children: [
-                // Active badge + menu
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -542,8 +594,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               ],
             ),
           ),
-
-          // Details
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -639,7 +689,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   //  NEW ORDERS
   // ─────────────────────────────────────────────────────────
   Widget _buildNewOrders() {
-    // Use API data if available, otherwise fall back to sample data
     final items = _newOrders.isNotEmpty
         ? _newOrders
         : [
@@ -753,8 +802,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
           const SizedBox(width: 10),
-
-          // Order details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -799,9 +846,100 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  META VERIFIED BADGE PAINTER
-// ─────────────────────────────────────────────────────────────
+class SellerInboxSheet extends StatelessWidget {
+  final List<Conversation> conversations;
+  final String sellerUserId;
+  final String sellerName;
+
+  const SellerInboxSheet({
+    super.key,
+    required this.conversations,
+    required this.sellerUserId,
+    required this.sellerName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: conversations.isEmpty
+            ? const Center(
+                child: Text(
+                  'No messages yet',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              )
+            : Column(
+                children: [
+                  const SizedBox(height: 14),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Messages',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: conversations.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(color: Colors.white10, height: 1),
+                      itemBuilder: (context, index) {
+                        final conv = conversations[index];
+
+                        return ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Color(0xFFFBB040),
+                            child: Icon(Icons.person, color: Colors.black),
+                          ),
+                          title: Text(
+                            conv.shopName,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            conv.lastMessage.isEmpty
+                                ? conv.productName
+                                : conv.lastMessage,
+                            style: const TextStyle(color: Colors.white60),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatApplication(
+                                  conversation: conv,
+                                  currentUserId: sellerUserId,
+                                  currentUserName: sellerName,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 class _MetaVerifiedPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -851,9 +989,6 @@ class _MetaVerifiedPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  PERFORMANCE CHART PAINTER
-// ─────────────────────────────────────────────────────────────
 class _ChartPainter extends CustomPainter {
   final List<double> thisWeek;
   final List<double> lastWeek;
@@ -874,7 +1009,6 @@ class _ChartPainter extends CustomPainter {
       padT + drawH - (v / maxV) * drawH,
     );
 
-    // Grid lines
     final gridPaint = Paint()
       ..color = const Color(0xFF3a3a3a)
       ..strokeWidth = 0.8;
@@ -923,7 +1057,6 @@ class _ChartPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
 
-    // Dots
     for (int i = 0; i < thisWeek.length; i++) {
       canvas.drawCircle(
         pt(i, thisWeek[i]),

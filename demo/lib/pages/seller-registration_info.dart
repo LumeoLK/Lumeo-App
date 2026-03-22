@@ -10,6 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 
+import "../pages/seller_terms_conditions.dart";
+
+
 class SellerRegistrationInfoScreen extends ConsumerStatefulWidget {
   const SellerRegistrationInfoScreen({super.key});
 
@@ -147,8 +150,14 @@ class _SellerRegistrationInfoScreenState
       );
 
       // 5. Send the Request!
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
+      var streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () =>
+            throw Exception('Request timed out. Please try again.'),
+      );
+      var response = await http.Response.fromStream(
+        streamedResponse,
+      ).timeout(const Duration(seconds: 30));
       print("Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
       var responseData = jsonDecode(response.body);
@@ -159,7 +168,17 @@ class _SellerRegistrationInfoScreenState
         // 2. Overwrite the old token in the device's local vault
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('x-auth-token', newToken);
-
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser != null) {
+          await ref.read(authProvider.notifier).updateUser({
+            '_id': currentUser.id,
+            'name': currentUser.name,
+            'email': currentUser.email,
+            'profilePicture': currentUser.profilePicture,
+            'role': 'seller', // we know role is now seller
+            'token': newToken,
+          });
+        }
         // Success! Tell the user the good news
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -168,10 +187,14 @@ class _SellerRegistrationInfoScreenState
           ),
         );
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SellerDashboardPage()),
-        );
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const TermsPage()),
+          );
+        }
+
       } else {
         // Backend returned an error (e.g., "Seller with same Business Registration Number already exist")
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,10 +205,12 @@ class _SellerRegistrationInfoScreenState
         );
       }
     } catch (e) {
-      print("Error during submission: $e");
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("An error occurred. Please check your connection."),
+        SnackBar(
+          content: Text(
+            e.toString(),
+          ), // show actual error instead of generic message
           backgroundColor: Colors.red,
         ),
       );
@@ -280,20 +305,25 @@ class _SellerRegistrationInfoScreenState
 
               /// Submit Button
               GestureDetector(
-                onTap: () {
-                  print("Checking Data before API call:");
-                  print("Shop Name: ${shopNameController.text}");
-                  print("Logo Selected: ${logoImage != null}");
-                  print("NIC Front Selected: ${nicFrontImage != null}");
-                  print("NIC Back Selected: ${nicBackImage != null}");
-                  _submitSellerRegistration();
-                },
+                onTap: isLoading
+                    ? null
+                    : () {
+                        print("Checking Data before API call:");
+                        print("Shop Name: ${shopNameController.text}");
+                        print("Logo Selected: ${logoImage != null}");
+                        print("NIC Front Selected: ${nicFrontImage != null}");
+                        print("NIC Back Selected: ${nicBackImage != null}");
+                        _submitSellerRegistration();
+                      },
                 child: Container(
                   width: double.infinity,
                   height: 55,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
-                    color: const Color(0xFFFBB040),
+                    color: isLoading
+                        ? Colors
+                              .grey // visually show disabled state
+                        : const Color(0xFFFBB040),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.orange.withOpacity(0.5),
