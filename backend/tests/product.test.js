@@ -4,19 +4,18 @@ import Product from "../src/models/Product.js";
 import { jest } from "@jest/globals";
 
 describe("Product CRUD API Tests", () => {
-  // This cleans up our "Spies" after each test so they don't leak
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   it("should fetch a list of products (READ)", async () => {
-    // 1. Arrange: Create our fake data
+
     const fakeProducts = [
       { _id: "123", name: "Luxury Chair", price: 150 },
       { _id: "456", name: "Oak Table", price: 300 },
     ];
 
-    // 2. The Upgraded ESM-Friendly Mock: Handle Chained Mongoose Methods!
     const mockQuery = {
       populate: jest.fn().mockReturnThis(),
       sort: jest.fn().mockReturnThis(),
