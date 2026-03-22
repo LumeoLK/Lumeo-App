@@ -52,8 +52,8 @@ jobs:
 
           cp ml/ml_service.py hf-space/app.py
           cp ml/requirements.txt hf-space/requirements.txt
+          cp ml/README.md hf-space/README.md
 
-          if [ -f ml/README.md ]; then cp ml/README.md hf-space/README.md; fi
           if [ -f ml/Dockerfile ]; then cp ml/Dockerfile hf-space/Dockerfile; fi
 
           cd hf-space
