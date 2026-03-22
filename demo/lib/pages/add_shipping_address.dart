@@ -26,6 +26,53 @@ class _AddShippingAddressPageState
   late final TextEditingController _countryController;
   late final TextEditingController _phoneController;
 
+  String? _validatePersonName(String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return 'Full name is required';
+    if (input.length < 3) return 'Name is too short';
+    if (!RegExp(r"^[A-Za-z ]+$").hasMatch(input)) {
+      return 'Name can contain letters and spaces only';
+    }
+    return null;
+  }
+
+  String? _validateAddress(String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return 'Address is required';
+    if (input.length < 6) return 'Address looks too short';
+    return null;
+  }
+
+  String? _validateTextLocation(String label, String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return '$label is required';
+    if (!RegExp(r"^[A-Za-z .'-]+$").hasMatch(input)) {
+      return '$label has invalid characters';
+    }
+    return null;
+  }
+
+  String? _validatePostalCode(String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return 'Postal code is required';
+    if (!RegExp(r'^[0-9A-Za-z -]{4,10}$').hasMatch(input)) {
+      return 'Enter a valid postal code';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) {
+      return 'Phone number is required';
+    }
+    final digits = input.replaceAll(RegExp(r'\D'), '');
+    if (digits.length != 10) {
+      return 'Phone number must be exactly 10 digits';
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,38 +164,46 @@ class _AddShippingAddressPageState
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.disabled,
             child: Column(
               children: [
                 _buildField(
                   "Full name",
                   _fullNameController,
                   hintText: 'Enter your full name',
+                  validator: _validatePersonName,
                 ),
                 _buildField(
                   "Address",
                   _addressController,
                   hintText: 'House no, street, area',
+                  validator: _validateAddress,
                 ),
                 _buildField(
                   "City",
                   _cityController,
                   hintText: 'Enter city',
+                  validator: (value) => _validateTextLocation('City', value),
                 ),
                 _buildField(
                   "State/Province/Region",
                   _stateController,
                   hintText: 'Enter state or province',
+                  validator: (value) =>
+                      _validateTextLocation('State/Province/Region', value),
                 ),
                 _buildField(
                   "Zip Code (Postal Code)",
                   _postalCodeController,
-                  hintText: 'e.g. 91709',
-                  keyboardType: TextInputType.number,
+                  hintText: 'e.g. 91709 or 00100',
+                  keyboardType: TextInputType.text,
+                  validator: _validatePostalCode,
                 ),
                 _buildField(
                   "Country",
                   _countryController,
                   hintText: 'Enter country',
+                  validator: (value) => _validateTextLocation('Country', value),
                 ),
                 _buildField(
                   "Phone Number",
@@ -156,17 +211,7 @@ class _AddShippingAddressPageState
                   hintText: '10-digit phone number',
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
-                    final input = value?.trim() ?? '';
-                    if (input.isEmpty) {
-                      return 'Phone number is required';
-                    }
-                    final digits = input.replaceAll(RegExp(r'\D'), '');
-                    if (digits.length != 10) {
-                      return 'Phone number must be exactly 10 digits';
-                    }
-                    return null;
-                  },
+                  validator: _validatePhone,
                 ),
                 const SizedBox(height: 12),
                 SizedBox(

@@ -9,9 +9,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs(project(":unityLibrary").projectDir.resolve("libs"))
-        }
+        // flatDir {
+        //     dirs(project(":unityLibrary").projectDir.resolve("libs"))
+        // }
         
     }
 }

@@ -4,9 +4,12 @@ import {
   register,
   forgotPassword,
   resetPassword,
-  showResetPasswordPage,googleAuth
-
+  changePassword,
+  showResetPasswordPage,
+  googleAuth,
+  getCurrentUser,
 } from "../controller/userController.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const authRouter = express.Router();
 
@@ -22,9 +25,14 @@ authRouter.post("/forgotPassword", forgotPassword);
 //forgot password
 authRouter.post("/resetPassword/:token", resetPassword);
 
+// change password for logged-in users
+authRouter.post("/changePassword", verifyToken, changePassword);
+
 authRouter.get("/resetPassword/:token", showResetPasswordPage);
 
-
 authRouter.post('/googleAuth', googleAuth);
+
+// Get current user details (requires authentication)
+authRouter.get("/me", verifyToken, getCurrentUser);
 
 export default authRouter;

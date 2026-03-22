@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final String hintText;
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final VoidCallback? onTap;
+  final bool readOnly;
+  final TextInputAction textInputAction;
 
   const SearchBarWidget({
     super.key,
     required this.hintText,
+    this.controller,
+    this.onChanged,
+    this.onSubmitted,
+    this.onTap,
+    this.readOnly = false,
+    this.textInputAction = TextInputAction.search,
   });
 
   @override
@@ -22,6 +34,12 @@ class SearchBarWidget extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              onTap: onTap,
+              readOnly: readOnly,
+              textInputAction: textInputAction,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: hintText,

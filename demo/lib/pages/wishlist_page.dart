@@ -92,21 +92,20 @@ class _WishListPageState extends ConsumerState<WishListPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Wish List',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Wish List',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
 
             // from dev: SearchBarWidget
             const Padding(
@@ -210,8 +209,7 @@ class _WishListPageState extends ConsumerState<WishListPage> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   // from HEAD: filters real Product objects

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../product/product_card.dart';
+import 'product_card.dart';
 
 class ProductSection extends StatelessWidget {
   final String title;

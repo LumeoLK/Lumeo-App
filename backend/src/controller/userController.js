@@ -154,6 +154,47 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ msg: "Please provide oldPassword and newPassword" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ msg: "New password must be at least 6 characters" });
+    }
+
+    const user = await User.findById(req.user.id).select("+password");
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ msg: "Password is not set for this account" });
+    }
+
+    const isMatch = await bcryptjs.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Old password is incorrect" });
+    }
+
+    const isSameAsCurrent = await bcryptjs.compare(newPassword, user.password);
+    if (isSameAsCurrent) {
+      return res.status(400).json({ msg: "New password must be different from old password" });
+    }
+
+    user.password = await bcryptjs.hash(newPassword, 10);
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, msg: error.message });
+  }
+};
+
 export const googleAuth = async (req, res) => {
   try {
     const { email, profilePicture, mode } = req.body;
@@ -187,6 +228,41 @@ export const googleAuth = async (req, res) => {
       user,
     });
   } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    console.log('[UserController] Getting current user - ID:', req.user.id);
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      console.log('[UserController] User not found');
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    console.log('[UserController] User found:', {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+
+    const userDto = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      profilePicture: user.profilePicture || '',
+    };
+
+    return res.status(200).json({
+      success: true,
+      user: userDto,
+    });
+  } catch (error) {
+    console.log('[UserController] Error getting user:', error.message);
     return res.status(500).json({ msg: error.message });
   }
 };

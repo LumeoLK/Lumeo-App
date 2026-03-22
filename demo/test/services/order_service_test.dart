@@ -10,7 +10,7 @@ void main() {
   const token = 'token-1234567890';
 
   group('OrderService.placeOrder', () {
-    test('returns Order instance when API returns 201', () async {
+    test('creates order successfully', () async {
       const shippingAddress = {
         'street': '123 Main St',
         'city': 'Colombo',
@@ -58,7 +58,7 @@ void main() {
       expect(order.totalAmount, 1500.0);
     });
 
-    test('throws when API returns non-201', () async {
+    test('throws when create order fails', () async {
       const shippingAddress = {'street': '123 Main St'};
 
       final mockClient = MockClient((request) async {
@@ -83,7 +83,7 @@ void main() {
   });
 
   group('OrderService.getMyOrders', () {
-    test('returns list of orders when API returns 200', () async {
+    test('returns my orders list', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'GET');
         expect(request.headers['Authorization'], 'Bearer $token');
@@ -130,7 +130,7 @@ void main() {
       expect(orders[1].totalAmount, 1200.0);
     });
 
-    test('returns empty list when no orders exist', () async {
+    test('returns empty list when no orders', () async {
       final mockClient = MockClient((request) async {
         return http.Response(
           jsonEncode([]),
@@ -147,7 +147,7 @@ void main() {
       expect(orders, isEmpty);
     });
 
-    test('throws when API returns non-200', () async {
+    test('throws when loading orders fails', () async {
       final mockClient = MockClient((request) async {
         return http.Response(
           jsonEncode({'msg': 'Unauthorized'}),
