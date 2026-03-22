@@ -42,7 +42,7 @@ export const startConversation = async (req, res) => {
   }
 };
 
-// Retrieving all conversations (returns a list of chat rooms)
+
 export const getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({

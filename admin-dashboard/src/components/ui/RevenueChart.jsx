@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -8,22 +8,51 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-// Dummy data for the chart curve
-const data = [
-  { name: 'Mon', revenue: 4000 },
-  { name: 'Tue', revenue: 3000 },
-  { name: 'Wed', revenue: 2000 },
-  { name: 'Thu', revenue: 2780 },
-  { name: 'Fri', revenue: 1890 },
-  { name: 'Sat', revenue: 2390 },
-  { name: 'Sun', revenue: 3490 },
-];
-
 const RevenueChart = () => {
   const [activeTab, setActiveTab] = useState('Week');
+  const [chartData, setChartData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchChartData();
+  }, []);
+
+  const fetchChartData = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/admin/revenue-chart');
+      if (response.ok) {
+        const apiData = await response.json();
+        
+        // Smart Data Processing: Build the last 7 days perfectly
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const formattedData = [];
+        
+        // Loop backwards from 6 days ago to today
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const dateString = d.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+          const dayName = days[d.getDay()]; // Gets 'Mon', 'Tue', etc.
+
+          // Check if MongoDB returned revenue for this specific date
+          const foundMatch = apiData.find(item => item._id === dateString);
+          
+          formattedData.push({
+            name: dayName,
+            revenue: foundMatch ? foundMatch.revenue : 0 // If no sales, default to 0
+          });
+        }
+        
+        setChartData(formattedData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch chart data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    // This container takes full width automatically
     <div className="bg-[#111111] border border-zinc-800 rounded-2xl p-6 w-full">
       
       {/* Chart Header & Time Toggles */}
@@ -48,31 +77,48 @@ const RevenueChart = () => {
       </div>
 
       {/* Chart Graph Area */}
-      <div className="h-[350px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f9d225" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#FBB040" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
-              itemStyle={{ color: '#FBB040' }}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="#FBB040" 
-              strokeWidth={3} 
-              fillOpacity={1} 
-              fill="url(#colorRevenue)" 
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="h-[350px] w-full relative">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
+            Loading chart data...
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f9d225" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#FBB040" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
+              
+              {/* Formatted to Rs. */}
+              <YAxis 
+                stroke="#52525b" 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false} 
+                tickFormatter={(value) => `Rs.${value}`} 
+              />
+              
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                itemStyle={{ color: '#FBB040' }}
+                formatter={(value) => [`Rs. ${value}`, 'Revenue']}
+              />
+              
+              <Area 
+                type="monotone" 
+                dataKey="revenue" 
+                stroke="#FBB040" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill="url(#colorRevenue)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

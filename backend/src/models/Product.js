@@ -60,17 +60,6 @@ const productSchema = mongoose.Schema(
       select: false,
     },
     views: { type: Number, default: 0 },
-
-    images: {
-      type: [String],
-      validate: {
-        validator: function (arr) {
-          return arr.length <= 5;
-        },
-        message: "You can upload up to 5 images only",
-      },
-    },
-
     model3D: {
       url: {
         type: String,

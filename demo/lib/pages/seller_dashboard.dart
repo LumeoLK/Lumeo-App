@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:lumeo_v2/pages/chat_application.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:lumeo_v2/pages/chat_application.dart';
+
+import 'package:get/get.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/seller_dashboard_service.dart';
+import 'home_page.dart';
+import "productpage.dart";
 import '../model/conversation.dart';
 import '../services/chat_service.dart';
 import '../services/seller_dashboard_service.dart';
 import '../pages/chat_application.dart';
+import '../widgets/seller_bottom_navigation_bar.dart';
 
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
-
   @override
   State<SellerDashboardPage> createState() => _SellerDashboardPageState();
 }
@@ -25,54 +31,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   Map<String, dynamic> _dashboard = const {};
   int _activeNav = 0;
 
-  final List<Map<String, dynamic>> listings = [
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair2.avif',
-    },
-    {
-      'name': '4 Chair Dinning Set',
-      'brand': 'RusticEdge Wooden Collection',
-      'price': '₦250,000',
-      'views': 312,
-      'likes': 41,
-      'comments': 7,
-      'active': true,
-      'image': 'assets/images/chair1.avif',
-    },
-  ];
-
-  final List<Map<String, dynamic>> orders = [
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03458',
-      'price': '₦250,000',
-      'image': 'assets/images/chair1.avif',
-    },
-    {
-      'name': 'Zenfold Chair',
-      'orderId': 'Order #VM03459',
-      'price': '₦250,000',
-      'image': 'assets/images/chair2.avif',
-    },
-  ];
-
+  // ── Chart data ────────────────────────────────────────────
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
   final List<double> lastWeek = [10, 13, 11, 16, 13, 18, 13];
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -158,6 +117,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     }
   }
 
+  // ── Dashboard data getters ────────────────────────────────
   Map<String, dynamic> get _profile => _asMap(_dashboard['profile']);
   Map<String, dynamic> get _summary => _asMap(_dashboard['summary']);
   Map<String, dynamic> get _performance => _asMap(_dashboard['performance']);
@@ -187,6 +147,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return result.isEmpty ? fallback : result;
   }
 
+  // ── Build ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -234,129 +195,117 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               ],
             ),
           ),
-          Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
+
+          // Fixed bottom nav
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SellerBottomNavigationBar(
+              currentIndex: _activeNav,
+              onTap: (index) => setState(() => _activeNav = index),
+            ),
+          ),
         ],
       ),
     );
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  COVER + PROFILE
+  // ─────────────────────────────────────────────────────────
   Widget _buildCoverAndProfile() {
     final logo = _text(_profile['logo']);
 
-    return Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 160,
-              width: double.infinity,
-              color: const Color(0xFF2a2a2a),
-              child: const Center(
-                child: Text(
-                  'Add cover photo',
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ),
+        Container(
+          height: 160,
+          width: double.infinity,
+          color: const Color(0xFF2a2a2a),
+          child: const Center(
+            child: Text(
+              'Add cover photo',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Transform.translate(
-                    offset: const Offset(0, -36),
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2a2a2a),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF1a1a1a),
-                          width: 3.5,
-                        ),
-                      ),
-                      child: logo.isNotEmpty
-                          ? ClipOval(
-                              child: Image.network(logo, fit: BoxFit.cover),
-                            )
-                          : const Center(
-                              child: Text(
-                                'Add Profile\nphoto',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
+          ),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar overlapping cover
+              Transform.translate(
+                offset: const Offset(0, -36),
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2a2a2a),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF1a1a1a),
+                      width: 3.5,
                     ),
                   ),
-                  Transform.translate(
-                    offset: const Offset(0, -26),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _text(
-                                  _profile['displayName'],
-                                  fallback: 'Display Name',
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.4,
-                                ),
-                              ),
+                  child: logo.isNotEmpty
+                      ? ClipOval(child: Image.network(logo, fit: BoxFit.cover))
+                      : const Center(
+                          child: Text(
+                            'Add Profile\nphoto',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 10,
+                              height: 1.5,
                             ),
-                            CustomPaint(
-                              size: const Size(22, 22),
-                              painter: _MetaVerifiedPainter(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _text(_profile['handle'], fallback: '@shopname'),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Container(height: 1, color: const Color(0xFF2a2a2a)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          top: 40,
-          right: 16,
-          child: Material(
-            color: Colors.black.withOpacity(0.35),
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: _openSellerInbox,
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.notifications_none,
-                  color: Colors.white,
-                  size: 26,
                 ),
               ),
-            ),
+
+              // Name + handle
+              Transform.translate(
+                offset: const Offset(0, -26),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _text(
+                              _profile['displayName'],
+                              fallback: 'Display Name',
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                        ),
+                        CustomPaint(
+                          size: const Size(22, 22),
+                          painter: _MetaVerifiedPainter(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _text(_profile['handle'], fallback: '@shopname'),
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(height: 1, color: const Color(0xFF2a2a2a)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -514,7 +463,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 
   Widget _buildActiveListings() {
-    final items = _activeListings.isNotEmpty ? _activeListings : listings;
+    final items = _activeListings;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -550,7 +499,16 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return _buildListingCard(items[index]);
+              final item = items[index];
+              return GestureDetector(
+                onTap: () {
+                  final productId = item['id']?.toString() ?? '';
+                  if (productId.isNotEmpty) {
+                    Get.to(() => ProductDetailPage(productId: productId));
+                  }
+                },
+                child: _buildListingCard(item),
+              );
             },
           ),
         ),
@@ -559,7 +517,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 
   Widget _buildListingCard(Map<String, dynamic> item) {
-    final imageUrl = _text(item['image']);
+    print(item);
+    final images = item['images'];
+    final imageUrl = (images is List && images.isNotEmpty)
+        ? _text(images[0])
+        : '';
     final isAsset = imageUrl.startsWith('assets/');
 
     return Container(
@@ -572,6 +534,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Image area
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF3a3a3a),
@@ -605,6 +568,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
+                // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: imageUrl.isNotEmpty
@@ -666,6 +630,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ),
                 ),
                 const SizedBox(height: 6),
+                // Stats row
                 Row(
                   children: [
                     _buildStat(
@@ -720,8 +685,28 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  NEW ORDERS
+  // ─────────────────────────────────────────────────────────
   Widget _buildNewOrders() {
-    final items = _newOrders.isNotEmpty ? _newOrders : orders;
+    final items = _newOrders.isNotEmpty
+        ? _newOrders
+        : [
+            {
+              'id': 'order1',
+              'productName': 'Modern Chair',
+              'customerName': 'John Doe',
+              'status': 'Processing',
+              'image': 'assets/chair.jpg',
+            },
+            {
+              'id': 'order2',
+              'productName': 'Wooden Table',
+              'customerName': 'Jane Smith',
+              'status': 'Shipped',
+              'image': 'assets/chair.jpg',
+            },
+          ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -779,6 +764,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       ),
       child: Row(
         children: [
+          // Thumbnail
           Container(
             width: 48,
             height: 48,
@@ -855,78 +841,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    final navItems = [
-      {'label': 'Overview', 'icon': Icons.grid_view_rounded},
-      {'label': 'Listings', 'icon': Icons.format_list_bulleted_rounded},
-      {'label': 'Orders', 'icon': Icons.shopping_bag_outlined},
-      {'label': 'BluePrint 3D', 'icon': Icons.view_in_ar_rounded},
-      {'label': 'Custom', 'icon': Icons.tune_rounded},
-      {'label': 'Profile', 'icon': Icons.person_outline_rounded},
-    ];
-
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
-      ),
-      child: Row(
-        children: List.generate(navItems.length, (i) {
-          final active = i == _activeNav;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _activeNav = i),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  if (active)
-                    Container(
-                      height: 2.5,
-                      width: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFBB040),
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(3),
-                        ),
-                      ),
-                    ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        navItems[i]['icon'] as IconData,
-                        size: 20,
-                        color: active
-                            ? const Color(0xFFFBB040)
-                            : const Color(0xFF555555),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        navItems[i]['label'] as String,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: active
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: active
-                              ? const Color(0xFFFBB040)
-                              : const Color(0xFF555555),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
@@ -1121,6 +1035,7 @@ class _ChartPainter extends CustomPainter {
       return p;
     }
 
+    // Last week — dashed grey
     _drawDashed(
       canvas,
       buildPath(lastWeek),
@@ -1131,6 +1046,7 @@ class _ChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
+    // This week — solid amber
     canvas.drawPath(
       buildPath(thisWeek),
       Paint()

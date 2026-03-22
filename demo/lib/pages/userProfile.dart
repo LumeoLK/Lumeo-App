@@ -14,6 +14,9 @@ import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 import 'settings_page.dart';
 import '../widgets/secondary_app_bar.dart';
 
+
+import 'seller_onboarding1.dart';
+
 class Userprofile extends ConsumerStatefulWidget {
   const Userprofile({super.key});
 
@@ -296,7 +299,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            const SellerRegistrationInfoScreen(),
+                            const SellerOnboardingPage(),
                       ),
                     );
                   }

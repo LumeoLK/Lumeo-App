@@ -37,9 +37,9 @@ class _LoginState extends ConsumerState<Login> {
         );
       }
       if (next.status == AuthStatus.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error ?? 'Login failed')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error ?? 'Login failed')));
       }
     });
 
@@ -59,7 +59,11 @@ class _LoginState extends ConsumerState<Login> {
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(
-                  left: 30, top: 75, right: 30, bottom: 5),
+                left: 30,
+                top: 75,
+                right: 30,
+                bottom: 5,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -82,7 +86,8 @@ class _LoginState extends ConsumerState<Login> {
                         hintText: "Enter email",
                         hintStyle: const TextStyle(color: Colors.black),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         fillColor: Colors.white,
                         filled: true,
                       ),
@@ -98,13 +103,13 @@ class _LoginState extends ConsumerState<Login> {
                     TextFormField(
                       controller: password,
                       obscureText: true,
-                      style:
-                          const TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'Enter password',
                         hintStyle: const TextStyle(color: Colors.black),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         fillColor: Colors.white,
                         filled: true,
                       ),
@@ -141,7 +146,8 @@ class _LoginState extends ConsumerState<Login> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE09D3B),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30)),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                           minimumSize: const Size(150, 40),
                         ),
                         child: isLoading
@@ -149,21 +155,29 @@ class _LoginState extends ConsumerState<Login> {
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.black),
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
                               )
-                            : const Text("LOGIN",
-                                style: TextStyle(color: Colors.black)),
+                            : const Text(
+                                "LOGIN",
+                                style: TextStyle(color: Colors.black),
+                              ),
                       ),
                     ),
                     TextButton(
                       onPressed: () => Get.to(() => Register()),
-                      child: const Text("Haven't Registered Yet?",
-                          style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        "Haven't Registered Yet?",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     const SizedBox(height: 170),
-                    const Text("Or login with social account",
-                        style: TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center),
+                    const Text(
+                      "Or login with social account",
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -173,7 +187,8 @@ class _LoginState extends ConsumerState<Login> {
                               .read(authProvider.notifier)
                               .signInWithGoogle("login"),
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white),
+                            backgroundColor: Colors.white,
+                          ),
                           child: Container(
                             width: 80,
                             height: 60,
@@ -184,7 +199,8 @@ class _LoginState extends ConsumerState<Login> {
                         ElevatedButton(
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white),
+                            backgroundColor: Colors.white,
+                          ),
                           child: Container(
                             width: 80,
                             height: 60,
@@ -197,9 +213,10 @@ class _LoginState extends ConsumerState<Login> {
                     const SizedBox(height: 45),
                     TextButton(
                       onPressed: () => Get.to(() => HomePage()),
-                      child: const Text("Skip >>",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.white)),
+                      child: const Text(
+                        "Skip >>",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

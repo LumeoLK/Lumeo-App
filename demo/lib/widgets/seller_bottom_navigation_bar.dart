@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 
-class BottomNav extends StatelessWidget {
-  const BottomNav({super.key, required this.currentIndex, required this.onTap});
+class SellerBottomNavigationBar extends StatelessWidget {
+  const SellerBottomNavigationBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const List<_BottomNavItem> _items = [
-    _BottomNavItem(label: 'Home', iconPath: 'assets/icons/menu.png'),
-    _BottomNavItem(label: 'Wish List', iconPath: 'assets/icons/wishlist.png'),
-    _BottomNavItem(label: 'AR View', iconPath: 'assets/icons/ar.png'),
-    _BottomNavItem(label: 'Cart', iconPath: 'assets/icons/cart.png'),
-    _BottomNavItem(label: 'Custom', iconPath: 'assets/icons/custom.png'),
+  static const List<_SellerNavItem> _navItems = [
+    _SellerNavItem(label: 'Overview', icon: Icons.grid_view_rounded),
+    _SellerNavItem(
+      label: 'Listings',
+      icon: Icons.format_list_bulleted_rounded,
+    ),
+    _SellerNavItem(label: 'Orders', icon: Icons.shopping_bag_outlined),
+    _SellerNavItem(label: 'BluePrint 3D', icon: Icons.view_in_ar_rounded),
+    _SellerNavItem(label: 'Custom', icon: Icons.tune_rounded),
+    _SellerNavItem(label: 'Profile', icon: Icons.person_outline_rounded),
   ];
 
   @override
@@ -23,8 +31,8 @@ class BottomNav extends StatelessWidget {
         border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
       ),
       child: Row(
-        children: List.generate(_items.length, (index) {
-          final item = _items[index];
+        children: List.generate(_navItems.length, (index) {
+          final item = _navItems[index];
           final isActive = index == currentIndex;
 
           return Expanded(
@@ -48,10 +56,9 @@ class BottomNav extends StatelessWidget {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        item.iconPath,
-                        width: 20,
-                        height: 20,
+                      Icon(
+                        item.icon,
+                        size: 20,
                         color: isActive
                             ? const Color(0xFFFBB040)
                             : const Color(0xFF555555),
@@ -82,9 +89,9 @@ class BottomNav extends StatelessWidget {
   }
 }
 
-class _BottomNavItem {
-  const _BottomNavItem({required this.label, required this.iconPath});
+class _SellerNavItem {
+  const _SellerNavItem({required this.label, required this.icon});
 
   final String label;
-  final String iconPath;
+  final IconData icon;
 }

@@ -1,24 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import 'package:lumeo/pages/cart_page.dart';
-import 'pages/wishlist_page.dart';
-
-// import '../providers/user_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-// import 'package:lumeo_v2/pages/ar_search_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-// Import your pages
-import '../pages/home_page.dart';
-import '../pages/login.dart';
+import 'pages/home_page.dart';
 import 'pages/onboarding_page1.dart';
-
-// import '../providers/user_provider.dart';
-import "./pages/emptyspace.dart";
-
-// import '../providers/user_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

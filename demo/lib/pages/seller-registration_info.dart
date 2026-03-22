@@ -2,13 +2,16 @@ import 'dart:io'; // Needed for the File class
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Needed for picking images
 import 'package:http/http.dart' as http;
+import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../Constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+
 import "../pages/seller_terms_conditions.dart";
+
 
 class SellerRegistrationInfoScreen extends ConsumerStatefulWidget {
   const SellerRegistrationInfoScreen({super.key});
@@ -184,12 +187,14 @@ class _SellerRegistrationInfoScreenState
           ),
         );
 
+
         if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const TermsPage()),
           );
         }
+
       } else {
         // Backend returned an error (e.g., "Seller with same Business Registration Number already exist")
         ScaffoldMessenger.of(context).showSnackBar(
@@ -200,8 +205,7 @@ class _SellerRegistrationInfoScreenState
         );
       }
     } catch (e) {
-      print("=== EXACT ERROR: ${e.toString()} ===");
-      print("=== ERROR TYPE: ${e.runtimeType} ===");
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
