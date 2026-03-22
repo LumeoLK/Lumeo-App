@@ -17,10 +17,10 @@ const OrderManagement = () => {
     fetchOrders();
   }, []);
 
-  const fetchOrders = async () => {
+const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/admin/orders');
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
@@ -33,16 +33,15 @@ const OrderManagement = () => {
   };
 
   // Update Order Status via the API
-  const handleStatusChange = async (orderId, newStatus) => {
+const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${orderId}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus.toLowerCase() })
       });
 
       if (response.ok) {
-        // Update UI instantly
         setOrders(orders.map(order => 
           order._id === orderId ? { ...order, status: newStatus.toLowerCase() } : order
         ));
@@ -53,11 +52,11 @@ const OrderManagement = () => {
   };
 
   // Delete Order via API
-  const handleDeleteOrder = async (orderId) => {
+const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to permanently delete this order?")) return;
     
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${orderId}`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders/${orderId}`, {
         method: 'DELETE'
       });
       if (response.ok) {

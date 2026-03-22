@@ -13,9 +13,6 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 
 console.log("Worker is listening for jobs...");
 
-// ────────────────────────────────────────────────────────
-//  WORKER 1 — Meshy AI queue
-// ────────────────────────────────────────────────────────
 const meshyWorker = new Worker(
   "meshy-3d-queue",
   async (job) => {
@@ -98,7 +95,7 @@ const blueprintWorker = new Worker(
       // The rest of your code remains the same...
       // Main backend handles Cloudinary upload + DB update
       await axios.post(
-        `http://localhost:3000/api/webhooks/blueprint-3d-update`, // fix the links after tesdting
+        `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`, // fix the links after tesdting
         {
           jobId,
           status: "completed",
@@ -113,7 +110,7 @@ const blueprintWorker = new Worker(
       console.error(`Blueprint worker error for job ${jobId}:`, error.message);
 
       await axios
-        .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
+        .post(`${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`, {
           jobId,
           status: "failed",
           errorMessage: error.message,
@@ -131,7 +128,7 @@ blueprintWorker.on("failed", async (job, err) => {
 
   if (job.attemptsMade === job.opts.attempts) {
     await axios
-      .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
+      .post(`${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`, {
         jobId: job.data.jobId,
 
         status: "failed",

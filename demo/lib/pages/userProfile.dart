@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/pages/seller-registration_info.dart';
 import 'package:lumeo_v2/pages/seller_dashboard.dart';
+import 'package:lumeo_v2/pages/seller_shell.dart';
 import 'package:lumeo_v2/pages/seller_verification_page.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:lumeo_v2/providers/order_provider.dart';
@@ -12,8 +13,6 @@ import 'package:lumeo_v2/pages/login.dart';
 import 'package:lumeo_v2/pages/my_orders.dart';
 import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 import 'settings_page.dart';
-import '../widgets/secondary_app_bar.dart';
-
 
 import 'seller_onboarding1.dart';
 
@@ -44,7 +43,6 @@ class _UserprofileState extends ConsumerState<Userprofile> {
       if (_isLoggedIn) {
         ref.read(orderProvider.notifier).fetchMyOrders();
       }
-
     });
   }
 
@@ -144,12 +142,9 @@ class _UserprofileState extends ConsumerState<Userprofile> {
       print('[UserProfile] Order fetch error: ${orderState.error}');
     }
 
-
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
-      appBar: SecondaryAppTopBar(
-        searchHintText: 'Search profile',
-      ),
+      appBar: AppBar(toolbarHeight: 60),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -223,7 +218,9 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               'Shipping addresses (Not available for MVP)',
               '3 addresses',
               onTap: () {
-                print('[UserProfile] Shipping addresses tapped (Not available for MVP)');
+                print(
+                  '[UserProfile] Shipping addresses tapped (Not available for MVP)',
+                );
                 // Out of scope feature for MVP, but can implement in future iterations
               },
             ),
@@ -231,7 +228,9 @@ class _UserprofileState extends ConsumerState<Userprofile> {
               'Payment methods (Not available for MVP)',
               'COD',
               onTap: () {
-                print('[UserProfile] Payment methods tapped (Not available for MVP)');
+                print(
+                  '[UserProfile] Payment methods tapped (Not available for MVP)',
+                );
                 //Out of scope for MVP, but can implement in future iterations
               },
             ),
@@ -283,7 +282,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SellerDashboardPage(),
+                        builder: (context) => const SellerShell(),
                       ),
                     );
                   } else if (isPending) {
@@ -298,8 +297,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const SellerOnboardingPage(),
+                        builder: (context) => const SellerOnboardingPage(),
                       ),
                     );
                   }

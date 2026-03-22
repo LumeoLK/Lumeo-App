@@ -223,7 +223,7 @@ export const placeOrder = async (req, res) => {
       shippingAddress: normalizedShippingAddress,
       paymentMethod,
       paymentStatus: "pending",
-      status: paymentMethod === "cod" ? "confirmed" : "pending"
+      status: paymentMethod === "cod" ? "pending" : "paid",
     }], { session });
 
    

@@ -8,7 +8,6 @@ import http from "http";
 
 import adminRoutes from "./routes/adminRoutes.js";
 
-
 import { Server } from "socket.io";
 import setupSocket from "./socket/socketHandler.js";
 const app = express();
@@ -65,6 +64,10 @@ app.use("/api/webhooks", webhookRoutes);
 app.get("/api/health", (req, res) => {
   return res.status(200).json({ status: "ok" });
 });
+app.get("/", (req, res) => {
+  res.send("Welcome to the Lumeo backend API");
+});
+
 // Create HTTP server for Socket.io
 const server = http.createServer(app);
 
@@ -78,22 +81,18 @@ const io = new Server(server, {
 // Socket.io
 setupSocket(io);
 
-try {
-  connectDB();
-  app.get("/", (req, res) => {
-    res.send("Welcome to the Lumeo backend API 🚀");
-  });
-  app.on("error", (err) => {
-    console.error("Error in app:", err);
-  });
-
-  server.listen(PORT, () => {
-    console.log(`Connected to port ${PORT}`);
-  });
-} catch (error) {
-  console.error("Error starting server:", error);
+// --- ONLY START THE SERVER IF NOT IN TEST MODE ---
+if (process.env.NODE_ENV !== "test") {
+  try {
+    connectDB();
+    server.listen(PORT, () => {
+      console.log(`Connected to port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+  }
 }
 
-app.get("/", (req, res) => {
-  res.send("Welcome to the Lumeo backend API");
-});
+// Triggering the CI/CD pipeline
+// Triggering the CI/CD pipeline2
+export default app;

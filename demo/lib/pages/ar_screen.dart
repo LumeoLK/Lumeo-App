@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_embed_unity/flutter_embed_unity.dart';
+import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 import '../services/model_downloader.dart';
 
 class ARScreen extends StatefulWidget {
@@ -11,13 +11,8 @@ class ARScreen extends StatefulWidget {
 }
 
 class _ARScreenState extends State<ARScreen> {
-  // LUMEO-SUPERVISOR: 1. This static variable acts as the global memory for Unity.
-  // It survives even when this specific widget is destroyed and rebuilt.
   static bool _hasUnityEverLoaded = false;
-
-  // LUMEO-SUPERVISOR: 2. We initialize our local state using the global memory.
   bool _isUnityLoaded = _hasUnityEverLoaded;
-
   bool _isDownloading = false;
   bool _isModelPlaced = false;
   bool _isScanning = true;
@@ -61,11 +56,10 @@ class _ARScreenState extends State<ARScreen> {
         _isDownloading = false;
       });
 
-      // LUMEO-SUPERVISOR: On the 2nd visit, _isUnityLoaded will already be TRUE here,
-      // so it will immediately load the new model without waiting for 'scene_loaded'.
-      // if (_isUnityLoaded) {
-      //   sendToUnity('ModelLoader', 'LoadModelFromPath', path);
-      // }
+      // If Unity already loaded send model immediately
+      if (_isUnityLoaded) {
+        sendToUnity('ModelLoader', 'LoadModelFromPath', path);
+      }
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to download model: $e';
@@ -76,12 +70,10 @@ class _ARScreenState extends State<ARScreen> {
 
   void _onUnityMessage(String message) {
     if (message == 'scene_loaded') {
-      // LUMEO-SUPERVISOR: 3. Update the global memory when Unity finishes its first load.
       _hasUnityEverLoaded = true;
-
       setState(() => _isUnityLoaded = true);
       if (_localModelPath != null) {
-        //sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
+        sendToUnity('ModelLoader', 'LoadModelFromPath', _localModelPath!);
       }
     }
 
@@ -90,8 +82,6 @@ class _ARScreenState extends State<ARScreen> {
         _isScanning = false;
         _displayMessage = "Surface detected!";
       });
-
-      // Auto-hide the message after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _showStatusMessage = false);
@@ -102,7 +92,7 @@ class _ARScreenState extends State<ARScreen> {
     if (message == 'object_placed') {
       setState(() {
         _isModelPlaced = true;
-        _showStatusMessage = false; // Ensure it's hidden once placed
+        _showStatusMessage = false;
       });
     }
   }
@@ -111,19 +101,18 @@ class _ARScreenState extends State<ARScreen> {
     if (!_hasTappedOnce) {
       setState(() {
         _hasTappedOnce = true;
-        _showStatusMessage = false; // Hide immediately on first tap
+        _showStatusMessage = false;
       });
     }
-
     final size = MediaQuery.of(context).size;
     final x = details.globalPosition.dx / size.width;
     final y = details.globalPosition.dy / size.height;
-    //sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
+    sendToUnity('XR_Origin', 'OnTapFromFlutter', '$x,$y');
   }
 
   void _rotate(double degrees) {
     setState(() => _currentRotation += degrees);
-    //sendToUnity('ModelLoader', 'RotateModel', degrees.toString());
+    sendToUnity('ModelLoader', 'RotateModel', degrees.toString());
   }
 
   void _reset() {
@@ -131,19 +120,22 @@ class _ARScreenState extends State<ARScreen> {
       _currentRotation = 0;
       _isModelPlaced = false;
       _isScanning = true;
+      _showStatusMessage = true;
+      _hasTappedOnce = false;
+      _displayMessage = "Scanning for surfaces...";
     });
-    //sendToUnity('ModelLoader', 'ResetModel', '');
+    sendToUnity('ModelLoader', 'ResetModel', '');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Download progress screen
     if (_isDownloading) {
       return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: const Text('AR View', style: TextStyle(color: Colors.white)),
+          title: const Text('AR View',
+              style: TextStyle(color: Colors.white)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -153,10 +145,8 @@ class _ARScreenState extends State<ARScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Downloading 3D Model...',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
+              const Text('Downloading 3D Model...',
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -171,7 +161,8 @@ class _ARScreenState extends State<ARScreen> {
               const SizedBox(height: 12),
               Text(
                 '${(_downloadProgress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
@@ -179,13 +170,13 @@ class _ARScreenState extends State<ARScreen> {
       );
     }
 
-    // Error screen
     if (_errorMessage != null) {
       return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: const Text('AR View', style: TextStyle(color: Colors.white)),
+          title: const Text('AR View',
+              style: TextStyle(color: Colors.white)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -197,11 +188,13 @@ class _ARScreenState extends State<ARScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const Icon(Icons.error_outline,
+                    color: Colors.red, size: 48),
                 const SizedBox(height: 16),
                 Text(
                   _errorMessage!,
-                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 15),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -211,22 +204,21 @@ class _ARScreenState extends State<ARScreen> {
       );
     }
 
-    // Main AR screen
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Unity AR view — full screen
+          // ✅ Unity AR view — full screen
           GestureDetector(
             onTapDown: (details) {
               if (!_isModelPlaced) {
                 _onTap(details, context);
               }
             },
-            //child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
+            child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
           ),
 
-          // Back button — top left
+          // Back button
           Positioned(
             top: 0,
             left: 16,
@@ -239,13 +231,14 @@ class _ARScreenState extends State<ARScreen> {
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
+                  child: const Icon(Icons.arrow_back,
+                      color: Colors.white),
                 ),
               ),
             ),
           ),
 
-          // Loading overlay — while Unity initializes
+          // Loading overlay
           if (!_isUnityLoaded)
             Container(
               color: Colors.black87,
@@ -253,21 +246,21 @@ class _ARScreenState extends State<ARScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: Color(0xFFFDB04B)),
+                    CircularProgressIndicator(
+                        color: Color(0xFFFDB04B)),
                     SizedBox(height: 16),
-                    Text(
-                      'Initializing AR...',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
+                    Text('Initializing AR...',
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 18)),
                   ],
                 ),
               ),
             ),
 
-          // Centered status card — scanning or surface found
+          // Status message
           if (_isUnityLoaded && _showStatusMessage)
             Positioned(
-              top: 60, // Positioned below the back button
+              top: 60,
               left: 40,
               right: 40,
               child: AnimatedOpacity(
@@ -275,9 +268,7 @@ class _ARScreenState extends State<ARScreen> {
                 opacity: _showStatusMessage ? 1.0 : 0.0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 20,
-                  ),
+                      vertical: 12, horizontal: 20),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(30),
@@ -297,18 +288,13 @@ class _ARScreenState extends State<ARScreen> {
                           ),
                         ),
                       if (!_isScanning)
-                        const Icon(
-                          Icons.check_circle,
-                          color: Color(0xFFFDB04B),
-                          size: 18,
-                        ),
+                        const Icon(Icons.check_circle,
+                            color: Color(0xFFFDB04B), size: 18),
                       const SizedBox(width: 12),
                       Text(
                         _displayMessage,
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
+                            color: Colors.white, fontSize: 14),
                       ),
                     ],
                   ),
@@ -316,7 +302,7 @@ class _ARScreenState extends State<ARScreen> {
               ),
             ),
 
-          // Rotation control bar — appears after model is placed
+          // Rotation control bar
           if (_isModelPlaced)
             Positioned(
               bottom: 30,
@@ -326,21 +312,22 @@ class _ARScreenState extends State<ARScreen> {
                 children: [
                   Text(
                     '${_currentRotation.toStringAsFixed(0)}°',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.75),
                       borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white12, width: 1),
+                      border: Border.all(
+                          color: Colors.white12, width: 1),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildControlButton(
                           icon: Icons.rotate_left,
@@ -360,11 +347,8 @@ class _ARScreenState extends State<ARScreen> {
                               color: Color(0xFFFDB04B),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.refresh,
-                              color: Colors.black,
-                              size: 22,
-                            ),
+                            child: const Icon(Icons.refresh,
+                                color: Colors.black, size: 22),
                           ),
                         ),
                         _buildControlButton(
@@ -388,56 +372,6 @@ class _ARScreenState extends State<ARScreen> {
     );
   }
 
-  // Status card — scanning or surface found
-  Widget _buildStatusCard({
-    required Key key,
-    required String title,
-    required String subtitle,
-    IconData? icon,
-    required bool isLoading,
-  }) {
-    return Container(
-      key: key,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.65),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          isLoading
-              ? const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFFDB04B),
-                    strokeWidth: 2.5,
-                  ),
-                )
-              : Icon(icon, color: const Color(0xFFFDB04B), size: 28),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white60, fontSize: 13),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Rotation button helper
   Widget _buildControlButton({
     required IconData icon,
     required String label,
@@ -446,7 +380,8 @@ class _ARScreenState extends State<ARScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white10,
           borderRadius: BorderRadius.circular(20),
@@ -455,10 +390,9 @@ class _ARScreenState extends State<ARScreen> {
           children: [
             Icon(icon, color: Colors.white, size: 18),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 12)),
           ],
         ),
       ),

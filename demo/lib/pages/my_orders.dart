@@ -26,18 +26,16 @@ class MyOrdersState extends ConsumerState<MyOrders> {
     Future.microtask(() => ref.read(orderProvider.notifier).fetchMyOrders());
   }
 
-  // Map tab names to backend status values
   List<order_model.Order> _getOrdersForTab(OrderState orderState) {
     switch (selectedBtn) {
       case "Delivered":
-        return orderState.byStatus("delivered");
+        return orderState.byStatus("paid"); // ← was "delivered"
       case "Processing":
-        // Show pending + processing + shipped all under "Processing"
-        return orderState.orders.where((o) =>
-          o.status == "pending" || o.status == "processing" || o.status == "shipped"
-        ).toList();
+        return orderState.byStatus(
+          "pending",
+        ); // ← was pending+processing+shipped
       case "Cancelled":
-        return orderState.byStatus("cancelled");
+        return orderState.byStatus("failed"); // ← was "cancelled"
       default:
         return [];
     }
@@ -48,10 +46,7 @@ class MyOrdersState extends ConsumerState<MyOrders> {
     final orderState = ref.watch(orderProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(''),
-        backgroundColor: Colors.black,
-      ),
+      appBar: AppBar(title: const Text(''), backgroundColor: Colors.black),
       backgroundColor: Colors.black,
       body: Container(
         margin: const EdgeInsets.all(16),
@@ -68,14 +63,12 @@ class MyOrdersState extends ConsumerState<MyOrders> {
             ),
             const SizedBox(height: 20),
 
-            // Tab buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: ["Delivered", "Processing", "Cancelled"].map((
                 orderStatus,
               ) {
                 bool isSelected = selectedBtn == orderStatus;
-
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(right: 1),
@@ -86,8 +79,9 @@ class MyOrdersState extends ConsumerState<MyOrders> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isSelected ? Colors.white : Colors.black,
+                        backgroundColor: isSelected
+                            ? Colors.white
+                            : Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -110,49 +104,51 @@ class MyOrdersState extends ConsumerState<MyOrders> {
 
             const SizedBox(height: 20),
 
-            // Order list content
             Expanded(
               child: orderState.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: Color(0xFFFBB040)),
+                        color: Color(0xFFFBB040),
+                      ),
                     )
                   : orderState.error != null
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Something went wrong',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
-                                child: Text(
-                                  orderState.error!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.redAccent,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () => ref
-                                    .read(orderProvider.notifier)
-                                    .fetchMyOrders(),
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color(0xFFFBB040)),
-                                child: const Text('Retry',
-                                    style: TextStyle(color: Colors.black)),
-                              ),
-                            ],
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Something went wrong',
+                            style: TextStyle(color: Colors.white70),
                           ),
-                        )
-                      : _buildOrderList(_getOrdersForTab(orderState)),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              orderState.error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () => ref
+                                .read(orderProvider.notifier)
+                                .fetchMyOrders(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFBB040),
+                            ),
+                            child: const Text(
+                              'Retry',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _buildOrderList(_getOrdersForTab(orderState)),
             ),
           ],
         ),
@@ -193,20 +189,19 @@ class MyOrdersState extends ConsumerState<MyOrders> {
   }
 
   Widget _buildOrderCard(order_model.Order order) {
-    // Format date
     final dateStr = DateFormat('dd-MM-yyyy').format(order.createdAt);
 
     // Status color
     Color statusColor;
     switch (order.status) {
-      case "delivered":
+      case "paid": // ← was "delivered"
         statusColor = const Color.fromARGB(255, 123, 252, 128);
         break;
-      case "cancelled":
+      case "failed": // ← was "cancelled"
         statusColor = Colors.redAccent;
         break;
-      default:
-        statusColor = const Color(0xFFFBB040); // amber for processing
+      default: // pending
+        statusColor = const Color(0xFFFBB040);
     }
 
     // Status display text
@@ -215,17 +210,11 @@ class MyOrdersState extends ConsumerState<MyOrders> {
       case "pending":
         statusText = "Pending";
         break;
-      case "processing":
-        statusText = "Processing";
+      case "paid": // ← was "processing"/"shipped"/"delivered"
+        statusText = "Paid";
         break;
-      case "shipped":
-        statusText = "Shipped";
-        break;
-      case "delivered":
-        statusText = "Delivered";
-        break;
-      case "cancelled":
-        statusText = "Cancelled";
+      case "failed": // ← was "cancelled"
+        statusText = "Failed";
         break;
       default:
         statusText = order.status;
@@ -240,7 +229,6 @@ class MyOrdersState extends ConsumerState<MyOrders> {
       ),
       child: Column(
         children: [
-          // Order ID + Date
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -260,7 +248,6 @@ class MyOrdersState extends ConsumerState<MyOrders> {
           ),
           const SizedBox(height: 16),
 
-          // Quantity + Total
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Row(
@@ -297,7 +284,6 @@ class MyOrdersState extends ConsumerState<MyOrders> {
           ),
           const SizedBox(height: 12),
 
-          // Items preview (show product names)
           if (order.items.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
@@ -305,8 +291,7 @@ class MyOrdersState extends ConsumerState<MyOrders> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   order.items
-                      .map((item) =>
-                          item.product?.title ?? 'Product')
+                      .map((item) => item.product?.title ?? 'Product')
                       .join(', '),
                   style: const TextStyle(color: Colors.white54, fontSize: 13),
                   maxLines: 1,
@@ -316,7 +301,6 @@ class MyOrdersState extends ConsumerState<MyOrders> {
             ),
           const SizedBox(height: 12),
 
-          // Status badge
           Padding(
             padding: const EdgeInsets.only(left: 10.0),
             child: Row(

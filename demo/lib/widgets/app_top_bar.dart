@@ -22,9 +22,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       toolbarHeight: 86,
       titleSpacing: 0,
-      shape: const Border(
-        bottom: BorderSide(color: _borderColor, width: 1),
-      ),
+      shape: const Border(bottom: BorderSide(color: _borderColor, width: 1)),
       title: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SizedBox(
@@ -112,28 +110,12 @@ class _ProfileButton extends StatelessWidget {
               colors: [Color(0xFF202020), Color(0xFF131313)],
             ),
             border: Border.all(color: AppTopBar._borderColor),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 14,
-                offset: Offset(0, 6),
-              ),
-            ],
           ),
-          child: Center(
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTopBar._surfaceColor,
-                border: Border.all(color: const Color(0xFF2B2B2B)),
-              ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: AppTopBar._accentColor,
-                size: 20,
-              ),
+          child: const Center(
+            child: Icon(
+              Icons.person_rounded,
+              color: AppTopBar._accentColor,
+              size: 22, // slightly increased for better balance
             ),
           ),
         ),
