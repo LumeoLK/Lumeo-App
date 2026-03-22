@@ -2,9 +2,8 @@ name: ML Service CI/CD
 
 on:
   push:
-    paths:
-      - 'ml/**'
-      - '.github/workflows/ml-cicd.yml'
+    branches:
+      - master
 
 jobs:
   test:
