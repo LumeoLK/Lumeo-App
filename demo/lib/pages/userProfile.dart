@@ -144,7 +144,7 @@ class _UserprofileState extends ConsumerState<Userprofile> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
-      appBar: SecondaryAppTopBar(searchHintText: 'Search profile'),
+      appBar: AppBar(toolbarHeight: 60),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(

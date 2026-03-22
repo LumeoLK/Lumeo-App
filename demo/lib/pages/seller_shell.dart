@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import '../pages/seller_dashboard.dart';
 import '../pages/seller_listings.dart';
 import '../widgets/seller_bottom_navigation_bar.dart';
+import 'blueprint_3d.dart';
+import 'chat_application.dart';
+import 'seller_inbox.dart';
 
 /// The root shell for the seller experience.
 ///
@@ -28,8 +31,8 @@ class _SellerShellState extends State<SellerShell> {
   static const List<Widget> _pages = [
     SellerDashboardPage(), // 0 — Overview
     ListingsPage(), // 1 — Listings
-    _PlaceholderPage(label: 'Orders'), // 2
-    _PlaceholderPage(label: 'BluePrint 3D'), // 3
+    SellerInboxPage(),
+    Blueprint3DScreen(), // 3
     _PlaceholderPage(label: 'Custom'), // 4
     _PlaceholderPage(label: 'Profile'), // 5
   ];

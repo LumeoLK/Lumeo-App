@@ -5,158 +5,194 @@ import '../model/conversation.dart';
 import '../services/chat_service.dart';
 import '../pages/chat_application.dart';
 
-/// Opens the seller inbox as a modal bottom sheet.
-///
-/// Call this from anywhere in the seller flow — e.g. the Messages tab
-/// in [SellerShell] — by awaiting [showSellerInbox].
-///
-/// Example:
-/// ```dart
-/// case 2: // Messages tab
-///   await showSellerInbox(context);
-///   break;
-/// ```
-Future<void> showSellerInbox(BuildContext context) async {
-  final chatService = ChatService();
+class SellerInboxPage extends StatefulWidget {
+  const SellerInboxPage({super.key});
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('x-auth-token')?.trim() ?? '';
-
-    if (token.isEmpty) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please log in first')));
-      return;
-    }
-
-    final conversations = await chatService.getConversations();
-
-    if (!context.mounted) return;
-
-    final sellerUserId =
-        prefs.getString('userId') ?? prefs.getString('id') ?? '';
-    final sellerName =
-        prefs.getString('userName') ?? prefs.getString('name') ?? 'Seller';
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF1a1a1a),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => SellerInboxSheet(
-        conversations: conversations,
-        sellerUserId: sellerUserId,
-        sellerName: sellerName,
-      ),
-    );
-  } catch (e) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Failed to load conversations: $e')));
-  }
+  @override
+  State<SellerInboxPage> createState() => _SellerInboxPageState();
 }
 
-/// The bottom sheet UI that lists all seller conversations.
-///
-/// Tapping a conversation navigates to [ChatApplication].
-/// This widget is intentionally stateless — all data is passed in
-/// by [showSellerInbox] after being fetched.
-class SellerInboxSheet extends StatelessWidget {
-  const SellerInboxSheet({
-    super.key,
-    required this.conversations,
-    required this.sellerUserId,
-    required this.sellerName,
-  });
+class _SellerInboxPageState extends State<SellerInboxPage> {
+  final ChatService _chatService = ChatService();
 
-  final List<Conversation> conversations;
-  final String sellerUserId;
-  final String sellerName;
+  List<Conversation> _conversations = [];
+  bool _isLoading = true;
+  String? _error;
+  String _sellerUserId = '';
+  String _sellerName = 'Seller';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInbox();
+  }
+
+  Future<void> _loadInbox() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token')?.trim() ?? '';
+
+      if (token.isEmpty) {
+        throw Exception('Please log in first');
+      }
+
+      final conversations = await _chatService.getConversations();
+
+      if (!mounted) return;
+
+      setState(() {
+        _conversations = conversations;
+        _sellerUserId =
+            prefs.getString('userId') ?? prefs.getString('id') ?? '';
+        _sellerName =
+            prefs.getString('userName') ?? prefs.getString('name') ?? 'Seller';
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
+
+  // ── Build ─────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.75,
+    return Scaffold(
+      backgroundColor: const Color(0xFF1a1a1a),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1a1a1a),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Messages',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: _loadInbox,
+          ),
+        ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(color: Color(0xFF2a2a2a), height: 1),
+        ),
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFFBB040)),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.redAccent,
+                size: 44,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _loadInbox,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                ),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_conversations.isEmpty) {
+      return const Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildHandle(),
-            _buildHeader(),
-            const SizedBox(height: 4),
-            Expanded(
-              child: conversations.isEmpty
-                  ? _buildEmpty()
-                  : _buildConversationList(context),
+            Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Color(0xFF555555),
+              size: 52,
+            ),
+            SizedBox(height: 14),
+            Text(
+              'No messages yet',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Conversations with buyers will appear here',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),
+      );
+    }
+
+    return RefreshIndicator(
+      color: const Color(0xFFFBB040),
+      backgroundColor: const Color(0xFF2a2a2a),
+      onRefresh: _loadInbox,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: _conversations.length,
+        separatorBuilder: (_, __) =>
+            const Divider(color: Color(0xFF2a2a2a), height: 1),
+        itemBuilder: (context, index) {
+          return _ConversationTile(
+            conversation: _conversations[index],
+            sellerUserId: _sellerUserId,
+            sellerName: _sellerName,
+          );
+        },
       ),
-    );
-  }
-
-  // ── Sub-widgets ───────────────────────────────────────────
-
-  Widget _buildHandle() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 14, bottom: 10),
-      child: Container(
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: Colors.white24,
-          borderRadius: BorderRadius.circular(999),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return const Padding(
-      padding: EdgeInsets.only(bottom: 8),
-      child: Text(
-        'Messages',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmpty() {
-    return const Center(
-      child: Text('No messages yet', style: TextStyle(color: Colors.white70)),
-    );
-  }
-
-  Widget _buildConversationList(BuildContext context) {
-    return ListView.separated(
-      itemCount: conversations.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Colors.white10, height: 1),
-      itemBuilder: (context, index) {
-        final conv = conversations[index];
-        return _ConversationTile(
-          conversation: conv,
-          sellerUserId: sellerUserId,
-          sellerName: sellerName,
-        );
-      },
     );
   }
 }
 
-/// A single conversation row inside [SellerInboxSheet].
-///
-/// Extracted as its own widget to keep [SellerInboxSheet] clean
-/// and to give this tile a natural place to grow (unread badges,
-/// timestamps, online indicators, etc.).
+// ─────────────────────────────────────────────────────────
+//  CONVERSATION TILE
+// ─────────────────────────────────────────────────────────
+
 class _ConversationTile extends StatelessWidget {
   const _ConversationTile({
     required this.conversation,
@@ -171,24 +207,32 @@ class _ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: const CircleAvatar(
-        backgroundColor: Color(0xFFFBB040),
-        child: Icon(Icons.person, color: Colors.black),
+        radius: 24,
+        backgroundColor: Color(0xFF2a2a2a),
+        child: Icon(Icons.person, color: Color(0xFFFBB040)),
       ),
       title: Text(
         conversation.shopName,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
       ),
-      subtitle: Text(
-        conversation.lastMessage.isEmpty
-            ? conversation.productName
-            : conversation.lastMessage,
-        style: const TextStyle(color: Colors.white60),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 3),
+        child: Text(
+          conversation.lastMessage.isEmpty
+              ? conversation.productName
+              : conversation.lastMessage,
+          style: const TextStyle(color: Colors.white60, fontSize: 12),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       onTap: () {
-        Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(

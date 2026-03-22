@@ -36,7 +36,7 @@ class BottomNav extends StatelessWidget {
                 children: [
                   if (isActive)
                     Container(
-                      height: 2.5,
+                      height: 3.5,
                       width: 22,
                       decoration: const BoxDecoration(
                         color: Color(0xFFFBB040),
@@ -50,18 +50,18 @@ class BottomNav extends StatelessWidget {
                     children: [
                       Image.asset(
                         item.iconPath,
-                        width: 20,
-                        height: 20,
+                        width: 80,
+                        height: 30,
                         color: isActive
                             ? const Color(0xFFFBB040)
                             : const Color(0xFF555555),
                       ),
-                      const SizedBox(height: 3),
+                      // const SizedBox(height: 0),
                       Text(
                         item.label,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 8,
+                          fontSize: 11,
                           fontWeight: isActive
                               ? FontWeight.w600
                               : FontWeight.w400,

@@ -14,6 +14,8 @@ class Product {
   final String modelUrl;
   final double averageRating;
   final ProductDimensions? dimensions;
+  final int stock;
+  final String title;
 
   Product({
     required this.id,
@@ -29,6 +31,8 @@ class Product {
     required this.modelUrl,
     required this.averageRating,
     this.dimensions,
+    required this.stock,
+    required this.title,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -56,6 +60,8 @@ class Product {
       dimensions: json['dimensions'] != null
           ? ProductDimensions.fromJson(json['dimensions'])
           : null,
+          stock: json['stock'] ?? 0,
+          title: json['title'] ?? '',
     );
   }
 }
