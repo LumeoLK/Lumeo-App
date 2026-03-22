@@ -1,5 +1,5 @@
 import express from "express";
-import { createRequest, getOpenRequests, placeBid } from "../controller/bidController.js";
+import { createRequest, getOpenRequests, placeBid ,getBidsByRequest} from "../controller/bidController.js";
 import { verifyToken, verifySeller } from "../middleware/auth.js";
 import upload from "../lib/cloudinary.js";
 
@@ -18,5 +18,7 @@ router.get("/feed", verifyToken, verifySeller, getOpenRequests);
 
 
 router.post("/bid", verifyToken, verifySeller,upload.array("images", 3), placeBid);
+
+router.post("/getbids",getBidsByRequest);
 
 export default router;
