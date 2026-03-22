@@ -17,11 +17,11 @@ class _OnboardingPage1State extends State<OnboardingPage1> {
   void initState() {
     super.initState();
 
-    // Use an asset video (placed at assets/videos/bg.mp4)
     _controller = VideoPlayerController.asset('assets/videos/loop.mp4')
       ..setLooping(true)
+      ..setVolume(0) //mute audio
       ..initialize().then((_) {
-        // Once the video is initialized we start playing
+        // play after initialization
         setState(() {
           _initialized = true;
         });
