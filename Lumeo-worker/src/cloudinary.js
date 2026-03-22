@@ -28,7 +28,7 @@ async function uploadAndNotify(jobId, localFilePath) {
     };
 
     // 4. Send the tiny webhook to your Main Backend
-    const mainBackendWebhookUrl = 'http://localhost:3000/webhook'; // Change to your actual route
+    const mainBackendWebhookUrl = `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`; // Change to your actual route
     
     // Using native fetch (available in Node 18+). You can also use axios here.
     const response = await fetch(mainBackendWebhookUrl, {
