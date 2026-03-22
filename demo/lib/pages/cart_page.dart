@@ -13,6 +13,18 @@ class CartPage extends ConsumerStatefulWidget {
 }
 
 class _CartPageState extends ConsumerState<CartPage> {
+  String _searchQuery = '';
+
+  List<CartItem> _filterCartItems(List<CartItem> items) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return items;
+
+    return items.where((item) {
+      final name = (item.productName ?? '').toLowerCase();
+      return name.contains(query);
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -23,6 +35,7 @@ class _CartPageState extends ConsumerState<CartPage> {
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
+    final filteredItems = _filterCartItems(cartState.items);
 
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
@@ -30,7 +43,14 @@ class _CartPageState extends ConsumerState<CartPage> {
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
         toolbarHeight: 70,
-        title: const SearchBarWidget(hintText: 'Search cart'),
+        title: SearchBarWidget(
+          hintText: 'Search cart',
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,18 +106,18 @@ class _CartPageState extends ConsumerState<CartPage> {
                           ],
                         ),
                       )
-                    : cartState.items.isEmpty
+                    : filteredItems.isEmpty
                         ? const Center(
                             child: Text(
-                              'Your cart is empty',
+                              'No cart items found',
                               style: TextStyle(color: Colors.white70, fontSize: 16),
                             ),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: cartState.items.length,
+                            itemCount: filteredItems.length,
                             itemBuilder: (context, index) {
-                              return buildCartItem(cartState.items[index]);
+                              return buildCartItem(filteredItems[index]);
                             },
                           ),
           ),

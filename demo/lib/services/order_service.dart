@@ -47,8 +47,12 @@ class OrderService {
     } else {
       try {
         final data = jsonDecode(response.body);
+        final msg = (data['msg'] ?? '').toString();
+
         throw Exception(
-          data['msg'] ??
+          msg.isNotEmpty
+              ? msg
+              :
               'Failed to load orders: ${response.statusCode} - ${response.body}',
         );
       } catch (_) {

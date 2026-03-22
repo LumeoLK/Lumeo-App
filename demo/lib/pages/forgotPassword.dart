@@ -12,6 +12,7 @@ class Forgotpassword extends ConsumerStatefulWidget {
 class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
   final _formKey = GlobalKey<FormState>();
   final email = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -79,30 +80,60 @@ class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
                     Align(
                       alignment: Alignment.center,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            // ✅ .notifier to call methods, not ref.read(authProvider)
-                            await ref
-                                .read(authProvider.notifier)
-                                .resetPassword(email.text);
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                if (_formKey.currentState!.validate()) {
+                                  setState(() => _isLoading = true);
+                                  try {
+                                    // ✅ .notifier to call methods, not ref.read(authProvider)
+                                    await ref
+                                        .read(authProvider.notifier)
+                                        .resetPassword(email.text);
 
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Password reset email sent!')),
-                              );
-                            }
-                          }
-                        },
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Password reset email sent successfully!')),
+                                      );
+                                      email.clear();
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(e
+                                                .toString()
+                                                .replaceFirst('Exception: ', ''))),
+                                      );
+                                    }
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() => _isLoading = false);
+                                    }
+                                  }
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE09D3B),
+                          disabledBackgroundColor: Colors.grey[600],
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30)),
                           minimumSize: const Size(150, 40),
                         ),
-                        child: const Text("SEND",
-                            style: TextStyle(color: Colors.black)),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.black),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text("SEND",
+                                style: TextStyle(color: Colors.black)),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/login.dart';
 import 'package:video_player/video_player.dart';
 
@@ -12,6 +13,20 @@ class OnboardingPage2 extends StatefulWidget {
 class _OnboardingPage2State extends State<OnboardingPage2> {
   late VideoPlayerController _controller;
   bool _initialized = false;
+
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Login(),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -118,14 +133,7 @@ class _OnboardingPage2State extends State<OnboardingPage2> {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Login(),
-                          ),
-                        );
-                      },
+                      onPressed: _completeOnboarding,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

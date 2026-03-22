@@ -1,28 +1,40 @@
 import Conversation from "../models/conversation.js";
 import Message from "../models/message.js";
+import Seller from "../models/seller.js";
 
-//Called when customer taps "Chat with Seller" on product detail page
+// Called when customer taps "Chat with Seller" on product detail page
 export const startConversation = async (req, res) => {
   try {
     const { sellerId, productId } = req.body;
     const customerId = req.user.id;
 
-    //Check if a conversation already exists for this customer, seller, product
+    // sellerId from frontend is Seller._id
+    // Convert it to the linked User._id for chat participants
+    const seller = await Seller.findById(sellerId);
+
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    const sellerUserId = seller.userId.toString();
+
+    // Check if a conversation already exists for this customer, seller user, and product
     let conversation = await Conversation.findOne({
-      participants: { $all: [customerId, sellerId] },
+      participants: { $all: [customerId, sellerUserId] },
       product: productId,
     });
 
-    // Create a new chat if the conversation does not exists
+    // Create a new chat if the conversation does not exist
     if (!conversation) {
       conversation = await Conversation.create({
-        participants: [customerId, sellerId],
+        participants: [customerId, sellerUserId],
         product: productId,
       });
     }
 
     // Populate participant details before sending back
-    await conversation.populate("participants", "name email avatar role");
+    await conversation.populate("participants", "name email profilePicture role");
+    await conversation.populate("product", "title images");
 
     res.status(200).json(conversation);
   } catch (error) {
@@ -30,15 +42,15 @@ export const startConversation = async (req, res) => {
   }
 };
 
-//retreiving all the conversation (returns a list of Chat Rooms)
+
 export const getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
-      participants: req.user.id, // Find all chats this user is part of
+      participants: req.user.id,
     })
-      .populate("participants", "name avatar role")
-      .populate("product", "name image") // Show product info in chat list
-      .sort({ updatedAt: -1 }); // Most recent first
+      .populate("participants", "name profilePicture role")
+      .populate("product", "title images")
+      .sort({ updatedAt: -1 });
 
     res.json(conversations);
   } catch (error) {
@@ -46,25 +58,25 @@ export const getConversations = async (req, res) => {
   }
 };
 
-//Sending a message
+// Sending a message
 export const sendMessage = async (req, res) => {
   try {
     const { conversationId, text } = req.body;
 
-    // Create the message
     const message = await Message.create({
       conversation: conversationId,
       sender: req.user.id,
       text,
     });
 
-    //Update the conversation's lastMessage preview
+    // Update conversation preview and timestamp
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: text,
+      updatedAt: new Date(),
     });
 
-    //Populate sender info before returning
-    await message.populate("sender", "name avatar");
+    // Populate sender info before returning
+    await message.populate("sender", "name profilePicture");
 
     res.status(201).json(message);
   } catch (error) {
@@ -72,14 +84,14 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-//open a particular chat
+// Open a particular chat
 export const getMessages = async (req, res) => {
   try {
     const messages = await Message.find({
       conversation: req.params.conversationId,
     })
-      .populate("sender", "name avatar")
-      .sort({ createdAt: 1 }); // Oldest first
+      .populate("sender", "name profilePicture")
+      .sort({ createdAt: 1 });
 
     res.json(messages);
   } catch (error) {

@@ -8,6 +8,8 @@ import 'ar_screen.dart';
 import 'cart_page.dart';
 import 'customFurniture.dart';
 import 'emptyspace.dart';
+import 'custom_request_review.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -23,7 +25,11 @@ class _HomePageState extends State<HomePage> {
     WishListPage(),
     ARSearchPage(),
     CartPage(),
-    CustomFurniturePage(),
+  ];
+
+  late final List<Widget> _pagesWithCustom = [
+    ...pages,
+    const CustomRequestReviewPage(),
   ];
 
   @override
@@ -31,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: const AppTopBar(),
 
-      body: pages[_selectedNavIndex],
+      body: _pagesWithCustom[_selectedNavIndex],
       bottomNavigationBar: BottomNav(
         currentIndex: _selectedNavIndex,
         onTap: (index) {
