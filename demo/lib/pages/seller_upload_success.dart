@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'seller_custom_orders.dart';
 
 const bgColor = Color(0xFF000000);
 const cardColor = Color(0xFF1a1a1a);
@@ -59,7 +60,15 @@ class _UploadSuccessPageState extends State<UploadSuccessPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CustomOrdersFeedPage(initialTab: 1),
+                          ),
+                          (route) => false,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kOrange,
                         padding: const EdgeInsets.symmetric(vertical: 15),
