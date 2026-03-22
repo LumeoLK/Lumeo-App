@@ -98,34 +98,7 @@ export const getMessages = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-//Called when customer taps "Chat with Seller" on product detail page
-export const startConversation = async (req, res) => {
-  try {
-    const { sellerId, productId } = req.body;
-    const customerId = req.user.id;
 
-    //Check if a conversation already exists for this customer, seller, product
-    let conversation = await Conversation.findOne({
-      participants: { $all: [customerId, sellerId] },
-      product: productId,
-    });
-
-    // Create a new chat if the conversation does not exists
-    if (!conversation) {
-      conversation = await Conversation.create({
-        participants: [customerId, sellerId],
-        product: productId,
-      });
-    }
-
-    // Populate participant details before sending back
-    await conversation.populate("participants", "name email avatar role");
-
-    res.status(200).json(conversation);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
 
 //retreiving all the conversation (returns a list of Chat Rooms)
 export const getConversations = async (req, res) => {
