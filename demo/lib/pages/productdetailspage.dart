@@ -333,7 +333,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                               productId: product.id,
                             );
                         if (context.mounted) {
-                          Navigator.pop(context); // dismiss spinner
+                          Navigator.pop(context);
                           Navigator.push(
                             context,
                             MaterialPageRoute(

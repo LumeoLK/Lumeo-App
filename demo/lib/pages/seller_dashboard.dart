@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lumeo_v2/pages/chat_application.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../model/conversation.dart';
+import '../services/chat_service.dart';
 import '../services/seller_dashboard_service.dart';
+import '../pages/chat_application.dart';
 
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
@@ -13,12 +18,13 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   final SellerDashboardService _dashboardService =
       const SellerDashboardService();
 
+  final ChatService _chatService = ChatService();
+
   bool _isLoading = true;
   String? _error;
   Map<String, dynamic> _dashboard = const {};
   int _activeNav = 0;
 
-  // ── Sample listings data ──────────────────────────────────
   final List<Map<String, dynamic>> listings = [
     {
       'name': '4 Chair Dinning Set',
@@ -52,7 +58,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     },
   ];
 
-  // ── Sample orders data ────────────────────────────────────
   final List<Map<String, dynamic>> orders = [
     {
       'name': 'Zenfold Chair',
@@ -68,7 +73,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     },
   ];
 
-  // ── Chart data ────────────────────────────────────────────
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
   final List<double> lastWeek = [10, 13, 11, 16, 13, 18, 13];
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -77,6 +81,49 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   void initState() {
     super.initState();
     _loadDashboard();
+  }
+
+  Future<void> _openSellerInbox() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token')?.trim() ?? '';
+
+      if (token.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please log in first')));
+        return;
+      }
+
+      final conversations = await _chatService.getConversations();
+
+      if (!mounted) return;
+
+      final sellerUserId =
+          prefs.getString('userId') ?? prefs.getString('id') ?? '';
+      final sellerName =
+          prefs.getString('userName') ?? prefs.getString('name') ?? 'Seller';
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: const Color(0xFF1a1a1a),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (_) => SellerInboxSheet(
+          conversations: conversations,
+          sellerUserId: sellerUserId,
+          sellerName: sellerName,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load conversations: $e')),
+      );
+    }
   }
 
   Future<void> _loadDashboard() async {
@@ -111,7 +158,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     }
   }
 
-  // ── Dashboard data getters ────────────────────────────────
   Map<String, dynamic> get _profile => _asMap(_dashboard['profile']);
   Map<String, dynamic> get _summary => _asMap(_dashboard['summary']);
   Map<String, dynamic> get _performance => _asMap(_dashboard['performance']);
@@ -141,14 +187,35 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return result.isEmpty ? fallback : result;
   }
 
-  // ── Build ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF1a1a1a),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1a1a1a),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
       body: Stack(
         children: [
-          // Scrollable body
           SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 80),
             child: Column(
@@ -167,118 +234,135 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               ],
             ),
           ),
-
-          // Fixed bottom nav
           Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
         ],
       ),
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  COVER + PROFILE
-  // ─────────────────────────────────────────────────────────
   Widget _buildCoverAndProfile() {
     final logo = _text(_profile['logo']);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
       children: [
-        // Cover photo
-        Container(
-          height: 160,
-          width: double.infinity,
-          color: const Color(0xFF2a2a2a),
-          child: const Center(
-            child: Text(
-              'Add cover photo',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 160,
+              width: double.infinity,
+              color: const Color(0xFF2a2a2a),
+              child: const Center(
+                child: Text(
+                  'Add cover photo',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ),
             ),
-          ),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Avatar overlapping cover
-              Transform.translate(
-                offset: const Offset(0, -36),
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2a2a2a),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF1a1a1a),
-                      width: 3.5,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Transform.translate(
+                    offset: const Offset(0, -36),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2a2a2a),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF1a1a1a),
+                          width: 3.5,
+                        ),
+                      ),
+                      child: logo.isNotEmpty
+                          ? ClipOval(
+                              child: Image.network(logo, fit: BoxFit.cover),
+                            )
+                          : const Center(
+                              child: Text(
+                                'Add Profile\nphoto',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 10,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
-                  child: logo.isNotEmpty
-                      ? ClipOval(child: Image.network(logo, fit: BoxFit.cover))
-                      : const Center(
-                          child: Text(
-                            'Add Profile\nphoto',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 10,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-
-              // Name + handle
-              Transform.translate(
-                offset: const Offset(0, -26),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  Transform.translate(
+                    offset: const Offset(0, -26),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _text(
+                                  _profile['displayName'],
+                                  fallback: 'Display Name',
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.4,
+                                ),
+                              ),
+                            ),
+                            CustomPaint(
+                              size: const Size(22, 22),
+                              painter: _MetaVerifiedPainter(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
                         Text(
-                          _text(
-                            _profile['displayName'],
-                            fallback: 'Display Name',
-                          ),
+                          _text(_profile['handle'], fallback: '@shopname'),
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.4,
+                            color: Colors.grey,
+                            fontSize: 13,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        CustomPaint(
-                          size: const Size(22, 22),
-                          painter: _MetaVerifiedPainter(),
-                        ),
+                        const SizedBox(height: 16),
+                        Container(height: 1, color: const Color(0xFF2a2a2a)),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _text(_profile['handle'], fallback: '@shopname'),
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(height: 1, color: const Color(0xFF2a2a2a)),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          top: 40,
+          right: 16,
+          child: Material(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: _openSellerInbox,
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(
+                  Icons.notifications_none,
+                  color: Colors.white,
+                  size: 26,
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  SELLER SUMMARY CARDS
-  // ─────────────────────────────────────────────────────────
   Widget _buildSellerSummary() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -363,15 +447,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  PERFORMANCE OVERVIEW
-  // ─────────────────────────────────────────────────────────
   Widget _buildPerformanceOverview() {
     final perfDays = _asStringList(_performance['days']);
     final perfThisWeek = _asStringList(_performance['thisWeek']);
     final perfLastWeek = _asStringList(_performance['lastWeek']);
 
-    // Use API data if available, otherwise fall back to sample data
     final chartThisWeek = perfThisWeek.isNotEmpty
         ? perfThisWeek.map((v) => double.tryParse(v) ?? 0.0).toList()
         : thisWeek;
@@ -433,11 +513,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  ACTIVE LISTINGS
-  // ─────────────────────────────────────────────────────────
   Widget _buildActiveListings() {
-    // Use API data if available, otherwise fall back to sample data
     final items = _activeListings.isNotEmpty ? _activeListings : listings;
 
     return Column(
@@ -496,7 +572,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image area
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF3a3a3a),
@@ -505,7 +580,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
             child: Column(
               children: [
-                // Active badge + menu
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -531,7 +605,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: imageUrl.isNotEmpty
@@ -557,8 +630,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               ],
             ),
           ),
-
-          // Details
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -595,7 +666,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Stats row
                 Row(
                   children: [
                     _buildStat(
@@ -650,11 +720,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  NEW ORDERS
-  // ─────────────────────────────────────────────────────────
   Widget _buildNewOrders() {
-    // Use API data if available, otherwise fall back to sample data
     final items = _newOrders.isNotEmpty ? _newOrders : orders;
 
     return Column(
@@ -713,7 +779,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       ),
       child: Row(
         children: [
-          // Thumbnail
           Container(
             width: 48,
             height: 48,
@@ -751,8 +816,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
           const SizedBox(width: 10),
-
-          // Order details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -796,9 +859,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  BOTTOM NAV
-  // ─────────────────────────────────────────────────────────
   Widget _buildBottomNav() {
     final navItems = [
       {'label': 'Overview', 'icon': Icons.grid_view_rounded},
@@ -872,9 +932,100 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  META VERIFIED BADGE PAINTER
-// ─────────────────────────────────────────────────────────────
+class SellerInboxSheet extends StatelessWidget {
+  final List<Conversation> conversations;
+  final String sellerUserId;
+  final String sellerName;
+
+  const SellerInboxSheet({
+    super.key,
+    required this.conversations,
+    required this.sellerUserId,
+    required this.sellerName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: conversations.isEmpty
+            ? const Center(
+                child: Text(
+                  'No messages yet',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              )
+            : Column(
+                children: [
+                  const SizedBox(height: 14),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Messages',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: conversations.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(color: Colors.white10, height: 1),
+                      itemBuilder: (context, index) {
+                        final conv = conversations[index];
+
+                        return ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Color(0xFFFBB040),
+                            child: Icon(Icons.person, color: Colors.black),
+                          ),
+                          title: Text(
+                            conv.shopName,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            conv.lastMessage.isEmpty
+                                ? conv.productName
+                                : conv.lastMessage,
+                            style: const TextStyle(color: Colors.white60),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatApplication(
+                                  conversation: conv,
+                                  currentUserId: sellerUserId,
+                                  currentUserName: sellerName,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 class _MetaVerifiedPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -924,9 +1075,6 @@ class _MetaVerifiedPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  PERFORMANCE CHART PAINTER
-// ─────────────────────────────────────────────────────────────
 class _ChartPainter extends CustomPainter {
   final List<double> thisWeek;
   final List<double> lastWeek;
@@ -947,7 +1095,6 @@ class _ChartPainter extends CustomPainter {
       padT + drawH - (v / maxV) * drawH,
     );
 
-    // Grid lines
     final gridPaint = Paint()
       ..color = const Color(0xFF3a3a3a)
       ..strokeWidth = 0.8;
@@ -974,7 +1121,6 @@ class _ChartPainter extends CustomPainter {
       return p;
     }
 
-    // Last week — dashed grey
     _drawDashed(
       canvas,
       buildPath(lastWeek),
@@ -985,7 +1131,6 @@ class _ChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // This week — solid amber
     canvas.drawPath(
       buildPath(thisWeek),
       Paint()
@@ -996,7 +1141,6 @@ class _ChartPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
 
-    // Dots
     for (int i = 0; i < thisWeek.length; i++) {
       canvas.drawCircle(
         pt(i, thisWeek[i]),
