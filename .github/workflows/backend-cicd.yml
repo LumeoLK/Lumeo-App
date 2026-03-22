@@ -4,9 +4,9 @@ name: Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Wakes up when code is pushed to the main branch
+      - master # Wakes up when code is pushed to the main branch
     paths:
-      - 'backend/**'  # ONLY wakes up if files inside the 'backend' folder were changed
+      - "backend/**" # ONLY wakes up if files inside the 'backend' folder were changed
 
 jobs:
   # 2. The Quality Check (CI)
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Assuming Node 18, change if you use a different version
+          node-version: "18" # Assuming Node 18, change if you use a different version
 
       - name: Install Dependencies
         working-directory: ./backend
@@ -28,7 +28,7 @@ jobs:
       # This runs your tests. If it fails, the whole pipeline stops here.
       - name: Run Tests
         working-directory: ./backend
-        run: npm test --if-present 
+        run: npm test --if-present
 
   # 3. The Delivery Truck (CD)
   deploy-to-render:
