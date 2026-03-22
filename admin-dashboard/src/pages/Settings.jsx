@@ -1,30 +1,69 @@
 import React, { useState } from 'react';
-import { Save, Store, Mail, Phone, MapPin, DollarSign, Percent, Box } from 'lucide-react';
+import { 
+  Save, 
+  DollarSign, 
+  Percent, 
+  Box, 
+  ShieldCheck, 
+  Lock, 
+  Mail, 
+  HardDrive,
+  Settings2,
+  UserCog
+} from 'lucide-react';
 
 const Settings = () => {
-  // Dummy state for the settings form
+  // State for the platform configurations
   const [formData, setFormData] = useState({
-    storeName: 'Lumeo Furniture',
-    email: 'admin@lumeo.lk',
-    phone: '+94 77 123 4567',
-    address: '123 Galle Road, Colombo 03',
-    currency: 'LKR',
+    // Financials
+    commissionRate: '10',
     taxRate: '15',
-    commission: '10',
+    minPayout: '5000',
+    
+    // AR Engine
     arQuality: 'High',
+    maxUploadSize: '50',
+    autoApproveModels: false,
+    
+    // Seller Management
+    requireBizReg: true,
+    autoApproveSellers: false,
+    
+    // Admin Security
+    adminEmail: 'admin@lumeo.com'
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleToggle = (field) => {
+    setFormData({ ...formData, [field]: !formData[field] });
+  };
+
+  // Reusable Toggle Switch Component
+  const ToggleSwitch = ({ label, field, description }) => (
+    <div className="flex items-center justify-between bg-[#09090b] p-4 rounded-xl border border-zinc-800">
+      <div>
+        <span className="text-sm font-medium text-zinc-200 block">{label}</span>
+        {description && <span className="text-xs text-zinc-500">{description}</span>}
+      </div>
+      <button 
+        onClick={() => handleToggle(field)}
+        className={`w-11 h-6 rounded-full relative transition-colors focus:outline-none ${formData[field] ? 'bg-brand' : 'bg-zinc-700'}`}
+      >
+        <span className={`absolute top-1 w-4 h-4 rounded-full bg-[#09090b] transition-all ${formData[field] ? 'right-1' : 'left-1'}`}></span>
+      </button>
+    </div>
+  );
+
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 pb-10">
       
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-wide">General Settings</h1>
+          <h1 className="text-2xl font-bold text-white tracking-wide">Platform Settings</h1>
         </div>
         
         <button className="flex items-center gap-2 bg-brand text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-brand/90 transition-colors">
@@ -35,125 +74,31 @@ const Settings = () => {
 
       <div className="space-y-8">
         
-        {/* --- SECTION 1: Store Information --- */}
+        {/* --- SECTION 1: Platform Financials --- */}
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left Column: Description */}
           <div className="md:w-1/3">
-            <h2 className="text-lg font-bold text-white">Store Information</h2>
-            <p className="text-sm text-zinc-500 mt-1">
-              Update your primary business details and contact information. This is visible to sellers.
-            </p>
-          </div>
-          
-          {/* Right Column: Form Card */}
-          <div className="md:w-2/3 bg-[#111111] border border-zinc-800 rounded-2xl p-6 space-y-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Store Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Store Name</label>
-                <div className="relative">
-                  <Store className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="text" 
-                    name="storeName"
-                    value={formData.storeName}
-                    onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Contact Email */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Support Email</label>
-                <div className="relative">
-                  <Mail className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="email" 
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Phone Number */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Phone Number</label>
-                <div className="relative">
-                  <Phone className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="text" 
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Business Address */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Business Address</label>
-                <div className="relative">
-                  <MapPin className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="text" 
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
-                  />
-                </div>
-              </div>
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-5 h-5 text-brand" />
+              <h2 className="text-lg font-bold text-white">Marketplace Financials</h2>
             </div>
-
-          </div>
-        </div>
-
-        {/* --- SECTION 2: Platform Financials --- */}
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-1/3">
-            <h2 className="text-lg font-bold text-white">Financial & Regional</h2>
-            <p className="text-sm text-zinc-500 mt-1">
-              Set your platform currency, seller commission rates, and baseline tax rules.
+            <p className="text-sm text-zinc-500">
+              Set the platform commission rates, baseline tax rules, and seller payout thresholds.
             </p>
           </div>
           
           <div className="md:w-2/3 bg-[#111111] border border-zinc-800 rounded-2xl p-6 space-y-6">
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Currency */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Default Currency</label>
-                <div className="relative">
-                  <DollarSign className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <select 
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm appearance-none cursor-pointer"
-                  >
-                    <option value="LKR">LKR (Rs)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                  </select>
-                </div>
-              </div>
-
               {/* Commission Rate */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Seller Commission</label>
+                <label className="text-sm font-medium text-zinc-400">Platform Commission</label>
                 <div className="relative">
                   <Percent className="w-4 h-4 text-zinc-500 absolute right-4 top-1/2 -translate-y-1/2" />
                   <input 
                     type="number" 
-                    name="commission"
-                    value={formData.commission}
+                    name="commissionRate"
+                    value={formData.commissionRate}
                     onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white px-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
+                    className="w-full bg-[#09090b] text-white pl-4 pr-10 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
                   />
                 </div>
               </div>
@@ -168,21 +113,38 @@ const Settings = () => {
                     name="taxRate"
                     value={formData.taxRate}
                     onChange={handleChange}
-                    className="w-full bg-[#09090b] text-white px-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
+                    className="w-full bg-[#09090b] text-white pl-4 pr-10 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Minimum Payout */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-400">Min. Seller Payout</label>
+                <div className="relative">
+                  <span className="text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium">Rs.</span>
+                  <input 
+                    type="number" 
+                    name="minPayout"
+                    value={formData.minPayout}
+                    onChange={handleChange}
+                    className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
                   />
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* --- SECTION 3: Lumeo AR Configurations --- */}
+        {/* --- SECTION 2: AR Engine Configurations --- */}
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/3">
-            <h2 className="text-lg font-bold text-white">AR Engine Configurations</h2>
-            <p className="text-sm text-zinc-500 mt-1">
-              Manage the 3D model requirements for sellers uploading furniture to the augmented reality viewer.
+            <div className="flex items-center gap-2 mb-2">
+              <Settings2 className="w-5 h-5 text-brand" />
+              <h2 className="text-lg font-bold text-white">3D & AR Pipeline</h2>
+            </div>
+            <p className="text-sm text-zinc-500">
+              Manage Meshy AI generation quality, file upload limits, and approval workflows.
             </p>
           </div>
           
@@ -191,7 +153,7 @@ const Settings = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* AR Export Quality */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Model Render Quality</label>
+                <label className="text-sm font-medium text-zinc-400">Default AI Render Quality</label>
                 <div className="relative">
                   <Box className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   <select 
@@ -200,20 +162,98 @@ const Settings = () => {
                     onChange={handleChange}
                     className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm appearance-none cursor-pointer"
                   >
-                    <option value="Standard">Standard (Fast Loading)</option>
+                    <option value="Standard">Standard (Fast / Low API Cost)</option>
                     <option value="High">High (Balanced)</option>
-                    <option value="Ultra">Ultra (Maximum Detail)</option>
+                    <option value="Ultra">Ultra (Slow / High API Cost)</option>
                   </select>
                 </div>
               </div>
 
-              {/* Toggle: Auto-approve models */}
-              <div className="flex items-center justify-between bg-[#09090b] p-4 rounded-xl border border-zinc-800 h-[42px] mt-7">
-                <span className="text-sm text-zinc-300">Auto-Approve 3D Models</span>
-                <button className="w-10 h-5 bg-brand rounded-full relative transition-colors focus:outline-none">
-                  <span className="absolute right-1 top-1 bg-black w-3 h-3 rounded-full"></span>
-                </button>
+              {/* Max Upload Size */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-400">Max GLB Upload Size</label>
+                <div className="relative">
+                  <HardDrive className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <span className="text-zinc-500 absolute right-4 top-1/2 -translate-y-1/2 text-sm">MB</span>
+                  <input 
+                    type="number" 
+                    name="maxUploadSize"
+                    value={formData.maxUploadSize}
+                    onChange={handleChange}
+                    className="w-full bg-[#09090b] text-white pl-10 pr-10 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
+                  />
+                </div>
               </div>
+            </div>
+
+            <ToggleSwitch 
+              label="Auto-Approve AI Generated Models" 
+              field="autoApproveModels"
+              description="Instantly publish successful Meshy 3D generations without manual admin review."
+            />
+
+          </div>
+        </div>
+
+        {/* --- SECTION 3: Seller Management --- */}
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="md:w-1/3">
+            <div className="flex items-center gap-2 mb-2">
+              <UserCog className="w-5 h-5 text-brand" />
+              <h2 className="text-lg font-bold text-white">Seller Management</h2>
+            </div>
+            <p className="text-sm text-zinc-500">
+              Configure the strictness of the seller verification and onboarding process.
+            </p>
+          </div>
+          
+          <div className="md:w-2/3 bg-[#111111] border border-zinc-800 rounded-2xl p-6 space-y-4">
+            <ToggleSwitch 
+              label="Require Business Registration Number" 
+              field="requireBizReg"
+              description="Forces new applicants to provide a valid BRN. Disabling this allows casual individual sellers."
+            />
+            <ToggleSwitch 
+              label="Auto-Approve New Sellers" 
+              field="autoApproveSellers"
+              description="Bypasses the manual NIC verification queue (Not recommended for production)."
+            />
+          </div>
+        </div>
+
+        {/* --- SECTION 4: Admin Security --- */}
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="md:w-1/3">
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck className="w-5 h-5 text-brand" />
+              <h2 className="text-lg font-bold text-white">Admin Security</h2>
+            </div>
+            <p className="text-sm text-zinc-500">
+              Manage root access and critical system notification settings.
+            </p>
+          </div>
+          
+          <div className="md:w-2/3 bg-[#111111] border border-zinc-800 rounded-2xl p-6 space-y-6">
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-400">System Notification Email</label>
+              <div className="relative">
+                <Mail className="w-5 h-5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="email" 
+                  name="adminEmail"
+                  value={formData.adminEmail}
+                  onChange={handleChange}
+                  className="w-full bg-[#09090b] text-white pl-10 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand text-sm transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-zinc-800/50">
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white font-medium text-sm transition-colors">
+                <Lock className="w-4 h-4" />
+                Change Root Password
+              </button>
             </div>
 
           </div>
