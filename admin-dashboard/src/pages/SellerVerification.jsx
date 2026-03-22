@@ -14,7 +14,8 @@ const SellerVerification = () => {
 
   const fetchPendingSellers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/admin/sellers/pending');
+      // Corrected syntax here
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/sellers/pending`);
       const data = await response.json();
       setApplicants(data);
       if (data.length > 0) {
@@ -29,7 +30,8 @@ const SellerVerification = () => {
 
   const handleApprove = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/sellers/${id}/approve`, { method: 'PUT' });
+      // Replaced localhost with environment variable
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/sellers/${id}/approve`, { method: 'PUT' });
       if (response.ok) {
         const updatedList = applicants.filter(app => app._id !== id);
         setApplicants(updatedList);
@@ -42,7 +44,7 @@ const SellerVerification = () => {
 
   const handleReject = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/sellers/${id}/reject`, { method: 'DELETE' });
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/sellers/${id}/reject`, { method: 'DELETE' });
       if (response.ok) {
         const updatedList = applicants.filter(app => app._id !== id);
         setApplicants(updatedList);

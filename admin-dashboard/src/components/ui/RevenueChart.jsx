@@ -19,7 +19,7 @@ const RevenueChart = () => {
 
   const fetchChartData = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/admin/revenue-chart');
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/revenue-chart`);
       if (response.ok) {
         const apiData = await response.json();
         
