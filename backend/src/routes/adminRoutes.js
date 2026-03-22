@@ -12,7 +12,9 @@ import {
   updatePaymentStatus,
   deleteOrder,
   getDashboardStats,
-  getRevenueChartData
+  getRevenueChartData,
+  getSettings, 
+  updateSettings
 } from "../controller/adminController.js";
 
 const router = express.Router();
@@ -36,5 +38,9 @@ router.put("/orders/:id/payment", updatePaymentStatus);   // Requires { "payment
 // --- DASHBOARD ROUTE ---
 router.get("/dashboard-stats", getDashboardStats);
 router.get("/revenue-chart", getRevenueChartData);
+
+// --- SETTINGS ROUTES ---
+router.get("/settings", getSettings);
+router.put("/settings", updateSettings);
 
 export default router;

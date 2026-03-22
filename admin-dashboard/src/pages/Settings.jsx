@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Save, 
   DollarSign, 
@@ -9,29 +9,69 @@ import {
   Mail, 
   HardDrive,
   Settings2,
-  UserCog
+  UserCog,
+  RefreshCw
 } from 'lucide-react';
 
 const Settings = () => {
-  // State for the platform configurations
+  // 1. State for platform configurations
   const [formData, setFormData] = useState({
-    // Financials
-    commissionRate: '10',
-    taxRate: '15',
-    minPayout: '5000',
-    
-    // AR Engine
+    commissionRate: 10,
+    taxRate: 15,
+    minPayout: 5000,
     arQuality: 'High',
-    maxUploadSize: '50',
+    maxUploadSize: 50,
     autoApproveModels: false,
-    
-    // Seller Management
     requireBizReg: true,
     autoApproveSellers: false,
-    
-    // Admin Security
     adminEmail: 'admin@lumeo.com'
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 2. Fetch settings from backend on load
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/settings`);
+      if (response.ok) {
+        const data = await response.json();
+        // Merge fetched data with default state to prevent undefined errors
+        setFormData(prev => ({ ...prev, ...data }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 3. Save settings to backend
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        alert("Platform settings saved successfully!");
+      } else {
+        alert("Failed to save settings. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("An error occurred while saving.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -57,6 +97,10 @@ const Settings = () => {
     </div>
   );
 
+  if (isLoading) {
+    return <div className="text-white p-8 flex items-center gap-2"><RefreshCw className="w-5 h-5 animate-spin"/> Loading platform configurations...</div>;
+  }
+
   return (
     <div className="w-full space-y-8 pb-10">
       
@@ -66,9 +110,13 @@ const Settings = () => {
           <h1 className="text-2xl font-bold text-white tracking-wide">Platform Settings</h1>
         </div>
         
-        <button className="flex items-center gap-2 bg-brand text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-brand/90 transition-colors">
-          <Save className="w-4 h-4" />
-          Save Changes
+        <button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 bg-brand text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-brand/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
 
