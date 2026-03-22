@@ -15,15 +15,31 @@ class Conversation {
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
     final product = json['product'];
-    final productName = product is Map ? product['name'] ?? '' : '';
-    final productId = product is Map ? product['_id'] ?? '' : '';
-    final shopName = product is Map ? product['shopName'] ?? 'Unknown Shop' : 'Unknown Shop';
+    final participants = json['participants'] as List<dynamic>? ?? [];
+
+    String productId = '';
+    String productName = '';
+    String shopName = 'Unknown Shop';
+
+    if (product is Map<String, dynamic>) {
+      productId = product['_id']?.toString() ?? '';
+      productName =
+          product['title']?.toString() ?? product['name']?.toString() ?? '';
+    }
+
+    if (participants.isNotEmpty) {
+      final firstParticipant = participants.first;
+      if (firstParticipant is Map<String, dynamic>) {
+        shopName = firstParticipant['name']?.toString() ?? 'Unknown Shop';
+      }
+    }
+
     return Conversation(
-      id: json['_id'] ?? '',
+      id: json['_id']?.toString() ?? '',
       productId: productId,
       productName: productName,
       shopName: shopName,
-      lastMessage: json['lastMessage'] ?? '',
+      lastMessage: json['lastMessage']?.toString() ?? '',
     );
   }
 }
