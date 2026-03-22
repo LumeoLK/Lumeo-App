@@ -67,3 +67,35 @@ export const placeBid = async (req, res) => {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
+
+export const getBidsByRequest = async (req, res) => {
+  try {
+    const { requestId } = req.body;
+
+    // Optional: validate request exists
+    const request = await CustomRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        msg: "Request not found"
+      });
+    }
+
+    // Fetch bids related to this request
+    const bids = await Bid.find({ requestId })
+      .populate("sellerId", "name email") // optional: include seller details
+      .sort({ createdAt: -1 }); // latest bids first
+
+    res.status(200).json({
+      success: true,
+      count: bids.length,
+      bids
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      msg: error.message
+    });
+  }
+};
