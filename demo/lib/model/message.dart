@@ -1,47 +1,41 @@
-class Conversation {
+class Message {
   final String id;
-  final String productId;
-  final String productName;
-  final String shopName;
-  final String lastMessage;
+  final String conversationId;
+  final String senderId;
+  final String senderName;
+  final String senderProfilePicture;
+  final String text;
+  final DateTime createdAt;
 
-  Conversation({
+  Message({
     required this.id,
-    required this.productId,
-    required this.productName,
-    required this.shopName,
-    required this.lastMessage,
+    required this.conversationId,
+    required this.senderId,
+    required this.senderName,
+    this.senderProfilePicture = '',
+    required this.text,
+    required this.createdAt,
   });
 
-  factory Conversation.fromJson(Map<String, dynamic> json) {
-    final product = json['product'];
-    final participants = json['participants'] as List<dynamic>? ?? [];
+  factory Message.fromJson(Map<String, dynamic> json) {
+    final sender = json['sender'];
 
-    String productId = '';
-    String productName = '';
-    String shopName = 'Unknown Shop';
-
-    if (product is Map<String, dynamic>) {
-      productId = product['_id']?.toString() ?? '';
-      productName =
-          product['title']?.toString() ??
-          product['name']?.toString() ??
-          '';
-    }
-
-    if (participants.isNotEmpty) {
-      final firstParticipant = participants.first;
-      if (firstParticipant is Map<String, dynamic>) {
-        shopName = firstParticipant['name']?.toString() ?? 'Unknown Shop';
-      }
-    }
-
-    return Conversation(
+    return Message(
       id: json['_id']?.toString() ?? '',
-      productId: productId,
-      productName: productName,
-      shopName: shopName,
-      lastMessage: json['lastMessage']?.toString() ?? '',
+      conversationId: json['conversation']?.toString() ?? '',
+      senderId: sender is Map<String, dynamic>
+          ? sender['_id']?.toString() ?? ''
+          : json['sender']?.toString() ?? '',
+      senderName: sender is Map<String, dynamic>
+          ? sender['name']?.toString() ?? ''
+          : '',
+      senderProfilePicture: sender is Map<String, dynamic>
+          ? sender['profilePicture']?.toString() ?? ''
+          : '',
+      text: json['text']?.toString() ?? '',
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt']) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 }
