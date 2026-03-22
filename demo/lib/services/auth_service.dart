@@ -63,11 +63,14 @@ class AuthService {
   }
 
   Future<void> resetPassword({required String email}) async {
-    await http.post(
+    final res = await http.post(
       Uri.parse('${Constants.authUri}/forgotPassword'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email.trim()}),
     );
+    if (res.statusCode != 200) {
+      throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
+    }
   }
 
   Future<void> signout() async {

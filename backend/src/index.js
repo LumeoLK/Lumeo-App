@@ -1,6 +1,7 @@
 import "./lib/env.js";
 import express from "express";
 import connectDB from "./config.js";
+import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
@@ -9,6 +10,10 @@ import { Server } from "socket.io";
 import setupSocket from "./socket/socketHandler.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Prevent runtime crashes when legacy code attempts to populate a path
+// that is not explicitly declared on a schema.
+mongoose.set("strictPopulate", false);
 
 app.use(cors());
 app.use(cookieParser());

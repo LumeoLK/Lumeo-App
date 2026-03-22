@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'seller_request_details.dart';
 
 //color constrants
 const bgColor = Color(0xFF000000);  //background color
@@ -59,13 +60,15 @@ final List<OrderRequest> sampleOrders = [
 // MAIN PAGE
 
 class CustomOrdersFeedPage extends StatefulWidget {
-  const CustomOrdersFeedPage({super.key});
+  final int initialTab;
+  const CustomOrdersFeedPage({super.key, this.initialTab = 0});
+
   @override
   State<CustomOrdersFeedPage> createState() => _CustomOrdersFeedPageState();
 }
 
 class _CustomOrdersFeedPageState extends State<CustomOrdersFeedPage> {
-  int _tab = 0;        // 0-Orders Feed, 1-My Proposals
+  late int _tab;        // 0-Orders Feed, 1-My Proposals
   int _navIndex = 4;   // custom tab selected
 
   final _navItems = const [
@@ -78,13 +81,19 @@ class _CustomOrdersFeedPageState extends State<CustomOrdersFeedPage> {
   ];
 
   @override
+    void initState() {
+      super.initState();
+      _tab = widget.initialTab;
+    }
+    
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: _buildAppBar(),
       body: _tab == 0
           ? const OrdersFeedBody()
-          : const Center(child: Text('My Proposals', style: TextStyle(color: textColor))),
+          : const MyProposalsBody(),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: cardColor,
         selectedItemColor: kOrange,
@@ -292,7 +301,12 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kOrange,
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -468,7 +482,12 @@ class OrderCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: kOrange,
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -481,6 +500,202 @@ class OrderCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// sample proposal model
+class ProposalItem {
+  final String name;
+  final String title;
+  final String timeAgo;
+  final String price;
+  final String status; // 'active' or 'closed'
+
+  const ProposalItem({
+    required this.name,
+    required this.title,
+    required this.timeAgo,
+    required this.price,
+    required this.status,
+  });
+}
+
+// sample proposals list
+final List<ProposalItem> sampleProposals = [
+  const ProposalItem(name: 'Namal P.', title: 'Custom Modern Bed', timeAgo: 'Submitted 1 Hour ago', price: 'LKR 4500', status: 'active'),
+  const ProposalItem(name: 'Namal P.', title: 'Custom Modern Bed', timeAgo: 'Submitted 1 Hour ago', price: 'LKR 4500', status: 'active'),
+  const ProposalItem(name: 'Namal P.', title: 'Custom Modern Bed', timeAgo: 'Submitted 1 Hour ago', price: 'LKR 4500', status: 'closed'),
+];
+
+class MyProposalsBody extends StatefulWidget {
+  const MyProposalsBody({super.key});
+  @override
+  State<MyProposalsBody> createState() => _MyProposalsBodyState();
+}
+
+class _MyProposalsBodyState extends State<MyProposalsBody> {
+  bool isGridView = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            children: [
+              // search field
+              TextField(
+                style: const TextStyle(color: textColor),
+                decoration: InputDecoration(
+                  hintText: 'Office Chairs...',
+                  hintStyle: const TextStyle(color: hintText),
+                  suffixIcon: const Icon(Icons.search, color: hintText),
+                  filled: true,
+                  fillColor: cardColor,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // filter row
+              Row(
+                children: [
+                  const Row(children: [
+                    Icon(Icons.filter_list, color: textColor, size: 16),
+                    SizedBox(width: 4),
+                    Text('Filters', style: TextStyle(color: textColor, fontSize: 13)),
+                  ]),
+                  const SizedBox(width: 16),
+                  const Row(children: [
+                    Icon(Icons.swap_vert, color: textColor, size: 16),
+                    SizedBox(width: 4),
+                    Text('Price: lowest to high', style: TextStyle(color: textColor, fontSize: 13)),
+                  ]),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => setState(() => isGridView = !isGridView),
+                    child: Icon(isGridView ? Icons.view_list : Icons.grid_view, color: textColor, size: 20),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // proposals list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: sampleProposals.length,
+            itemBuilder: (context, index) => _ProposalCard(proposal: sampleProposals[index]),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// proposal card
+class _ProposalCard extends StatelessWidget {
+  final ProposalItem proposal;
+  const _ProposalCard({required this.proposal});
+
+  @override
+  Widget build(BuildContext context) {
+    final isClosed = proposal.status == 'closed';
+    final contentColor = isClosed ? hintText : textColor;
+    final priceColor = isClosed ? hintText : kOrange;
+
+    return Opacity(
+      opacity: isClosed ? 0.6 : 1.0,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            // image thumbnail
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // status badge row
+                  Row(
+                    children: [
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isClosed ? Colors.grey : Colors.green,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          isClosed ? 'Closed' : 'Active',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+
+                  Text(proposal.name, style: TextStyle(color: contentColor, fontSize: 13)),
+                  Text(proposal.title,
+                      style: TextStyle(color: contentColor, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(proposal.timeAgo, style: TextStyle(color: isClosed ? hintText : hintText, fontSize: 11)),
+                  const SizedBox(height: 6),
+                  Text(proposal.price,
+                      style: TextStyle(color: priceColor, fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 6),
+
+                  // icons row
+                  Row(
+                    children: [
+                      const Spacer(),
+                      if (!isClosed)
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: kOrange.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.chat_bubble_outline, color: kOrange, size: 16),
+                        ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.remove_red_eye_outlined, color: isClosed ? hintText : hintText, size: 18),
+                      const SizedBox(width: 8),
+                      Icon(Icons.more_horiz, color: isClosed ? hintText : textColor, size: 18),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,24 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import 'package:lumeo/pages/cart_page.dart';
-import 'pages/wishlist_page.dart';
-
-// import '../providers/user_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-// import 'package:lumeo_v2/pages/ar_search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import your pages
 import '../pages/home_page.dart';
 import '../pages/login.dart';
 import 'pages/onboarding_page1.dart';
-
-// import '../providers/user_provider.dart';
-import "./pages/emptyspace.dart";
-
-// import '../providers/user_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,15 +40,34 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Transition to Onboarding after 3 seconds
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _navigateAfterSplash() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
+    final token = prefs.getString('x-auth-token') ?? '';
+
+    if (!mounted) return;
+
+    if (!seenOnboarding) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const OnboardingPage1()),
       );
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => token.isNotEmpty ? const HomePage() : const Login(),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(seconds: 3), () {
+      _navigateAfterSplash();
     });
   }
 
