@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/seller_dashboard_service.dart';
 import 'home_page.dart';
 import "productpage.dart";
+import 'seller_listings.dart' show ListingsPage;
 
 import '../widgets/seller_bottom_navigation_bar.dart';
 
@@ -97,6 +98,19 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return result.isEmpty ? fallback : result;
   }
 
+  void _handleNavigationTap(int index) {
+    if (index == _activeNav) return;
+
+    if (index == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ListingsPage()),
+      );
+      return;
+    }
+
+    setState(() => _activeNav = index);
+  }
+
   // ── Build ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
@@ -142,7 +156,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             bottom: 0,
             child: SellerBottomNavigationBar(
               currentIndex: _activeNav,
-              onTap: (index) => setState(() => _activeNav = index),
+              onTap: _handleNavigationTap,
             ),
           ),
         ],

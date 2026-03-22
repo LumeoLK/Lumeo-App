@@ -87,6 +87,17 @@ class _ListingsPageState extends State<ListingsPage> {
     await _loadListings();
   }
 
+  void _handleNavigationTap(int index) {
+    if (index == _navIndex) return;
+
+    if (index == 0) {
+      Navigator.maybePop(context);
+      return;
+    }
+
+    setState(() => _navIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,7 +120,7 @@ class _ListingsPageState extends State<ListingsPage> {
       ),
       bottomNavigationBar: SellerBottomNavigationBar(
         currentIndex: _navIndex,
-        onTap: (index) => setState(() => _navIndex = index),
+        onTap: _handleNavigationTap,
       ),
     );
   }
