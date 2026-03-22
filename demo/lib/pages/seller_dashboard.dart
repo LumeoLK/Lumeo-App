@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
-
-import 'package:lumeo_v2/pages/chat_application.dart';
-
 import 'package:get/get.dart';
-import 'seller_listings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../services/seller_dashboard_service.dart';
-import 'home_page.dart';
-import "productpage.dart";
-import '../model/conversation.dart';
-import '../services/chat_service.dart';
-import '../services/seller_dashboard_service.dart';
-import '../pages/chat_application.dart';
-import '../widgets/seller_bottom_navigation_bar.dart';
+import '../pages/productpage.dart';
 
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
+
   @override
   State<SellerDashboardPage> createState() => _SellerDashboardPageState();
 }
@@ -24,14 +16,11 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   final SellerDashboardService _dashboardService =
       const SellerDashboardService();
 
-  final ChatService _chatService = ChatService();
-
   bool _isLoading = true;
   String? _error;
   Map<String, dynamic> _dashboard = const {};
-  int _activeNav = 0;
 
-  // ── Chart data ────────────────────────────────────────────
+  // ── Fallback chart data ───────────────────────────────────
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
   final List<double> lastWeek = [10, 13, 11, 16, 13, 18, 13];
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -42,49 +31,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     _loadDashboard();
   }
 
-  Future<void> _openSellerInbox() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('x-auth-token')?.trim() ?? '';
-
-      if (token.isEmpty) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Please log in first')));
-        return;
-      }
-
-      final conversations = await _chatService.getConversations();
-
-      if (!mounted) return;
-
-      final sellerUserId =
-          prefs.getString('userId') ?? prefs.getString('id') ?? '';
-      final sellerName =
-          prefs.getString('userName') ?? prefs.getString('name') ?? 'Seller';
-
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: const Color(0xFF1a1a1a),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (_) => SellerInboxSheet(
-          conversations: conversations,
-          sellerUserId: sellerUserId,
-          sellerName: sellerName,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load conversations: $e')),
-      );
-    }
-  }
-
+  // ── Data loading ──────────────────────────────────────────
   Future<void> _loadDashboard() async {
     setState(() {
       _isLoading = true;
@@ -126,6 +73,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   List<Map<String, dynamic>> get _newOrders =>
       _asMapList(_dashboard['newOrders']);
 
+  // ── Data helpers ──────────────────────────────────────────
   Map<String, dynamic> _asMap(dynamic value) {
     if (value is Map<String, dynamic>) return value;
     if (value is Map) return value.map((k, v) => MapEntry('$k', v));
@@ -175,54 +123,24 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 80),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCoverAndProfile(),
-                const SizedBox(height: 16),
-                _buildSellerSummary(),
-                const SizedBox(height: 16),
-                _buildPerformanceOverview(),
-                const SizedBox(height: 20),
-                _buildActiveListings(),
-                const SizedBox(height: 20),
-                _buildNewOrders(),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-
-          // Fixed bottom nav
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SellerBottomNavigationBar(
-              currentIndex: _activeNav,
-              onTap: (index) {
-                setState(() => _activeNav = index);
-                switch (index) {
-                  case 0:
-                    Get.back(); // ← just go back, dashboard is already there
-                    break;
-                  case 1:
-                    Get.off(
-                      () => const ListingsPage(),
-                    ); // replaces instead of stacking
-                    break;
-                  case 2:
-                    _openSellerInbox();
-                    break;
-                  // ... other tabs
-                }
-              },
-            ),
-          ),
-        ],
+      body: SingleChildScrollView(
+        // Extra bottom padding so content clears the shell's nav bar
+        padding: const EdgeInsets.only(bottom: 80),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildCoverAndProfile(),
+            const SizedBox(height: 16),
+            _buildSellerSummary(),
+            const SizedBox(height: 16),
+            _buildPerformanceOverview(),
+            const SizedBox(height: 20),
+            _buildActiveListings(),
+            const SizedBox(height: 20),
+            _buildNewOrders(),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -236,6 +154,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Cover photo placeholder
         Container(
           height: 160,
           width: double.infinity,
@@ -283,7 +202,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                 ),
               ),
 
-              // Name + handle
+              // Name + verified badge + handle
               Transform.translate(
                 offset: const Offset(0, -26),
                 child: Column(
@@ -328,6 +247,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  SELLER SUMMARY
+  // ─────────────────────────────────────────────────────────
   Widget _buildSellerSummary() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -412,6 +334,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  PERFORMANCE OVERVIEW
+  // ─────────────────────────────────────────────────────────
   Widget _buildPerformanceOverview() {
     final perfDays = _asStringList(_performance['days']);
     final perfThisWeek = _asStringList(_performance['thisWeek']);
@@ -478,6 +403,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  ACTIVE LISTINGS
+  // ─────────────────────────────────────────────────────────
   Widget _buildActiveListings() {
     final items = _activeListings;
 
@@ -533,7 +461,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 
   Widget _buildListingCard(Map<String, dynamic> item) {
-    print(item);
     final images = item['images'];
     final imageUrl = (images is List && images.isNotEmpty)
         ? _text(images[0])
@@ -550,7 +477,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image area
+          // Image + status header
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF3a3a3a),
@@ -584,7 +511,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: imageUrl.isNotEmpty
@@ -610,6 +536,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               ],
             ),
           ),
+          // Info
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -646,7 +573,6 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Stats row
                 Row(
                   children: [
                     _buildStat(
@@ -757,9 +683,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: items.length,
-            itemBuilder: (context, index) {
-              return _buildOrderCard(items[index]);
-            },
+            itemBuilder: (context, index) => _buildOrderCard(items[index]),
           ),
         ),
       ],
@@ -818,6 +742,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             ),
           ),
           const SizedBox(width: 10),
+          // Order info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -862,99 +787,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 }
 
-class SellerInboxSheet extends StatelessWidget {
-  final List<Conversation> conversations;
-  final String sellerUserId;
-  final String sellerName;
-
-  const SellerInboxSheet({
-    super.key,
-    required this.conversations,
-    required this.sellerUserId,
-    required this.sellerName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.75,
-        child: conversations.isEmpty
-            ? const Center(
-                child: Text(
-                  'No messages yet',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              )
-            : Column(
-                children: [
-                  const SizedBox(height: 14),
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Messages',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: conversations.length,
-                      separatorBuilder: (_, __) =>
-                          const Divider(color: Colors.white10, height: 1),
-                      itemBuilder: (context, index) {
-                        final conv = conversations[index];
-
-                        return ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0xFFFBB040),
-                            child: Icon(Icons.person, color: Colors.black),
-                          ),
-                          title: Text(
-                            conv.shopName,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            conv.lastMessage.isEmpty
-                                ? conv.productName
-                                : conv.lastMessage,
-                            style: const TextStyle(color: Colors.white60),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ChatApplication(
-                                  conversation: conv,
-                                  currentUserId: sellerUserId,
-                                  currentUserName: sellerName,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-}
+// ─────────────────────────────────────────────────────────
+//  PAINTERS
+// ─────────────────────────────────────────────────────────
 
 class _MetaVerifiedPainter extends CustomPainter {
   @override
@@ -1073,6 +908,7 @@ class _ChartPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
 
+    // Data point dots
     for (int i = 0; i < thisWeek.length; i++) {
       canvas.drawCircle(
         pt(i, thisWeek[i]),
