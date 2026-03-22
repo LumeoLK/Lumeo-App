@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'seller_request_details.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/custom_request_provider.dart';
+import 'package:lumeo_v2/model/custom_request.dart';
+import 'package:intl/intl.dart';
 
 //color constrants
 const bgColor = Color(0xFF000000);  //background color
@@ -8,66 +12,17 @@ const kOrange = Color(0xFFfbb040);
 const textColor = Colors.white;
 const hintText = Color(0xFF888888); //hint text color
 
-void main() => runApp(const MaterialApp(home: CustomOrdersFeedPage(), debugShowCheckedModeBanner: false));
-
-//sample data model
-class OrderRequest {
-  final String name;
-  final String timeAgo;
-  final String title;
-  final String description;
-  final String budget;
-  final String deadline;
-
-  const OrderRequest({
-    required this.name,
-    required this.timeAgo,
-    required this.title,
-    required this.description,
-    required this.budget,
-    required this.deadline,
-  });
-}
-
-// sample orders list
-final List<OrderRequest> sampleOrders = [
-  const OrderRequest(
-    name: 'Namal P.',
-    timeAgo: 'Posted 2 hrs ago',
-    title: 'Need Custom Wooden Bed Frame',
-    description: 'Looking for a minimal king-size wooden bed ...',
-    budget: 'Rs. 85,000',
-    deadline: '12 days',
-  ),
-  const OrderRequest(
-    name: 'Namal P.',
-    timeAgo: 'Posted 2 hrs ago',
-    title: 'Need Custom Wooden Bed Frame',
-    description: 'Looking for a minimal king-size wooden bed ...',
-    budget: 'Rs. 85,000',
-    deadline: '12 days',
-  ),
-  const OrderRequest(
-    name: 'Namal P.',
-    timeAgo: 'Posted 4 hrs ago',
-    title: 'Need Custom Wooden Bed Frame',
-    description: 'Looking for a minimal king-size wooden bed ...',
-    budget: 'Rs. 85,000',
-    deadline: '12 days',
-  ),
-];
-
 // MAIN PAGE
 
-class CustomOrdersFeedPage extends StatefulWidget {
+class CustomOrdersFeedPage extends ConsumerStatefulWidget {
   final int initialTab;
   const CustomOrdersFeedPage({super.key, this.initialTab = 0});
 
   @override
-  State<CustomOrdersFeedPage> createState() => _CustomOrdersFeedPageState();
+  ConsumerState<CustomOrdersFeedPage> createState() => _CustomOrdersFeedPageState();
 }
 
-class _CustomOrdersFeedPageState extends State<CustomOrdersFeedPage> {
+class _CustomOrdersFeedPageState extends ConsumerState<CustomOrdersFeedPage> {
   late int _tab;        // 0-Orders Feed, 1-My Proposals
   int _navIndex = 4;   // custom tab selected
 
@@ -163,15 +118,24 @@ class _CustomOrdersFeedPageState extends State<CustomOrdersFeedPage> {
 }
 
 //ORDERS FEED body
-class OrdersFeedBody extends StatefulWidget {
+class OrdersFeedBody extends ConsumerStatefulWidget {
   const OrdersFeedBody({super.key});
   @override
-  State<OrdersFeedBody> createState() => _OrdersFeedBodyState();
+  ConsumerState<OrdersFeedBody> createState() => _OrdersFeedBodyState();
 }
 
-class _OrdersFeedBodyState extends State<OrdersFeedBody> {
+class _OrdersFeedBodyState extends ConsumerState<OrdersFeedBody> {
   String sortBy = 'budget_low_to_high';  // current sort option
   bool isGridView = false; //current grid view is false
+
+  @override
+  void initState() {
+    super.initState();
+    // fetch real orders from backend when page loads
+    Future.microtask(() =>
+      ref.read(customRequestProvider.notifier).fetchMarketplaceRequests()
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,9 +185,7 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
                   Text(
                     sortBy == 'budget_high_to_low'
                         ? 'Budget: highest to low'
-                        : sortBy == 'deadline'
-                            ? 'Deadline'
-                            : 'Budget: lowest to high',
+                        : 'Budget: lowest to high',   
                     style: const TextStyle(color: textColor, fontSize: 13),
                   ),
                 ]),
@@ -247,17 +209,46 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
 
         //orders list
         Expanded(
-          child: isGridView ? _buildGridView() : ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _getFilteredOrders().length,
-            itemBuilder: (context, index) => OrderCard(order: _getFilteredOrders()[index]),
+          child: Builder(
+            builder: (context) {
+              final state = ref.watch(customRequestProvider);
+
+              // show loading spinner
+              if (state.isLoading) {
+                return const Center(child: CircularProgressIndicator(color: kOrange));
+              }
+
+              // show error
+              if (state.error != null) {
+                return Center(child: Text('Error: ${state.error}', style: const TextStyle(color: Colors.red)));
+              }
+
+              // show empty state
+              if (state.marketplaceRequests.isEmpty) {
+                return const Center(child: Text('No requests found.', style: TextStyle(color: hintText)));
+              }
+
+              List<CustomRequest> orders = List.from(state.marketplaceRequests);
+
+              if (sortBy == 'budget_low_to_high') {
+                orders.sort((a, b) => a.budget.compareTo(b.budget));
+              } else if (sortBy == 'budget_high_to_low') {
+                orders.sort((a, b) => b.budget.compareTo(a.budget));
+              }
+
+              return isGridView ? _buildGridView(orders) : ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: orders.length,
+                itemBuilder: (context, index) => OrderCard(order: orders[index]),
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  Widget _buildGridView() {
+  Widget _buildGridView(List<CustomRequest> orders) {
   return GridView.builder(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -266,9 +257,9 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
       mainAxisSpacing: 12,
       childAspectRatio: 0.75,
     ),
-    itemCount: _getFilteredOrders().length,
+    itemCount: orders.length,
     itemBuilder: (context, index) {
-      final order = _getFilteredOrders()[index];
+      final order = orders[index];
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -278,9 +269,9 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(order.name,
+            Text('Custom Request',
                 style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-            Text(order.timeAgo,
+            Text(DateFormat('MMM d, y').format(order.createdAt),
                 style: const TextStyle(color: hintText, fontSize: 10)),
             const SizedBox(height: 8),
             Text(order.title,
@@ -293,10 +284,10 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
             const Spacer(),
-            Text('Budget: ${order.budget}',
+            Text('Budget: Rs. ${order.budget.toStringAsFixed(0)}',
                 style: const TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.w600)),
-            Text('Deadline: ${order.deadline}',
-                style: const TextStyle(color: textColor, fontSize: 11)),
+            Text('Status: ${order.status}',
+              style: const TextStyle(color: textColor, fontSize: 11)),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -323,7 +314,7 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
   );
   }
 
-  List<OrderRequest> _getFilteredOrders() {
+  /*List<OrderRequest> _getFilteredOrders() {
   List<OrderRequest> filtered = List.from(sampleOrders);
 
   if (sortBy == 'budget_low_to_high') {
@@ -335,7 +326,7 @@ class _OrdersFeedBodyState extends State<OrdersFeedBody> {
 }
 
   return filtered; 
-}
+}*/
 
 void _showFilterDialog() {
   showDialog(
@@ -371,18 +362,6 @@ void _showFilterDialog() {
                 },
               ),
             ),
-            ListTile(
-              title: const Text('Deadline', style: TextStyle(color: textColor)),
-              leading: Radio<String>(
-                value: 'deadline',
-                groupValue: sortBy,
-                activeColor: kOrange,
-                onChanged: (value) {
-                  setState(() => sortBy = value!);
-                  Navigator.pop(context);
-                },
-              ),
-            ),
           ],
         ),
         actions: [
@@ -399,7 +378,7 @@ void _showFilterDialog() {
 
 // ORDER CARD
 class OrderCard extends StatelessWidget {
-  final OrderRequest order;
+  final CustomRequest order;
   const OrderCard({super.key, required this.order});
 
   @override
@@ -434,10 +413,8 @@ class OrderCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(order.name,
-                      style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text(order.timeAgo,
-                      style: const TextStyle(color: hintText, fontSize: 11)),
+                  Text('Custom Request', style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(DateFormat('MMM d, y').format(order.createdAt), style: const TextStyle(color: hintText, fontSize: 11)),
                 ],
               ),
 
@@ -469,11 +446,10 @@ class OrderCard extends StatelessWidget {
           //budget and deadline
           Row(
             children: [
-              Text('Budget: ${order.budget}',
+              Text('Budget: Rs. ${order.budget.toStringAsFixed(0)}', 
                   style: const TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 13)),
               const SizedBox(width: 16),
-              Text('Deadline: ${order.deadline}',
-                  style: const TextStyle(color: textColor, fontSize: 13)),
+              Text('Status: ${order.status}', style: const TextStyle(color: textColor, fontSize: 13)),
             ],
           ),
           const SizedBox(height: 14),

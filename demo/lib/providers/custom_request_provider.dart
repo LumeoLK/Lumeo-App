@@ -5,6 +5,7 @@ import '../model/custom_request.dart';
 import '../model/bid.dart';
 import '../services/custom_request_service.dart';
 
+
 class CustomRequestState {
   final List<CustomRequest> myRequests;
   final List<CustomRequest> marketplaceRequests;
@@ -48,6 +49,20 @@ class CustomRequestNotifier extends StateNotifier<CustomRequestState> {
   Future<CustomRequestService> _getService() async {
     final token = await _getToken();
     return CustomRequestService(token: token);
+  }
+
+  // Fetch all open requests from marketplace
+  Future<void> fetchMarketplaceRequests() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = await _getService();
+      final requests = await service.getMarketplaceRequests();
+      print('[CustomRequestProvider] Fetched ${requests.length} marketplace requests');
+      state = state.copyWith(marketplaceRequests: requests, isLoading: false);
+    } catch (e) {
+      print('[CustomRequestProvider] Error: $e');
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
   }
 
   // Fetch requests created by the user

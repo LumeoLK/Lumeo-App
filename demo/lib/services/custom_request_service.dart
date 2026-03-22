@@ -12,7 +12,7 @@ class CustomRequestService {
   // Fetch all open custom requests (Bidding Marketplace)
   Future<List<CustomRequest>> getMarketplaceRequests() async {
     final response = await http.get(
-      Uri.parse('${Constants.requestsUri}/browse'),
+      Uri.parse('${Constants.requestsUri}/feed'),
       headers: {
         'Authorization': 'Bearer $token',
       },
