@@ -1,0 +1,10 @@
+torch
+torchvision
+torchaudio
+diffusers>=0.35.1
+transformers>=4.57.1
+accelerate>=1.11.0
+safetensors>=0.6.2
+fastapi>=0.129.0
+uvicorn
+python-multipart>=0.0.22

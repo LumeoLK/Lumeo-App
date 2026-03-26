@@ -28,5 +28,20 @@ dependencies = [
   "python-multipart>=0.0.22",
 ]
 
+[project.optional-dependencies]
+step1 = [
+  "torch",
+  "torchvision",
+  "torchaudio",
+  "diffusers>=0.35.1",
+  "transformers>=4.57.1",
+  "accelerate>=1.11.0",
+  "safetensors>=0.6.2",
+]
+step2 = [
+  "rembg[cpu]>=2.0.72",
+  "onnxruntime>=1.19.0",
+]
+
 [tool.uv.extra-build-dependencies]
 clip = ["setuptools<81"]
