@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/message.dart';
-import '../model/conversation.dart';
 import '../services/chat_service.dart';
 import '../services/socket_service.dart';
-
 
 // The details displayed in the UI
 class ChatState {
@@ -31,7 +30,7 @@ class ChatState {
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       isTyping: isTyping ?? this.isTyping,
-      error: error, // null clears the error, which is what we want
+      error: error, // clears the error
     );
   }
 }
@@ -70,7 +69,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         final newMsg = Message.fromJson(Map<String, dynamic>.from(data));
 
         // Check if we already have this message
-        // This prevents duplicates — our own sent messages come back
+        // This prevents duplicates of our own sent messages come back
         // through the socket too since we're in the same room
         final alreadyExists = state.messages.any((m) => m.id == newMsg.id);
         if (!alreadyExists) {
@@ -98,9 +97,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
   Future<void> sendMessage({
     required String conversationId,
     required String text,
-    required String currentUserId,
-    required String currentUserName,
   }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentUserId = prefs.getString('userId') ?? '';
     // Optimistic UI
     // Add a temporary message immediately so the UI feels instant
     // The user sees their message right away without waiting for the server
@@ -109,7 +108,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       conversationId: conversationId,
       text: text,
       senderId: currentUserId,
-      senderName: currentUserName,
+      senderName: "",
       createdAt: DateTime.now(),
     );
     state = state.copyWith(messages: [...state.messages, tempMessage]);
@@ -134,7 +133,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
         'conversationId': conversationId,
         '_id': savedMessage.id,
         'text': savedMessage.text,
-        'sender': {'_id': currentUserId, 'name': currentUserName},
         'conversation': conversationId,
         'createdAt': savedMessage.createdAt.toIso8601String(),
       });
