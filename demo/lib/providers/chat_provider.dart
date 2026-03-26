@@ -120,21 +120,30 @@ class ChatNotifier extends StateNotifier<ChatState> {
         conversationId: conversationId,
         text: text,
       );
+      final fixedMessage = Message(
+        id: savedMessage.id,
+        conversationId: savedMessage.conversationId,
+        text: savedMessage.text,
+        senderId: currentUserId, // ✅ ensures message stays on right side
+        senderName: savedMessage.senderName,
+        createdAt: savedMessage.createdAt,
+      );
 
       // Replace the temporary message with the real saved one
       // The real one has a proper MongoDB _id instead of our fake temp id
       final updatedMessages = state.messages
-          .map((m) => m.id == tempMessage.id ? savedMessage : m)
+          .map((m) => m.id == tempMessage.id ? fixedMessage : m)
           .toList();
       state = state.copyWith(messages: updatedMessages);
 
       // Broadcast via socket so the other person sees it instantly
       _socketService.sendMessage({
         'conversationId': conversationId,
-        '_id': savedMessage.id,
-        'text': savedMessage.text,
+        '_id': fixedMessage.id,
+        'text': fixedMessage.text,
         'conversation': conversationId,
-        'createdAt': savedMessage.createdAt.toIso8601String(),
+        'senderId': currentUserId,
+        'createdAt': fixedMessage.createdAt.toIso8601String(),
       });
     } catch (e) {
       // If saving failed, remove the optimistic message

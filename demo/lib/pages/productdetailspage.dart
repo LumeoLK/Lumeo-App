@@ -105,7 +105,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ARScreen(modelUrl: product.modelUrl),
+                          builder: (context) =>
+                              ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
                       // ScaffoldMessenger.of(context).showSnackBar(
@@ -319,9 +320,18 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                     "Ask For Customizations",
                     onTap: () async {
                       if (!await requireAuth(context, ref)) return;
-
+                      if (!context.mounted) return;
                       final currentUser = ref.read(currentUserProvider);
-                      if (currentUser == null) return;
+                      if (currentUser == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "User session not found. Please log in again.",
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                       showDialog(
                         context: context,
@@ -337,6 +347,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                               sellerId: product.sellerId,
                               productId: product.id,
                             );
+                          
                         if (context.mounted) {
                           Navigator.pop(context);
                           Navigator.push(

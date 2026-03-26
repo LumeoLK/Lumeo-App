@@ -85,13 +85,13 @@ class AuthNotifier extends Notifier<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('x-auth-token', '');
     await prefs.setString('userId', '');
-    SocketService().disconnect(); 
+    SocketService().disconnect();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   Future<void> _saveSession(Map<String, dynamic> body) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = body['token'] ?? '';   
+    final token = body['token'] ?? '';
     final userId = body['_id'] ?? body['user']?['_id'] ?? '';
     await prefs.setString('x-auth-token', token);
     await prefs.setString('userId', userId);
@@ -139,6 +139,8 @@ final authProvider = NotifierProvider<AuthNotifier, AuthState>(
 );
 
 // Convenience provider — use this anywhere you need the current user
-final currentUserProvider = Provider<User?>(
-  (ref) => ref.watch(authProvider).user,
-);
+final currentUserProvider = Provider<User?>((ref) {
+  // We watch the authProvider defined above
+  final authState = ref.watch(authProvider);
+  return authState.user;
+});

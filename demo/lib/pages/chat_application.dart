@@ -4,15 +4,19 @@ import '../model/conversation.dart';
 import '../providers/chat_provider.dart';
 
 class ChatApplication extends ConsumerStatefulWidget {
-  final Conversation conversation; // the chat room we're in
-  final String currentUserId; // logged in user's id
-  final String currentUserName; // logged in user's name
+  final Conversation conversation;
+  final String currentUserId;
+  final String currentUserName;
+  final String currentUserAvatar;
+  final String otherUserAvatar;
 
   const ChatApplication({
     super.key,
     required this.conversation,
     required this.currentUserId,
     required this.currentUserName,
+    this.currentUserAvatar = '',
+    this.otherUserAvatar = '',
   });
 
   @override
@@ -25,11 +29,11 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late ChatNotifier _chatNotifier;
+
   @override
   void initState() {
     super.initState();
     _chatNotifier = ref.read(chatProvider.notifier);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _chatNotifier.loadMessages(widget.conversation.id);
     });
@@ -38,16 +42,11 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
   @override
   void dispose() {
     _chatNotifier.leaveChat();
-    // Clean up when user leaves the chat screen
-    // This removes socket listeners so we don't get duplicate messages
-
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  // Scrolls to the bottom of the message list
-  // Called every time a new message arrives
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -62,27 +61,19 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
 
   void _sendMessage() {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return; // don't send empty messages
-
+    if (text.isEmpty) return;
     _messageController.clear();
-
     _chatNotifier.sendMessage(
       conversationId: widget.conversation.id,
       text: text,
-      currentUserId: widget.currentUserId,
-      currentUserName: widget.currentUserName,
     );
-
     _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch the provider — UI rebuilds whenever state changes
-    // e.g. new message arrives, loading state changes, error occurs
     final chatState = ref.watch(chatProvider);
 
-    // Auto scroll when new messages arrive
     if (chatState.messages.isNotEmpty) {
       _scrollToBottom();
     }
@@ -93,17 +84,16 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () async {
-            await Navigator.maybePop(context);
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () async => await Navigator.maybePop(context),
         ),
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: accentColor.withOpacity(0.2),
-              child: Icon(Icons.store, color: accentColor, size: 20),
+            _buildAvatar(
+              imageUrl: widget.otherUserAvatar,
+              fallbackInitial: widget.conversation.shopName.isNotEmpty
+                  ? widget.conversation.shopName[0].toUpperCase()
+                  : '?',
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -111,11 +101,8 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Shop Name (Primary)
                   Text(
-                    widget
-                        .conversation
-                        .shopName, // Ensure this exists in your model!
+                    widget.conversation.shopName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -123,13 +110,11 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  // Product Name (Secondary)
                   Text(
                     widget.conversation.productName,
                     style: const TextStyle(color: Colors.white60, fontSize: 12),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  // Show typing indicator under the name
                   if (chatState.isTyping)
                     const Text(
                       'typing...',
@@ -143,7 +128,6 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
       ),
       body: Column(
         children: [
-          // Error banner — shows if something went wrong
           if (chatState.error != null)
             Container(
               width: double.infinity,
@@ -155,11 +139,8 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                 textAlign: TextAlign.center,
               ),
             ),
-
-          // Message list
           Expanded(
             child: chatState.isLoading
-                // Show spinner while loading history
                 ? const Center(child: CircularProgressIndicator())
                 : Container(
                     margin: const EdgeInsets.symmetric(
@@ -171,7 +152,6 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: chatState.messages.isEmpty
-                        // Show empty state if no messages yet
                         ? const Center(
                             child: Text(
                               'No messages yet.\nSay hello!',
@@ -186,25 +166,25 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                             itemBuilder: (context, index) {
                               final message = chatState.messages[index];
 
-                              // Compare senderId to know which side to show
-                              // your messages on the right, theirs on the left
+                              // Use String comparison to avoid ID type mismatches
                               final isMe =
-                                  message.senderId == widget.currentUserId;
+                                  message.senderId.toString() ==
+                                  widget.currentUserId.toString();
 
                               return _buildMessage(
-                                // First letter of sender's name for avatar
-                                message.senderName.isNotEmpty
+                                text: message.text,
+                                isMe: isMe,
+                                imageUrl: isMe
+                                    ? widget.currentUserAvatar
+                                    : widget.otherUserAvatar,
+                                fallbackInitial: message.senderName.isNotEmpty
                                     ? message.senderName[0].toUpperCase()
                                     : '?',
-                                message.text,
-                                isMe: isMe,
                               );
                             },
                           ),
                   ),
           ),
-
-          // Input area
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
@@ -229,7 +209,6 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
                           ),
                           border: InputBorder.none,
                         ),
-                        // Allow sending with keyboard done button
                         onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
@@ -248,45 +227,77 @@ class _ChatApplicationState extends ConsumerState<ChatApplication> {
     );
   }
 
-  Widget _buildMessage(String initial, String text, {required bool isMe}) {
-    return Padding(
+  Widget _buildMessage({
+    required String text,
+    required bool isMe,
+    required String imageUrl,
+    required String fallbackInitial,
+  }) {
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: isMe
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMe) _buildAvatar(initial),
-          const SizedBox(width: 10),
+          if (!isMe) ...[
+            _buildAvatar(imageUrl: imageUrl, fallbackInitial: fallbackInitial),
+            const SizedBox(width: 8),
+          ],
           Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: isMe ? Colors.black87 : Colors.black54,
-                fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
-                fontSize: 15,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isMe
+                    ? accentColor.withOpacity(0.85)
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(isMe ? 16 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 16),
+                ),
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isMe ? Colors.black87 : Colors.black54,
+                  fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
+                  fontSize: 15,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          if (isMe) _buildAvatar(initial),
+          if (isMe) ...[
+            const SizedBox(width: 8),
+            _buildAvatar(imageUrl: imageUrl, fallbackInitial: fallbackInitial),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildAvatar(String initial) {
+  Widget _buildAvatar({
+    required String imageUrl,
+    required String fallbackInitial,
+  }) {
     return CircleAvatar(
       radius: 18,
       backgroundColor: accentColor,
-      child: Text(
-        initial,
-        style: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+      onBackgroundImageError: imageUrl.isNotEmpty ? (_, __) {} : null,
+      child: imageUrl.isEmpty
+          ? Text(
+              fallbackInitial,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            )
+          : null,
     );
   }
 }
