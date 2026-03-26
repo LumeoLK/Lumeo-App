@@ -1,12 +1,22 @@
 export const setupSocket = (io) => {
+  // Verify JWT before allowing any connection
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication required"));
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.data.userId = decoded.id;
+      next();
+    } catch {
+      next(new Error("Invalid token"));
+    }
+  });
+
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
     //User joins their personal room (to receive messages)
-    socket.on("join", (userId) => {
-      socket.join(userId);
-      console.log(`User ${userId} joined their room`);
-    });
+    socket.join(socket.data.userId);
 
     //User opens a specific conversation
     socket.on("joinConversation", (conversationId) => {
@@ -16,8 +26,15 @@ export const setupSocket = (io) => {
 
     //Someone sends a message
     socket.on("sendMessage", (message) => {
+      const trustedMessage = {
+        ...message,
+        sender: {
+          _id: socket.data.userId,
+          name: message.sender?.name ?? "",
+        },
+      };
       // Emit to everyone in that conversation room (including sender)
-      io.to(message.conversationId).emit("newMessage", message);
+      io.to(message.conversationId).emit("newMessage", trustedMessage);
     });
 
     //Typing indicator
