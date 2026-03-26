@@ -71,8 +71,10 @@ android {
             outputs.file getIl2CppSymbolPath(workingDir, abi)
         }
         doLast {
-            // skipIl2CppBuild used for testing purposes
-            if (project.hasProperty("skipIl2CppBuild")) {
+            def localProps = new Properties()
+localProps.load(new FileInputStream("${rootDir}/local.properties"))
+
+if (project.hasProperty("skipIl2CppBuild") || localProps.getProperty("skipUnity") == "true") {
                 println("Skipping il2cpp build, creating dummy files.")
                 archs.each { arch, abi ->
                     {
