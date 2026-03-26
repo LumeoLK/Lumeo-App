@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cart_provider.dart';
+import '../providers/auth_provider.dart';
 import '../model/cart_item.dart';
 import 'package:lumeo_v2/widgets/search_bar.dart';
 import 'add_shipping_address.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/login_required_dialog.dart';
 
 class CartPage extends ConsumerStatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -14,6 +17,7 @@ class CartPage extends ConsumerStatefulWidget {
 
 class _CartPageState extends ConsumerState<CartPage> {
   String _searchQuery = '';
+  bool _isLoggedIn = false;
 
   List<CartItem> _filterCartItems(List<CartItem> items) {
     final query = _searchQuery.trim().toLowerCase();
@@ -28,12 +32,64 @@ class _CartPageState extends ConsumerState<CartPage> {
   @override
   void initState() {
     super.initState();
-    // Fetch cart when page loads
-    Future.microtask(() => ref.read(cartProvider.notifier).fetchCart());
+    Future.microtask(() async {
+      await _checkLoginStatus();
+      if (_isLoggedIn) {
+        ref.read(cartProvider.notifier).fetchCart();
+      }
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+
+    if (mounted) setState(() => _isLoggedIn = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1a1a1a),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.shopping_cart_outlined, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to access your Cart',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => LoginRequiredDialog.show(context),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final cartState = ref.watch(cartProvider);
     final filteredItems = _filterCartItems(cartState.items);
 

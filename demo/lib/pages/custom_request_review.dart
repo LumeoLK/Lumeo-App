@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/custom_request_provider.dart';
+import '../providers/auth_provider.dart';
 import '../model/custom_request.dart';
 import 'proposal_review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/login_required_dialog.dart';
 
 class CustomRequestReviewPage extends ConsumerStatefulWidget {
   const CustomRequestReviewPage({super.key});
@@ -14,17 +17,69 @@ class CustomRequestReviewPage extends ConsumerStatefulWidget {
 
 class _CustomRequestReviewPageState extends ConsumerState<CustomRequestReviewPage> {
   bool isProcessing = true;
+  bool _isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(customRequestProvider.notifier).fetchMyRequests();
+    Future.microtask(() async {
+      await _checkLoginStatus();
+      if (_isLoggedIn) {
+        ref.read(customRequestProvider.notifier).fetchMyRequests();
+      }
     });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+
+    if (mounted) setState(() => _isLoggedIn = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F0F14),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Custom Requests',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => LoginRequiredDialog.show(context),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final state = ref.watch(customRequestProvider);
 
     return Scaffold(
@@ -182,4 +237,4 @@ class _CustomRequestReviewPageState extends ConsumerState<CustomRequestReviewPag
       ),
     );
   }
-}
+}

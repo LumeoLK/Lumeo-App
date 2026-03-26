@@ -212,7 +212,15 @@ class _LoginState extends ConsumerState<Login> {
                     ),
                     const SizedBox(height: 45),
                     TextButton(
-                      onPressed: () => Get.to(() => HomePage()),
+                      onPressed: () async {
+                        await ref.read(authProvider.notifier).signout();
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomePage()),
+                          (_) => false,
+                        );
+                      },
                       child: const Text(
                         "Skip >>",
                         style: TextStyle(fontSize: 16, color: Colors.white),
