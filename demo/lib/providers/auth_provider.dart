@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -41,7 +40,6 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final body = await _service.login(email: email, password: password);
       await _saveSession(body);
-      print("hi");
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: User.fromJson(body['user'] ?? body),
@@ -87,15 +85,17 @@ class AuthNotifier extends Notifier<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('x-auth-token', '');
     await prefs.setString('userId', '');
+    SocketService().disconnect(); 
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   Future<void> _saveSession(Map<String, dynamic> body) async {
     final prefs = await SharedPreferences.getInstance();
+    final token = body['token'] ?? '';   
     final userId = body['_id'] ?? body['user']?['_id'] ?? '';
-    await prefs.setString('x-auth-token', body['token'] ?? '');
+    await prefs.setString('x-auth-token', token);
     await prefs.setString('userId', userId);
-    SocketService().connect(userId);
+    SocketService().connect(token);
   }
 
   Future<void> resetPassword(String email) async {
