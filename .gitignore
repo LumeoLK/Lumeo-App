@@ -6,9 +6,6 @@ images/
 furniture_dataset_folder/
 *.csv
 .venv/
-venv312/
-ml/venv312/
-ml/.step1-cache/
 
 # Miscellaneous
 *.class
