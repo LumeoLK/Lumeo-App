@@ -11,49 +11,47 @@ class SocketService {
   late IO.Socket socket;
 
   // Called once after login — opens the persistent connection to your server
-  void connect(String userId) {
+  void connect(String token) {
     socket = IO.io(
-      Constants.baseUrl, 
+      Constants.baseUrl,
       IO.OptionBuilder()
-          .setTransports(['websocket']) // use websocket not long-polling
+          .setTransports(['websocket']) // use websocket
           .disableAutoConnect() // we control when to connect manually
+          .setAuth({'token': token}) //  server verifies this token
           .build(),
     );
 
     socket.connect(); // open the connection
-
+    
     socket.onConnect((_) {
       print('Socket connected');
-      socket.emit('join', userId); // tell server which user room we belong to
+      // No "join" emit needed — server joins personal room from JWT automatically
     });
 
     socket.onDisconnect((_) => print('Socket disconnected'));
   }
 
   // Called when user opens a specific chat screen
-  // This tells the server "I'm in this conversation room now"
   void joinConversation(String conversationId) {
     socket.emit('joinConversation', conversationId);
   }
 
-  // Called when user taps send — broadcasts message to everyone in the room
+  // Called when user taps send broadcasts message to everyone in the room
   void sendMessage(Map<String, dynamic> message) {
     socket.emit('sendMessage', message);
   }
 
   // Listen for incoming messages from the other person
-  // The handler is a function that runs every time a new message arrives
   void onNewMessage(Function(dynamic) handler) {
     socket.on('newMessage', handler);
   }
 
-  // Remove the listener — important when leaving the chat screen
-  // Without this, old listeners stack up and you get duplicate messages
+  // Remove the listener when leaving the chat screen
   void offNewMessage() => socket.off('newMessage');
 
   // Typing indicators
-  void emitTyping(String conversationId, String userId) {
-    socket.emit('typing', {'conversationId': conversationId, 'userId': userId});
+  void emitTyping(String conversationId) {
+    socket.emit('typing', {'conversationId': conversationId});
   }
 
   void stopTyping(String conversationId) {
