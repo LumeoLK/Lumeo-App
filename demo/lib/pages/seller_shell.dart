@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../pages/seller_dashboard.dart';
 import '../pages/seller_listings.dart';
 import '../widgets/seller_bottom_navigation_bar.dart';
 import 'blueprint_3d.dart';
-import 'chat_application.dart';
 import 'seller_inbox.dart';
 
 /// The root shell for the seller experience.

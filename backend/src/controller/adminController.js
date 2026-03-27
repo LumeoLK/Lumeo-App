@@ -1,3 +1,4 @@
+import bcryptjs from "bcryptjs";
 import User from "../models/User.js";
 import Seller from "../models/seller.js";
 import Product from "../models/Product.js";
@@ -313,5 +314,54 @@ export const getRevenueChartData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching chart data:", error);
     res.status(500).json({ message: "Server error fetching chart data." });
+  }
+};
+
+// @desc    Get system settings
+// @route   GET /api/admin/settings
+export const getSettings = async (req, res) => {
+  try {
+    // TODO: Implement settings model/database query
+    // For now, return default settings
+    const settings = {
+      id: "default",
+      siteName: "Lumeo",
+      maintenanceMode: false,
+      maxUploadSize: 10, // MB
+      enableUserRegistration: true,
+      enableSellerRegistration: true,
+      commissionRate: 0.1, // 10%
+      currency: "USD"
+    };
+    res.status(200).json(settings);
+  } catch (error) {
+    console.error("Error fetching settings:", error);
+    res.status(500).json({ message: "Server error fetching settings." });
+  }
+};
+
+// @desc    Update system settings
+// @route   PUT /api/admin/settings
+export const updateSettings = async (req, res) => {
+  try {
+    const { siteName, maintenanceMode, maxUploadSize, enableUserRegistration, enableSellerRegistration, commissionRate, currency } = req.body;
+    
+    // TODO: Implement settings model/database update
+    // For now, return updated settings
+    const updatedSettings = {
+      id: "default",
+      siteName: siteName || "Lumeo",
+      maintenanceMode: maintenanceMode || false,
+      maxUploadSize: maxUploadSize || 10,
+      enableUserRegistration: enableUserRegistration !== undefined ? enableUserRegistration : true,
+      enableSellerRegistration: enableSellerRegistration !== undefined ? enableSellerRegistration : true,
+      commissionRate: commissionRate || 0.1,
+      currency: currency || "USD"
+    };
+    
+    res.status(200).json({ message: "Settings updated successfully", settings: updatedSettings });
+  } catch (error) {
+    console.error("Error updating settings:", error);
+    res.status(500).json({ message: "Server error updating settings." });
   }
 };

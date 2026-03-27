@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'seller-registration_info.dart';
 class SellerOnboardingPage3 extends StatefulWidget {
-  const SellerOnboardingPage3({Key? key}) : super(key: key);
+  const SellerOnboardingPage3({super.key});
 
   @override
   State<SellerOnboardingPage3> createState() => _SellerOnboardingPageState();

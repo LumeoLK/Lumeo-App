@@ -2,7 +2,6 @@ import 'dart:io'; // Needed for the File class
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Needed for picking images
 import 'package:http/http.dart' as http;
-import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../Constants.dart';

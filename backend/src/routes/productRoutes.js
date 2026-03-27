@@ -7,9 +7,9 @@ import {
   getProductById,
   searchProducts,
   retry3dgeneration,
-  
   getProductsForML,
-  deleteProduct
+  deleteProduct,
+  getProductsBySeller,
 } from "../controller/productController.js";
 
 const router = express.Router();
@@ -27,5 +27,6 @@ router.get("/search", searchProducts);
 router.post("/retry3d", retry3dgeneration);
 router.get("/mlproducts", getProductsForML);
 router.post("/delete", verifyToken, verifySeller, deleteProduct);
+router.get("/seller/me", verifyToken, verifySeller, getProductsBySeller);
 router.get("/:id", getProductById);
 export default router;

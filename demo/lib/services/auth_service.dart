@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,15 +15,25 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final res = await http.post(
-      Uri.parse('${Constants.authUri}/login'),
-      body: jsonEncode({'email': email, 'password': password}),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-    );
-    if (res.statusCode != 200) {
-      throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
+    try {
+      final res = await http.post(
+        Uri.parse('${Constants.authUri}/login'),
+        body: jsonEncode({'email': email, 'password': password}),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      ).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () => throw Exception('Server error. Please try again later.'),
+      );
+      
+      if (res.statusCode != 200) {
+        throw Exception(jsonDecode(res.body)['msg'] ?? res.body);
+      }
+      return jsonDecode(res.body);
+    } on TimeoutException {
+      throw Exception('Server error. Please try again later.');
+    } catch (e) {
+      rethrow;
     }
-    return jsonDecode(res.body);
   }
 
   Future<Map<String, dynamic>> signUpUser({

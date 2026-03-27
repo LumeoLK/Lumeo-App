@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Constants.dart';
+import '../model/create_product_request.dart';
+
 // ── Typed exception ───────────────────────────────────────
 class ListingException implements Exception {
   const ListingException(this.message);
@@ -12,38 +13,9 @@ class ListingException implements Exception {
   String toString() => message;
 }
 
-// ── Request model ─────────────────────────────────────────
-/// Everything the form collects, passed as one clean object
-/// to [ListingService.createProduct].
-class CreateProductRequest {
-  const CreateProductRequest({
-    required this.title,
-    required this.description,
-    required this.price,
-    required this.category,
-    required this.stock,
-    required this.length,
-    required this.width,
-    required this.height,
-    required this.images, // only non-null files
-  });
-
-  final String title;
-  final String description;
-  final double price;
-  final String category;
-  final int stock;
-  final double length;
-  final double width;
-  final double height;
-  final List<File> images;
-}
-
 // ── Service ───────────────────────────────────────────────
 class ListingService {
   const ListingService();
-
-  
 
   /// Creates a product by sending a multipart POST request.
   ///
@@ -63,11 +35,17 @@ class ListingService {
     }
 
     // 2. Build multipart request
+    // Backend endpoint might be /api/products/add or /api/products/create
+    // Judging by OrderService, it might be /create
     final uri = Uri.parse('${Constants.productsUri}/create');
     final multipartRequest = http.MultipartRequest('POST', uri);
 
-    // 3. Attach auth header
-    multipartRequest.headers['x-auth-token'] = token;
+    // 3. Attach auth headers
+    // The app mostly uses 'Authorization: Bearer $token'
+    multipartRequest.headers.addAll({
+      'Authorization': 'Bearer $token',
+      'x-auth-token': token, // keeping this for fallback
+    });
 
     // 4. Attach text fields
     multipartRequest.fields.addAll({
@@ -76,6 +54,7 @@ class ListingService {
       'price': request.price.toString(),
       'category': request.category,
       'stock': request.stock.toString(),
+      // Send dimensions as separate fields as the backend might expect them flat
       'length': request.length.toString(),
       'width': request.width.toString(),
       'height': request.height.toString(),
@@ -83,43 +62,42 @@ class ListingService {
 
     // 5. Attach image files
     for (int i = 0; i < request.images.length; i++) {
-      final file = request.images[i];
-      final stream = http.ByteStream(file.openRead());
-      final length = await file.length();
-      final filename = 'image_$i${_extension(file.path)}';
-
       multipartRequest.files.add(
-        http.MultipartFile(
-          'images', // must match multer field name on backend
-          stream,
-          length,
-          filename: filename,
+        await http.MultipartFile.fromPath(
+          'images', // Key 'images' (common for array uploads)
+          request.images[i].path,
         ),
       );
     }
 
     // 6. Send
-    final streamedResponse = await multipartRequest.send().timeout(
-      const Duration(seconds: 60), // images can be large
-      onTimeout: () => throw const ListingException(
-        'Request timed out. Check your connection and try again.',
-      ),
-    );
+    try {
+      final streamedResponse = await multipartRequest.send().timeout(
+        const Duration(seconds: 60),
+        onTimeout: () => throw const ListingException(
+          'Request timed out. Check your connection and try again.',
+        ),
+      );
 
-    final response = await http.Response.fromStream(streamedResponse);
+      final response = await http.Response.fromStream(streamedResponse);
 
-    // 7. Parse response
-    final body = _parseBody(response.body);
+      // 7. Parse response
+      final body = _parseBody(response.body);
 
-    if (response.statusCode == 201) {
-      return body;
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return body;
+      }
+
+      // Surface backend error message if available
+      final msg =
+          body['msg']?.toString() ??
+          body['message']?.toString() ??
+          'Failed to create product (${response.statusCode})';
+      throw ListingException(msg);
+    } catch (e) {
+      if (e is ListingException) rethrow;
+      throw ListingException('Error occurred: $e');
     }
-
-    // Surface backend error message if available
-    final msg =
-        body['msg']?.toString() ??
-        'Failed to create product (${response.statusCode})';
-    throw ListingException(msg);
   }
 
   // ── Helpers ───────────────────────────────────────────
@@ -133,11 +111,5 @@ class ListingService {
     } catch (_) {
       return const {};
     }
-  }
-
-  /// Extracts file extension from path, defaults to .jpg.
-  String _extension(String path) {
-    final dot = path.lastIndexOf('.');
-    return dot != -1 ? path.substring(dot) : '.jpg';
   }
 }
