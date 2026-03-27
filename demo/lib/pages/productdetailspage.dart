@@ -8,7 +8,7 @@ import '../model/product.dart';
 import '../utils/auth_guard.dart';
 import '../pages/cart_page.dart';
 import '../providers/wishlist_provider.dart';
-
+import '../providers/product_provider.dart';
 import '../pages/ar_screen.dart';
 
 class ProductDetailsPage extends ConsumerStatefulWidget {
@@ -35,7 +35,11 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
     final cartState = ref.watch(cartProvider);
     final wishlistState = ref.watch(wishlistProvider);
     final isFavorite = wishlistState.items.any((item) => item.id == product.id);
-
+    final productState = ref.watch(productProvider);
+    final similarProducts = productState.similarProducts(
+      product.category,
+      product.id,
+    );
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -105,7 +109,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ARScreen(modelUrl: product.modelUrl),
+                          builder: (context) =>
+                              ARScreen(modelUrl: product.modelUrl),
                         ),
                       );
                       // ScaffoldMessenger.of(context).showSnackBar(
@@ -319,9 +324,18 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                     "Ask For Customizations",
                     onTap: () async {
                       if (!await requireAuth(context, ref)) return;
-
+                      if (!context.mounted) return;
                       final currentUser = ref.read(currentUserProvider);
-                      if (currentUser == null) return;
+                      if (currentUser == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "User session not found. Please log in again.",
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                       showDialog(
                         context: context,
@@ -337,6 +351,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                               sellerId: product.sellerId,
                               productId: product.id,
                             );
+
                         if (context.mounted) {
                           Navigator.pop(context);
                           Navigator.push(
@@ -377,11 +392,30 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
 
                   SizedBox(
                     height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 3,
-                      itemBuilder: (context, index) => _buildRelatedItem(),
-                    ),
+                    child: similarProducts.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No similar products found',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: similarProducts.length,
+                            itemBuilder: (context, index) {
+                              final p = similarProducts[index];
+                              return GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ProductDetailsPage(product: p),
+                                  ),
+                                ),
+                                child: _buildRelatedItem(p),
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -418,7 +452,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
     );
   }
 
-  Widget _buildRelatedItem() {
+  Widget _buildRelatedItem(Product p) {
     return Container(
       width: 150,
       margin: const EdgeInsets.only(right: 15),
@@ -430,27 +464,40 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
-                ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
               ),
+              child: p.images.isNotEmpty
+                  ? Image.network(
+                      p.images[0],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey[700],
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.white24,
+                        ),
+                      ),
+                    )
+                  : Container(color: Colors.grey[700]),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Dining Chair",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  p.name,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  "\$12",
-                  style: TextStyle(
+                  '\$${p.price.toStringAsFixed(2)}',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),

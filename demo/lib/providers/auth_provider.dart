@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/user.dart';
 import '../services/auth_service.dart';
 import '../services/socket_service.dart';
+import "../secrets.dart";
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
@@ -41,7 +41,6 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final body = await _service.login(email: email, password: password);
       await _saveSession(body);
-      print("hi");
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: User.fromJson(body['user'] ?? body),
@@ -79,6 +78,7 @@ class AuthNotifier extends Notifier<AuthState> {
         user: User.fromJson(body['user'] ?? body),
       );
     } catch (e) {
+      print('GOOGLE SIGN IN ERROR: $e'); // ← add this
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
     }
   }
@@ -86,16 +86,20 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> signout() async {
     await _service.signout();
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('x-auth-token', '');
+    await prefs.setString('userId', '');
+    SocketService().disconnect();
     await prefs.setBool('seller_is_verified', false);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   Future<void> _saveSession(Map<String, dynamic> body) async {
     final prefs = await SharedPreferences.getInstance();
+    final token = body['token'] ?? '';
     final userId = body['_id'] ?? body['user']?['_id'] ?? '';
-    await prefs.setString('x-auth-token', body['token'] ?? '');
+    await prefs.setString('x-auth-token', token);
     await prefs.setString('userId', userId);
-    SocketService().connect(userId);
+    SocketService().connect(token);
   }
 
   Future<void> resetPassword(String email) async {
@@ -131,7 +135,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
 // Providers
 final authServiceProvider = Provider(
-  (ref) => AuthService(googleSignIn: GoogleSignIn()),
+  (ref) => AuthService(
+    googleSignIn: GoogleSignIn(serverClientId: Secrets.googleWebClientId),
+  ),
 );
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -139,6 +145,8 @@ final authProvider = NotifierProvider<AuthNotifier, AuthState>(
 );
 
 // Convenience provider — use this anywhere you need the current user
-final currentUserProvider = Provider<User?>(
-  (ref) => ref.watch(authProvider).user,
-);
+final currentUserProvider = Provider<User?>((ref) {
+  // We watch the authProvider defined above
+  final authState = ref.watch(authProvider);
+  return authState.user;
+});
