@@ -84,9 +84,9 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> signout() async {
+    await _service.signout();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('x-auth-token', '');
-    await prefs.setString('userId', '');
+    await prefs.setBool('seller_is_verified', false);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 

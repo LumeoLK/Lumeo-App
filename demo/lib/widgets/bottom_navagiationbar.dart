@@ -16,67 +16,69 @@ class BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
-      ),
-      child: Row(
-        children: List.generate(_items.length, (index) {
-          final item = _items[index];
-          final isActive = index == currentIndex;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 68,
+        decoration: const BoxDecoration(
+          color: Color(0xFF111111),
+          border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
+        ),
+        child: Row(
+          children: List.generate(_items.length, (index) {
+            final item = _items[index];
+            final isActive = index == currentIndex;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onTap(index),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  if (isActive)
-                    Container(
-                      height: 3.5,
-                      width: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFBB040),
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(3),
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onTap(index),
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    if (isActive)
+                      Container(
+                        height: 3.5,
+                        width: 22,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFBB040),
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(3),
+                          ),
                         ),
                       ),
-                    ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        item.iconPath,
-                        width: 80,
-                        height: 30,
-                        color: isActive
-                            ? const Color(0xFFFBB040)
-                            : const Color(0xFF555555),
-                      ),
-                      // const SizedBox(height: 0),
-                      Text(
-                        item.label,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          item.iconPath,
+                          width: 80,
+                          height: 30,
                           color: isActive
                               ? const Color(0xFFFBB040)
                               : const Color(0xFF555555),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          item.label,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isActive
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            color: isActive
+                                ? const Color(0xFFFBB040)
+                                : const Color(0xFF555555),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

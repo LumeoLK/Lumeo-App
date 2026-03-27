@@ -69,10 +69,12 @@ class _ForgotpasswordState extends ConsumerState<Forgotpassword> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Email cannot be empty";
-                        if (!value.trim().endsWith("@gmail.com"))
+                        }
+                        if (!value.trim().endsWith("@gmail.com")) {
                           return "Please use a Gmail address (you@gmail.com)";
+                        }
                         return null;
                       },
                     ),

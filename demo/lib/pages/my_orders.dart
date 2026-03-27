@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/order_provider.dart';
+import '../providers/auth_provider.dart';
 import '../model/order.dart' as order_model;
+import '../widgets/login_required_dialog.dart';
 
 class MyOrders extends ConsumerStatefulWidget {
   const MyOrders({super.key});
@@ -19,11 +22,32 @@ final TextStyle myOrderNormalStyle = const TextStyle(
 
 class MyOrdersState extends ConsumerState<MyOrders> {
   String selectedBtn = "Processing";
+  bool _isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(orderProvider.notifier).fetchMyOrders());
+    Future.microtask(() async {
+      await _checkLoginStatus();
+      if (_isLoggedIn) {
+        ref.read(orderProvider.notifier).fetchMyOrders();
+      }
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    if (mounted) setState(() => _isLoggedIn = false);
   }
 
   List<order_model.Order> _getOrdersForTab(OrderState orderState) {
@@ -43,6 +67,37 @@ class MyOrdersState extends ConsumerState<MyOrders> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to view your Orders',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => LoginRequiredDialog.show(context),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final orderState = ref.watch(orderProvider);
 
     return Scaffold(

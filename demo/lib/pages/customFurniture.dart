@@ -4,7 +4,10 @@ import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 import 'dart:convert';
+import 'dart:io';
 
 import '../Constants.dart';
 import '../providers/custom_request_provider.dart';
@@ -21,12 +24,39 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _budgetController = TextEditingController();
-  bool _isSubmitting = false;
-  String _searchQuery = '';
+  final bool _isSubmitting = false;
+  final String _searchQuery = '';
+  final ImagePicker _picker = ImagePicker();
+  File? _image1;
+  File? _image2;
+  bool _isLoggedIn = false;
 
   bool _matchesSearch(String input) {
     if (_searchQuery.isEmpty) return true;
     return input.toLowerCase().contains(_searchQuery.toLowerCase());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      await _checkLoginStatus();
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.id.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('x-auth-token') ?? '';
+    if (token.isNotEmpty) {
+      if (mounted) setState(() => _isLoggedIn = true);
+      return;
+    }
+    if (mounted) setState(() => _isLoggedIn = false);
   }
 
   @override
@@ -35,6 +65,31 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
     _descriptionController.dispose();
     _budgetController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(int imageIndex) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          if (imageIndex == 1) {
+            _image1 = File(pickedFile.path);
+          } else if (imageIndex == 2) {
+            _image2 = File(pickedFile.path);
+          }
+        });
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _submitCustomOrder() async {
@@ -77,6 +132,38 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long, color: Colors.grey, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Login to request Custom Orders',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFBB040),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => LoginRequiredDialog.show(context),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+
     final user = ref.watch(currentUserProvider);
     final hasProfileImage = user != null && user.profilePicture.isNotEmpty;
     final displayName =
@@ -89,7 +176,7 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
     const Color cardColor = Color(0xFF2C2C2C);
     const Color primaryText = Colors.white;
     const Color secondaryText = Colors.white70;
-    const Color accentColor = Color(0xFF1a1a1a); // Orange/Gold
+    const Color accentColor = Color(0xFFFBB040); // Orange/Gold
 
     return Scaffold(
       appBar: AppBar(
@@ -123,7 +210,7 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
                     CircleAvatar(
                       radius: 25,
                       backgroundImage:
-                          hasProfileImage ? NetworkImage(user!.profilePicture) : null,
+                          hasProfileImage ? NetworkImage(user.profilePicture) : null,
                       child: !hasProfileImage
                           ? const Icon(Icons.person, color: Colors.white70)
                           : null,
@@ -282,9 +369,9 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
                 const SizedBox(height: 15),
                 Row(
                   children: [
-                    _buildUploadBox(cardColor),
+                    _buildUploadBox(cardColor, 1),
                     const SizedBox(width: 15),
-                    _buildUploadBox(cardColor),
+                    _buildUploadBox(cardColor, 2),
                   ],
                 ),
 
@@ -381,19 +468,33 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
   }
 
   // Helper widget for the square upload buttons
-  Widget _buildUploadBox(Color color) {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: IconButton(
-        icon: const Icon(Icons.add, color: Colors.white70, size: 30),
-        onPressed: () {
-          // Handle image upload
-        },
+  Widget _buildUploadBox(Color color, int imageIndex) {
+    File? imageFile = imageIndex == 1 ? _image1 : _image2;
+    bool hasImage = imageFile != null;
+
+    return GestureDetector(
+      onTap: () => _pickImage(imageIndex),
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(15),
+          border: hasImage
+              ? Border.all(color: const Color(0xFFFBB040), width: 2)
+              : null,
+        ),
+        child: hasImage
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(13),
+                child: Image.file(
+                  imageFile,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : const Center(
+                child: Icon(Icons.add, color: Colors.white70, size: 30),
+              ),
       ),
     );
   }

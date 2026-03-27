@@ -24,66 +24,69 @@ class SellerBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
-      ),
-      child: Row(
-        children: List.generate(_navItems.length, (index) {
-          final item = _navItems[index];
-          final isActive = index == currentIndex;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 68,
+        decoration: const BoxDecoration(
+          color: Color(0xFF111111),
+          border: Border(top: BorderSide(color: Color(0xFF2a2a2a))),
+        ),
+        child: Row(
+          children: List.generate(_navItems.length, (index) {
+            final item = _navItems[index];
+            final isActive = index == currentIndex;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onTap(index),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  if (isActive)
-                    Container(
-                      height: 2.5,
-                      width: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFBB040),
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(3),
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onTap(index),
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    if (isActive)
+                      Container(
+                        height: 2.5,
+                        width: 22,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFBB040),
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(3),
+                          ),
                         ),
                       ),
-                    ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        item.icon,
-                        size: 20,
-                        color: isActive
-                            ? const Color(0xFFFBB040)
-                            : const Color(0xFF555555),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.label,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          item.icon,
+                          size: 20,
                           color: isActive
                               ? const Color(0xFFFBB040)
                               : const Color(0xFF555555),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(height: 3),
+                        Text(
+                          item.label,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: isActive
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            color: isActive
+                                ? const Color(0xFFFBB040)
+                                : const Color(0xFF555555),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

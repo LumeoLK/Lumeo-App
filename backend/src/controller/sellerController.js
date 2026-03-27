@@ -385,35 +385,6 @@ export const becomeSeller = async (req, res) => {
 
 };
 //----------------------------------------------
-export const createProduct = async (req, res) => {
-  try {
-    const { title, description, price, category, stock, length, width, height } = req.body;
-
-    const seller = await Seller.findOne({ userId: req.user.id });
-    if (!seller) {
-      return res.status(404).json({ success: false, msg: "Seller profile not found." });
-    }
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, msg: "Please upload at least one image." });
-    }
-
-    const imageUrls = req.files.map((file) => file.path);
-
-    const newProduct = new Product({
-      sellerId: seller._id,
-      title, description, price, category, stock,
-      images: imageUrls,
-      dimensions: { length, width, height },
-    });
-
-    await newProduct.save();
-
-    res.status(201).json({ success: true, msg: "Product created successfully!", product: newProduct });
-  } catch (error) {
-    res.status(500).json({ success: false, msg: error.message });
-  }
-};
 
 
 export const searchProducts = async (req, res) => {

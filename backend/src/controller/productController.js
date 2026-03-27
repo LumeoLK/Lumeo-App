@@ -282,3 +282,25 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
+
+export const getProductsBySeller = async (req, res) => {
+  try {
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller) {
+      return res.status(404).json({ success: false, msg: "Seller profile not found." });
+    }
+
+    const products = await Product.find({ sellerId: seller._id }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (error) {
+    console.error("Get Products By Seller Error:", error);
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};

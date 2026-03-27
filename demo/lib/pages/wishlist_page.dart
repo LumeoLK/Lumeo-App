@@ -11,7 +11,7 @@ import 'package:lumeo_v2/widgets/login_required_dialog.dart';
 import '../widgets/search_bar.dart';
 
 class WishListPage extends ConsumerStatefulWidget {
-  const WishListPage({Key? key}) : super(key: key);
+  const WishListPage({super.key});
 
   @override
   ConsumerState<WishListPage> createState() => _WishListPageState();
