@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/user.dart';
 import '../services/auth_service.dart';
 import '../services/socket_service.dart';
+import "../secrets.dart";
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
@@ -77,6 +78,7 @@ class AuthNotifier extends Notifier<AuthState> {
         user: User.fromJson(body['user'] ?? body),
       );
     } catch (e) {
+      print('GOOGLE SIGN IN ERROR: $e'); // ← add this
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
     }
   }
@@ -131,7 +133,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
 // Providers
 final authServiceProvider = Provider(
-  (ref) => AuthService(googleSignIn: GoogleSignIn()),
+  (ref) => AuthService(
+    googleSignIn: GoogleSignIn(serverClientId: Secrets.googleWebClientId),
+  ),
 );
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(

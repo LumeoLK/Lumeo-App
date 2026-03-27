@@ -140,3 +140,4 @@ $RECYCLE.BIN/
 lib/Constants.dart
 # FVM Version Cache
 .fvm/
+lib/secrets.dart
