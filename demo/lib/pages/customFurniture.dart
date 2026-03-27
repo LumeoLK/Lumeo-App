@@ -24,8 +24,8 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _budgetController = TextEditingController();
-  bool _isSubmitting = false;
-  String _searchQuery = '';
+  final bool _isSubmitting = false;
+  final String _searchQuery = '';
   final ImagePicker _picker = ImagePicker();
   File? _image1;
   File? _image2;
@@ -210,7 +210,7 @@ class _CustomFurniturePageState extends ConsumerState<CustomFurniturePage> {
                     CircleAvatar(
                       radius: 25,
                       backgroundImage:
-                          hasProfileImage ? NetworkImage(user!.profilePicture) : null,
+                          hasProfileImage ? NetworkImage(user.profilePicture) : null,
                       child: !hasProfileImage
                           ? const Icon(Icons.person, color: Colors.white70)
                           : null,

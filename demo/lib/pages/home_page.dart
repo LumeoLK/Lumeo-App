@@ -4,9 +4,7 @@ import '../widgets/bottom_navagiationbar.dart';
 import 'home_content.dart';
 
 import 'wishlist_page.dart';
-import 'ar_screen.dart';
 import 'cart_page.dart';
-import 'customFurniture.dart';
 import 'emptyspace.dart';
 import 'custom_request_review.dart';
 

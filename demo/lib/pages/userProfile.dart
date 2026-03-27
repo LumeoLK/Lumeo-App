@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lumeo_v2/pages/seller-registration_info.dart';
-import 'package:lumeo_v2/pages/seller_dashboard.dart';
 import 'package:lumeo_v2/pages/seller_shell.dart';
 import 'package:lumeo_v2/pages/seller_verification_page.dart';
 import 'package:lumeo_v2/providers/auth_provider.dart';
 import 'package:lumeo_v2/providers/order_provider.dart';
-import 'package:lumeo_v2/widgets/secondary_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lumeo_v2/pages/customFurniture.dart';
 import 'package:lumeo_v2/pages/login.dart';

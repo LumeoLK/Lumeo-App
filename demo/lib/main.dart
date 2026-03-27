@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'pages/home_page.dart';
 import 'pages/onboarding_page1.dart';
+
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

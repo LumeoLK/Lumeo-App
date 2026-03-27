@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/login_required_dialog.dart';
 
 class CartPage extends ConsumerStatefulWidget {
-  const CartPage({Key? key}) : super(key: key);
+  const CartPage({super.key});
 
   @override
   ConsumerState<CartPage> createState() => _CartPageState();

@@ -85,8 +85,9 @@ class _RegisterState extends ConsumerState<Register> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Username cannot be empty";
+                        }
                         return null;
                       },
                     ),
@@ -103,10 +104,12 @@ class _RegisterState extends ConsumerState<Register> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Email cannot be empty";
-                        if (!value.trim().endsWith("@gmail.com"))
+                        }
+                        if (!value.trim().endsWith("@gmail.com")) {
                           return "Please use a Gmail address (you@gmail.com)";
+                        }
                         return null;
                       },
                     ),
@@ -124,8 +127,9 @@ class _RegisterState extends ConsumerState<Register> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Password cannot be empty";
+                        }
                         return null;
                       },
                     ),
@@ -143,10 +147,12 @@ class _RegisterState extends ConsumerState<Register> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Confirm password cannot be empty";
-                        if (value != password.text)
+                        }
+                        if (value != password.text) {
                           return "Passwords do not match";
+                        }
                         return null;
                       },
                     ),

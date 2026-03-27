@@ -56,7 +56,9 @@ class _ARSearchPageState extends ConsumerState<ARSearchPage>
 
   Future<void> _captureAndSearch() async {
     if (_cameraController == null ||
-        !_cameraController!.value.isInitialized) return;
+        !_cameraController!.value.isInitialized) {
+      return;
+    }
     try {
       final XFile photo = await _cameraController!.takePicture();
       final imageFile = File(photo.path);

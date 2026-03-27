@@ -92,10 +92,12 @@ class _LoginState extends ConsumerState<Login> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Email cannot be empty";
-                        if (!value.trim().endsWith("@gmail.com"))
+                        }
+                        if (!value.trim().endsWith("@gmail.com")) {
                           return "Please use a Gmail address (you@gmail.com)";
+                        }
                         return null;
                       },
                     ),
@@ -114,8 +116,9 @@ class _LoginState extends ConsumerState<Login> {
                         filled: true,
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Password cannot be empty";
+                        }
                         return null;
                       },
                     ),

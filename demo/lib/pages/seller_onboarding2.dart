@@ -4,7 +4,7 @@ import 'package:lumeo_v2/pages/seller_onboarding3.dart';
 
 
 class SellerOnboardingPage2 extends StatefulWidget {
-  const SellerOnboardingPage2({Key? key}) : super(key: key);
+  const SellerOnboardingPage2({super.key});
 
   @override
   State<SellerOnboardingPage2> createState() => _SellerOnboardingPageState();

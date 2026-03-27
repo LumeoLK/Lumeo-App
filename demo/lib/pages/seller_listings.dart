@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:flutter/widget_previews.dart';
 import '../services/listing_service.dart';
 import '../services/product_service.dart';
 import '../model/product.dart';
@@ -82,6 +82,7 @@ class _ListingsPageState extends State<ListingsPage> {
     ),
   );
 
+  @Preview()
   Widget _tabBtn(String label, int index) {
     final selected = _tab == index;
     return GestureDetector(
@@ -298,8 +299,9 @@ class _AddProductFormState extends State<AddProductForm> {
               keyboardType: TextInputType.number,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Price is required';
-                if (double.tryParse(v.trim()) == null)
+                if (double.tryParse(v.trim()) == null) {
                   return 'Enter a valid number';
+                }
                 return null;
               },
             ),
@@ -397,10 +399,12 @@ class _AddProductFormState extends State<AddProductForm> {
                     controller: _stockController,
                     keyboardType: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty)
+                      if (v == null || v.trim().isEmpty) {
                         return 'Stock is required';
-                      if (int.tryParse(v.trim()) == null)
+                      }
+                      if (int.tryParse(v.trim()) == null) {
                         return 'Enter a whole number';
+                      }
                       return null;
                     },
                   ),
@@ -587,7 +591,7 @@ class _AddProductFormState extends State<AddProductForm> {
 
   // ── Category dropdown ─────────────────────────────────
   Widget _categoryDropdown() => DropdownButtonFormField<String>(
-    value: _selectedCategory,
+    initialValue: _selectedCategory,
     dropdownColor: cardColor,
     style: const TextStyle(color: textColor, fontSize: 14),
     hint: const Text(

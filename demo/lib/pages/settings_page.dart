@@ -18,8 +18,8 @@ class _SettingsPageState extends State<SettingsPage> {
   late TextEditingController _dobController;
   DateTime? _selectedDob;
   bool _isEditMode = false;
-  bool _notificationsEnabled = true;
-  bool _darkModeEnabled = true;
+  final bool _notificationsEnabled = true;
+  final bool _darkModeEnabled = true;
   bool _isLoading = false;
   String? _userEmail;
   String? _userId;
@@ -184,8 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onPrimary: Colors.black,
               surface: Color(0xFF1A1A22),
               onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: const Color(0xFF1A1A22),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A22)),
           ),
           child: child!,
         );
