@@ -37,6 +37,18 @@ class ProductState {
     return sorted.take(10).toList();
   }
 
+  // similar products by category
+  List<Product> similarProducts(String category, String excludeId) {
+    final filtered = products
+        .where((p) => p.category == category && p.id != excludeId)
+        .toList();
+    // fallback to popular if no similar products found
+    if (filtered.isEmpty) {
+      return forYou;
+    }
+    return filtered.take(10).toList();
+  }
+
   ProductState copyWith({
     List<Product>? products,
     bool? isLoading,
@@ -49,7 +61,6 @@ class ProductState {
     );
   }
 }
-
 
 class ProductNotifier extends Notifier<ProductState> {
   late final ProductService _service;
