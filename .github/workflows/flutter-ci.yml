@@ -30,9 +30,21 @@ jobs:
           channel: "stable"
           cache: true
 
-      # 4. Disable analytics (fix your issue)
+      # 4. Disable analytics
       - name: Disable Flutter Analytics
         run: flutter config --no-analytics
+
+      # 4.5. Create dummy secrets file so analysis and build pass!
+      - name: Create dummy secrets.dart
+        working-directory: ./demo/lib
+        run: |
+          mkdir -p providers  # Just in case the folder structure is expected
+          cat <<EOF > secrets.dart
+          class Secrets {
+            static const String apiBaseUrl = 'dummy_url';
+            // Add any other variables your app expects here
+          }
+          EOF
 
       # 5. Install dependencies
       - name: Install Dependencies
