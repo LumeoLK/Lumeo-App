@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/product_service.dart';
 import '../model/product.dart';
 import '../pages/productpage.dart';
@@ -32,7 +33,10 @@ class _ProductsListTabState extends State<ProductsListTab> {
     });
 
     try {
-      final products = await _productService.getAllProducts();
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('x-auth-token') ?? '';
+      
+      final products = await _productService.getSellerProducts(token);
       if (!mounted) return;
       setState(() {
         _products = products;
