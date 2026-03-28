@@ -30,9 +30,28 @@ jobs:
           channel: "stable"
           cache: true
 
-      # 4. Disable analytics (fix your issue)
+      # 4. Disable analytics
       - name: Disable Flutter Analytics
         run: flutter config --no-analytics
+      - name: Create Dummy Secrets and Google Services
+        working-directory: ./demo
+        run: |
+          # Create a dummy secrets.dart for flutter analyze
+          cat <<EOF > lib/secrets.dart
+          class Secrets {
+            static const String apiBaseUrl = 'dummy_url';
+            // Add any other variable names your app uses here
+          }
+          EOF
+          
+          # Create a dummy google-services.json for the Android build
+          # NOTE: Replace "com.example.lumeo" with your actual Android package name!
+          cat <<EOF > android/app/google-services.json
+          {
+            "project_info": { "project_number": "123456789", "project_id": "dummy-project" },
+            "client": [ { "client_info": { "mobilesdk_app_id": "1:123456789:android:abcdef", "android_client_info": { "package_name": "com.example.lumeo_v2" } } } ]
+          }
+          EOF
 
       # 5. Install dependencies
       - name: Install Dependencies
