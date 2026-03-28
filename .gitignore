@@ -89,4 +89,4 @@ demo/android/unityLibrary/
 *.unity3d
 global-metadata.dat
 boot.config
-
+demo/android/app/google-services.json
