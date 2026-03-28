@@ -64,7 +64,7 @@ class ListingService {
     for (int i = 0; i < request.images.length; i++) {
       multipartRequest.files.add(
         await http.MultipartFile.fromPath(
-          'images', // Key 'images' (common for array uploads)
+          'image', // Key 'images' (common for array uploads)
           request.images[i].path,
         ),
       );
