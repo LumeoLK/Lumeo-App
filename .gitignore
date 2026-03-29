@@ -12,6 +12,21 @@ images/
 furniture_dataset_folder/
 *.csv
 .venv/
+venv/
+venv*/
+env/
+ENV/
+
+# =========================
+# Python cache / tooling
+# =========================
+__pycache__/
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
 
 # =========================
 # Miscellaneous
