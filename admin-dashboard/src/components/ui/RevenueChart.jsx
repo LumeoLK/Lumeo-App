@@ -15,32 +15,56 @@ const RevenueChart = () => {
 
   useEffect(() => {
     fetchChartData();
-  }, []);
+  }, [activeTab]);
 
   const fetchChartData = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/revenue-chart`);
       if (response.ok) {
         const apiData = await response.json();
         
-        // Smart Data Processing: Build the last 7 days perfectly
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const formattedData = [];
+        let formattedData = [];
         
-        // Loop backwards from 6 days ago to today
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const dateString = d.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-          const dayName = days[d.getDay()]; // Gets 'Mon', 'Tue', etc.
-
-          // Check if MongoDB returned revenue for this specific date
-          const foundMatch = apiData.find(item => item._id === dateString);
-          
-          formattedData.push({
-            name: dayName,
-            revenue: foundMatch ? foundMatch.revenue : 0 // If no sales, default to 0
-          });
+        if (activeTab === 'Day') {
+          // Show last 24 hours
+          const hours = [];
+          for (let i = 23; i >= 0; i--) {
+            const d = new Date();
+            d.setHours(d.getHours() - i);
+            const hour = d.getHours().toString().padStart(2, '0');
+            hours.push({ name: `${hour}:00`, revenue: 0 });
+          }
+          formattedData = hours;
+        } else if (activeTab === 'Week') {
+          // Show last 7 days (current logic)
+          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateString = d.toISOString().split('T')[0];
+            const dayName = days[d.getDay()];
+            const foundMatch = apiData.find(item => item._id === dateString);
+            
+            formattedData.push({
+              name: dayName,
+              revenue: foundMatch ? foundMatch.revenue : 0
+            });
+          }
+        } else if (activeTab === 'Month') {
+          // Show last 30 days
+          for (let i = 29; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateString = d.toISOString().split('T')[0];
+            const day = d.getDate();
+            const foundMatch = apiData.find(item => item._id === dateString);
+            
+            formattedData.push({
+              name: `${day}`,
+              revenue: foundMatch ? foundMatch.revenue : 0
+            });
+          }
         }
         
         setChartData(formattedData);
