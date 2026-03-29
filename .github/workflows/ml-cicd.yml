@@ -48,7 +48,7 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
 
-          git clone https://lumeoCS14:${HF_TOKEN}@huggingface.co/spaces/lumeoCS14/lumeo-ml hf-space
+          git clone https://lumeoCS14:${HF_TOKEN}@huggingface.co/spaces/lumeoCS14/lumeo-ml-v2 hf-space
 
           rm -f hf-space/README.md
           rm -f hf-space/app.py
@@ -65,4 +65,4 @@ jobs:
           cat README.md
           git add .
           git commit -m "Deploy ML service from GitHub Actions" || echo "No changes to commit"
-          git push
+          git push origin main --force
