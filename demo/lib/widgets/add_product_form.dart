@@ -36,7 +36,8 @@ class _AddProductFormState extends State<AddProductForm> {
   String? _selectedCategory;
 
   // ── Images ────────────────────────────────────────────
-  final List<File?> _images = [null, null, null];
+  // Backend allows up to 4 images
+  final List<File?> _images = [null, null, null, null];
 
   @override
   void dispose() {
@@ -97,15 +98,17 @@ class _AddProductFormState extends State<AddProductForm> {
             const SizedBox(height: 28),
 
             // ── Image upload boxes ──────────────────────
-            Row(
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
               children: List.generate(
-                3,
-                (i) => Expanded(
+                4,
+                (i) => SizedBox(
+                  width: (MediaQuery.of(context).size.width - 42) / 2, // 2 items per row
+                  height: 120,
                   child: GestureDetector(
                     onTap: () => _pickImage(i),
                     child: Container(
-                      margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
-                      height: 120,
                       decoration: BoxDecoration(
                         color: Constants.cardColor,
                         borderRadius: BorderRadius.circular(10),
@@ -124,12 +127,12 @@ class _AddProductFormState extends State<AddProductForm> {
                                   color: Constants.hintText,
                                   size: 32,
                                 ),
-                                SizedBox(height: 6),
+                                SizedBox(height: 4),
                                 Text(
-                                  'Images',
+                                  'Add Image',
                                   style: TextStyle(
                                     color: Constants.hintText,
-                                    fontSize: 13,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
@@ -257,8 +260,11 @@ class _AddProductFormState extends State<AddProductForm> {
                     'Length (cm)',
                     controller: _lengthController,
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (double.tryParse(v.trim()) == null) return 'Invalid';
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -267,8 +273,11 @@ class _AddProductFormState extends State<AddProductForm> {
                     'Width (cm)',
                     controller: _widthController,
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (double.tryParse(v.trim()) == null) return 'Invalid';
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -277,8 +286,11 @@ class _AddProductFormState extends State<AddProductForm> {
                     'Height (cm)',
                     controller: _heightController,
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (double.tryParse(v.trim()) == null) return 'Invalid';
+                      return null;
+                    },
                   ),
                 ),
               ],

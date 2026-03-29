@@ -27,16 +27,10 @@ class Constants {
 
   // Categories
   static const List<String> kCategories = [
-    'Sofa',
-    'Chair',
-    'Table',
-    'Bed',
-    'Wardrobe',
-    'Shelf',
-    'Desk',
-    'Cabinet',
-    'Lighting',
+    'Living Room',
+    'Bedroom',
+    'Office',
+    'Kitchen',
     'Decor',
-    'Other',
   ];
 }

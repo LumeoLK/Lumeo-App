@@ -69,7 +69,10 @@ export const createProduct = async (req, res) => {
     ]);
 
     // 4. Extract Data from both successful tasks
-    const { rgb, vector } = mlResponse.data;
+    // ML might fail (returned null), so we use a fallback
+    const mlData = mlResponse?.data || { rgb: [0, 0, 0], vector: [] };
+    const { rgb, vector } = mlData;
+
     const imageUrls = cloudinaryResults.map((result) => result.secure_url);
 
     // 5. Create Product
@@ -82,20 +85,27 @@ export const createProduct = async (req, res) => {
       stock,
       images: imageUrls,
       dimensions: { length, width, height },
-      dominantColor: rgb,
-      imageEmbedding: vector,
+      dominantColor: rgb || [0, 0, 0],
+      imageEmbedding: vector || [],
       model3D: { status: "pending" },
     });
 
     await newProduct.save();
-    console.log("data saved");
-    const result = await generate3DModel(newProduct._id, imageUrls);
+    console.log("Product saved successfully");
+
+    // 6. Generate 3D Model (Asynchronous)
+    let result = { jobId: "" };
+    try {
+      result = await generate3DModel(newProduct._id, imageUrls);
+    } catch (err) {
+      console.error("3D Generation Error:", err.message);
+    }
 
     res.status(201).json({
       success: true,
       msg: "Product created successfully!",
       product: newProduct,
-      jobid: result.jobId,
+      jobid: result?.jobId || "",
     });
   } catch (error) {
     console.error("Product Creation Error:", error);

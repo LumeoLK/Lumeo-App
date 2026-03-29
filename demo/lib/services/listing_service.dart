@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Constants.dart';
 import '../model/create_product_request.dart';
+import 'package:http_parser/http_parser.dart';
 
 // ── Typed exception ───────────────────────────────────────
 class ListingException implements Exception {
@@ -41,20 +42,18 @@ class ListingService {
     final multipartRequest = http.MultipartRequest('POST', uri);
 
     // 3. Attach auth headers
-    // The app mostly uses 'Authorization: Bearer $token'
     multipartRequest.headers.addAll({
       'Authorization': 'Bearer $token',
-      'x-auth-token': token, // keeping this for fallback
     });
 
     // 4. Attach text fields
+    // Ensure all numeric fields are sent as strings - the backend Mongoose schema will cast them
     multipartRequest.fields.addAll({
       'title': request.title,
       'description': request.description,
       'price': request.price.toString(),
       'category': request.category,
       'stock': request.stock.toString(),
-      // Send dimensions as separate fields as the backend might expect them flat
       'length': request.length.toString(),
       'width': request.width.toString(),
       'height': request.height.toString(),
@@ -62,10 +61,26 @@ class ListingService {
 
     // 5. Attach image files
     for (int i = 0; i < request.images.length; i++) {
+      final filePath = request.images[i].path;
+
+      // Extract the file extension to set the correct subtype
+      final extension = filePath.split('.').last.toLowerCase();
+      String subType = 'jpeg'; // Default fallback
+
+      if (extension == 'png') {
+        subType = 'png';
+      } else if (extension == 'webp') {
+        subType = 'webp';
+      } else if (extension == 'jpg' || extension == 'jpeg') {
+        subType = 'jpeg';
+      }
+
       multipartRequest.files.add(
         await http.MultipartFile.fromPath(
-          'image', // Key 'images' (common for array uploads)
-          request.images[i].path,
+          'images',
+          filePath,
+          // explicitly telling the backend "This is an image!"
+          contentType: MediaType('image', subType),
         ),
       );
     }
