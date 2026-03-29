@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RefreshCw, EyeOff, Trash2, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +46,62 @@ const ProductManagement = () => {
       }
     } catch (error) {
       console.error("Error deleting product:", error);
+    }
+  };
+
+  // 3. Handle AR Status Change
+  const handleArStatusChange = async (productId, newUiStatus) => {
+    try {
+      // Convert UI status back to database status format
+      let dbStatus = newUiStatus.toLowerCase();
+      if (dbStatus === 'processing') dbStatus = 'generating';
+      if (dbStatus === 'live') dbStatus = 'approved';
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/products/${productId}/model-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: dbStatus })
+      });
+
+      if (response.ok) {
+        // Update the product in the local state
+        setProducts(products.map(p => 
+          p._id === productId 
+            ? { ...p, model3D: { ...p.model3D, status: dbStatus } } 
+            : p
+        ));
+      } else {
+        console.error("Failed to update AR status");
+      }
+    } catch (error) {
+      console.error("Error updating AR status:", error);
+    }
+  };
+
+  // 4. Handle 3D Model Generation Retry
+  const handleRetry3D = async (productId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/retry3d`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update product status to 'generating' after retry
+        setProducts(products.map(p => 
+          p._id === productId 
+            ? { ...p, model3D: { ...p.model3D, status: 'generating' } } 
+            : p
+        ));
+        toast.success("3D model generation retry initiated successfully!");
+      } else {
+        toast.error("Failed to retry 3D generation. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error retrying 3D generation:", error);
+      toast.error("Error retrying 3D generation");
     }
   };
 
@@ -209,10 +266,32 @@ const ProductManagement = () => {
                       
                       {/* AR Status Badge */}
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getArStatusBadge(uiStatus)}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${getArStatusDot(uiStatus)}`}></span>
-                          {uiStatus}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="relative inline-block">
+                            <select 
+                              className={`appearance-none outline-none cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 pr-8 rounded-full text-xs font-medium border transition-colors ${getArStatusBadge(uiStatus)}`}
+                              value={uiStatus}
+                              onChange={(e) => handleArStatusChange(product._id, e.target.value)}
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Processing">Processing</option>
+                              <option value="Live">Live</option>
+                              <option value="Failed">Failed</option>
+                            </select>
+                            <div className={`absolute top-1/2 right-2.5 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${getArStatusDot(uiStatus)} pointer-events-none`}></div>
+                          </div>
+                          
+                          {/* Retry Button - Shows only when Failed */}
+                          {uiStatus === 'Failed' && (
+                            <button
+                              onClick={() => handleRetry3D(product._id)}
+                              className="px-2.5 py-1 text-xs font-medium bg-brand text-black rounded-lg hover:bg-brand/90 transition-colors whitespace-nowrap"
+                              title="Retry 3D Generation"
+                            >
+                              Retry
+                            </button>
+                          )}
+                        </div>
                       </td>
                       
                       {/* Actions */}
@@ -246,12 +325,6 @@ const ProductManagement = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <select className="bg-[#09090b] text-zinc-200 border border-zinc-800 rounded-lg px-3 py-1.5 focus:outline-none focus:border-brand text-sm cursor-pointer">
-              <option>10 per page</option>
-              <option>25 per page</option>
-              <option>50 per page</option>
-            </select>
-            
             <div className="flex gap-2">
               <button className="p-1.5 rounded-lg border border-zinc-800 bg-[#09090b] text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors" title="Previous Page">
                 <ChevronLeft className="w-4 h-4" />

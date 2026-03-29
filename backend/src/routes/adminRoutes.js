@@ -12,10 +12,10 @@ import {
   updatePaymentStatus,
   deleteOrder,
   getDashboardStats,
-  getRevenueChartData,
-  getSettings, 
-  updateSettings
+  getRevenueChartData
 } from "../controller/adminController.js";
+
+import { getSettings, updateSettings } from "../controller/settingsController.js";
 
 const router = express.Router();
 

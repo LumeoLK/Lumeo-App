@@ -12,6 +12,7 @@ import {
   UserCog,
   RefreshCw
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Settings = () => {
   // 1. State for platform configurations
@@ -61,13 +62,13 @@ const Settings = () => {
       });
       
       if (response.ok) {
-        alert("Platform settings saved successfully!");
+        toast.success("Platform settings saved successfully!");
       } else {
-        alert("Failed to save settings. Please try again.");
+        toast.error("Failed to save settings. Please try again.");
       }
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("An error occurred while saving.");
+      toast.error("An error occurred while saving.");
     } finally {
       setIsSaving(false);
     }
