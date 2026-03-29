@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/onboarding_page1.dart';
+import 'pages/login.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,13 +40,32 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Transition to Onboarding after 3 seconds
-    Timer(const Duration(seconds: 3), () {
+    _checkOnboardingStatus();
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    // Wait for 3 seconds for the splash screen effect
+    await Future.delayed(const Duration(seconds: 3));
+    
+    // Check SharedPreferences for the seen_onboarding flag
+    final prefs = await SharedPreferences.getInstance();
+    final seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
+
+    if (!mounted) return;
+
+    if (seenOnboarding) {
+      // If the user has already seen onboarding, route straight to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Login()),
+      );
+    } else {
+      // Otherwise, show the onboarding process
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const OnboardingPage1()),
       );
-    });
+    }
   }
 
   @override

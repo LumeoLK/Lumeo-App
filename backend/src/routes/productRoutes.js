@@ -10,6 +10,7 @@ import {
   getProductsForML,
   deleteProduct,
   getProductsBySeller,
+  updateProduct,
 } from "../controller/productController.js";
 
 const router = express.Router();
@@ -29,4 +30,5 @@ router.get("/mlproducts", getProductsForML);
 router.post("/delete", verifyToken, verifySeller, deleteProduct);
 router.get("/seller/me", verifyToken, verifySeller, getProductsBySeller);
 router.get("/:id", getProductById);
+router.put("/:id", verifyToken, verifySeller, updateProduct);
 export default router;

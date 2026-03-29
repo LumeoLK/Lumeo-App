@@ -227,12 +227,8 @@ export const retry3dgeneration = async (req, res) => {
         .status(400)
         .json({ msg: "No images available for 3D generation." });
     }
-    if(product.model3D.status === "success"){
-      return res
-        .status(400)
-        .json({ msg: "3D model already generated successfully." });
-    }
 
+    // Always allow retry, even if previously successful
     const result = await generate3DModel(productId, product.images);
     res
       .status(200)
@@ -311,6 +307,49 @@ export const getProductsBySeller = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Products By Seller Error:", error);
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};
+
+export const updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const {
+      title,
+      description,
+      price,
+      category,
+      stock,
+      length,
+      width,
+      height,
+    } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, msg: "Product not found." });
+    }
+
+    const seller = await Seller.findOne({ userId: req.user.id });
+    // Make sure string conversion is done correctly
+    if (!seller || product.sellerId.toString() !== seller._id.toString()) {
+      return res.status(403).json({ success: false, msg: "Unauthorized to edit this product." });
+    }
+
+    const updatedData = { ...req.body };
+    if (length !== undefined || width !== undefined || height !== undefined) {
+      updatedData.dimensions = {
+        length: length !== undefined ? length : product.dimensions.length,
+        width: width !== undefined ? width : product.dimensions.width,
+        height: height !== undefined ? height : product.dimensions.height,
+        unit: product.dimensions.unit || "cm",
+      };
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(productId, updatedData, { new: true });
+    res.status(200).json({ success: true, msg: "Product updated successfully.", product: updatedProduct });
+  } catch (error) {
+    console.error("Update Product Error:", error);
     res.status(500).json({ success: false, msg: error.message });
   }
 };

@@ -214,19 +214,45 @@ class _LoginState extends ConsumerState<Login> {
                       ],
                     ),
                     const SizedBox(height: 45),
-                    TextButton(
-                      onPressed: () async {
-                        await ref.read(authProvider.notifier).signout();
-                        if (!context.mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomePage()),
-                          (_) => false,
-                        );
-                      },
-                      child: const Text(
-                        "Skip >>",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                    Align(
+                      alignment: Alignment.center,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Directly navigate to HomePage without attempting to signout
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const HomePage()),
+                            (_) => false,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white70, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          elevation: 0,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Skip for now",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                          ],
+                        ),
                       ),
                     ),
                   ],

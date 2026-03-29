@@ -186,6 +186,105 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  void _showEditDialog() {
+    final titleController = TextEditingController(text: _text(_product['title']));
+    final descriptionController = TextEditingController(text: _text(_product['description']));
+    final priceController = TextEditingController(text: _product['price']?.toString());
+    final stockController = TextEditingController(text: _product['stock']?.toString());
+    final categoryController = TextEditingController(text: _text(_product['category']));
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2a2a2a),
+          title: const Text('Edit Product', style: TextStyle(color: Colors.white)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Title', labelStyle: TextStyle(color: Colors.grey)),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Description', labelStyle: TextStyle(color: Colors.grey)),
+                  maxLines: 3,
+                ),
+                TextField(
+                  controller: priceController,
+                  style: const TextStyle(color: Colors.white),
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Price', labelStyle: TextStyle(color: Colors.grey)),
+                ),
+                TextField(
+                  controller: stockController,
+                  style: const TextStyle(color: Colors.white),
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Stock', labelStyle: TextStyle(color: Colors.grey)),
+                ),
+                TextField(
+                  controller: categoryController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Category', labelStyle: TextStyle(color: Colors.grey)),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await _updateProductDetails({
+                  'title': titleController.text,
+                  'description': descriptionController.text,
+                  'price': double.tryParse(priceController.text) ?? 0,
+                  'stock': int.tryParse(stockController.text) ?? 0,
+                  'category': categoryController.text,
+                });
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFBB040)),
+              child: const Text('Save', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updateProductDetails(Map<String, dynamic> data) async {
+    setState(() => _isLoading = true);
+    try {
+      final token = await _getToken() ?? '';
+      await _productService.updateProduct(widget.productId, token, data);
+      
+      if (!mounted) return;
+      Get.snackbar(
+        'Success',
+        'Product updated successfully!',
+        backgroundColor: const Color(0xFF4BC87A),
+        colorText: Colors.white,
+      );
+      await _loadProduct(); // Reload the product details to reflect changes
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Get.snackbar(
+        'Failed to update',
+        e.toString().replaceFirst('Exception: ', ''),
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────
 
   @override
@@ -244,6 +343,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () => Get.back(),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.white),
+              onPressed: _showEditDialog,
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             background: _buildImageSection(images),
           ),
@@ -559,6 +664,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             const SizedBox(width: 8),
             _build3DStatusBadge(),
+            const Spacer(),
+            if (_model3DStatus == 'success')
+              _isRetrying
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFFBB040),
+                      ),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: Colors.grey, size: 20),
+                      onPressed: _retryModel3D,
+                      tooltip: 'Regenerate 3D Model',
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
           ],
         ),
         const SizedBox(height: 14),
