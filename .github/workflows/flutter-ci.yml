@@ -37,15 +37,38 @@ jobs:
         working-directory: ./demo
         run: |
           # Create a dummy secrets.dart for flutter analyze
-          cat <<EOF > lib/secrets.dart
+          cat <<'EOF' > lib/secrets.dart
           class Secrets {
             static const String apiBaseUrl = 'dummy_url';
-            static const String googleWebClientId = 'dummy_client_id'; # Added this line!
+            static const String googleWebClientId = 'dummy_client_id'; // Fixed dart comment
+          }
+          EOF
+
+          # Create a dummy Constants.dart for flutter analyze
+          cat <<'EOF' > lib/Constants.dart
+          import 'package:flutter/material.dart';
+          class Constants {
+            static const String baseUrl = "https://dummy-base-url.com";
+            static String authUri = '$baseUrl/api/auth';
+            static const String mlUri = 'https://dummy-ml-url.com';
+            static String cartUri = '$baseUrl/api/cart';
+            static String productsUri = '$baseUrl/api/products';
+            static String requestsUri = '$baseUrl/api/requests';
+            static String chatUri = '$baseUrl/api/chat';
+            static String wishlistUri = '$baseUrl/api/wishlist';
+            static String ordersUri = '$baseUrl/api/orders';
+            static String sellersUri = '$baseUrl/api/seller';
+            static const Color bgColor = Color(0xFF000000);
+            static const Color cardColor = Color(0xFF1a1a1a);
+            static const Color kOrange = Color(0xFFfbb040);
+            static const Color textColor = Colors.white;
+            static const Color hintText = Color(0xFF888888);
+            static const List<String> kCategories = ['Living Room', 'Bedroom', 'Office', 'Kitchen', 'Decor'];
           }
           EOF
 
           # Create a dummy google-services.json for the Android build
-          cat <<EOF > android/app/google-services.json
+          cat <<'EOF' > android/app/google-services.json
           {
             "project_info": { "project_number": "123456789", "project_id": "dummy-project" },
             "client": [ { "client_info": { "mobilesdk_app_id": "1:123456789:android:abcdef", "android_client_info": { "package_name": "com.example.lumeo" } } } ]
