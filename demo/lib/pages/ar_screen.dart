@@ -15,12 +15,12 @@ class _ARScreenState extends State<ARScreen> {
   bool _isUnityLoaded = _hasUnityEverLoaded;
   bool _isDownloading = false;
   bool _isModelPlaced = false;
-  bool _isScanning = true;
+  bool _isScanning = !_hasUnityEverLoaded;
   double _downloadProgress = 0;
   String? _localModelPath;
   String? _errorMessage;
   double _currentRotation = 0;
-  bool _showStatusMessage = true;
+  bool _showStatusMessage = !_hasUnityEverLoaded;
   bool _hasTappedOnce = false;
   String _displayMessage = "Scanning for surfaces...";
 
@@ -98,6 +98,8 @@ class _ARScreenState extends State<ARScreen> {
   }
 
   void _onTap(TapDownDetails details, BuildContext context) {
+    if (!_isUnityLoaded || _isScanning) return;
+
     if (!_hasTappedOnce) {
       setState(() {
         _hasTappedOnce = true;
@@ -119,10 +121,7 @@ class _ARScreenState extends State<ARScreen> {
     setState(() {
       _currentRotation = 0;
       _isModelPlaced = false;
-      _isScanning = true;
-      _showStatusMessage = true;
       _hasTappedOnce = false;
-      _displayMessage = "Scanning for surfaces...";
     });
     sendToUnity('ModelLoader', 'ResetModel', '');
   }
@@ -208,11 +207,17 @@ class _ARScreenState extends State<ARScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // ✅ Unity AR view — full screen
           GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onTapDown: (details) {
               if (!_isModelPlaced) {
                 _onTap(details, context);
+              }
+            },
+            onPanUpdate: (details) {
+              if (_isModelPlaced) {
+                // Rotate the model based on horizontal swipe distance
+                _rotate(details.delta.dx * 0.5);
               }
             },
             child: EmbedUnity(onMessageFromUnity: _onUnityMessage),
