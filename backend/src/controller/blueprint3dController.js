@@ -50,3 +50,17 @@ export const uploadBlueprint = async (req, res) => {
     });
   }
 };
+
+export const getBlueprintJobStatus = async (req, res) => {
+  try {
+    const job = await Blueprint3DJob.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+    return res.status(200).json({
+      status: job.status,
+      model3DUrl: job.model3DUrl,
+      errorMessage: job.errorMessage,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

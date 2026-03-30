@@ -130,6 +130,7 @@ export const handleBlueprint3DWebhook = async (req, res) => {
   try {
     console.log("hello from the webhook");
     const { jobId, status, glbBase64, glbSize } = req.body;
+    const { errorMessage } = req.body;
 
     const job = await Blueprint3DJob.findById(jobId);
     if (!job) return res.status(404).json({ message: "Job not found" });
@@ -149,10 +150,10 @@ export const handleBlueprint3DWebhook = async (req, res) => {
       job.status = "completed";
       job.model3DUrl = uploadResult.secure_url;
     }
-    //  else if (status === "failed") {
-    //   job.status = "failed";
-    //   job.errorMessage = errorMessage;
-    // }
+    else if (status === "failed") {
+      job.status = "failed";
+      job.errorMessage = errorMessage;
+    }
 
     await job.save();
     res.status(200).json({ success: true });
