@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/custom_request_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'seller_upload_success.dart';
@@ -9,10 +11,9 @@ const kOrange = Color(0xFFfbb040);
 const textColor = Colors.white;
 const hintText = Color(0xFF888888);
 
-void main() => runApp(const MaterialApp(home: SendProposalPage(), debugShowCheckedModeBanner: false));
-
 class SendProposalPage extends StatefulWidget {
-  const SendProposalPage({super.key});
+  final String requestId;
+  const SendProposalPage({super.key, required this.requestId});
   @override
   State<SendProposalPage> createState() => _SendProposalPageState();
 }
@@ -34,7 +35,7 @@ class _SendProposalPageState extends State<SendProposalPage> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: _buildAppBar(),
-      body: const SendProposalBody(),
+      body: SendProposalBody(requestId: widget.requestId),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: cardColor,
         selectedItemColor: kOrange,
@@ -69,13 +70,14 @@ class _SendProposalPageState extends State<SendProposalPage> {
       );
 }
 
-class SendProposalBody extends StatefulWidget {
-  const SendProposalBody({super.key});
+class SendProposalBody extends ConsumerStatefulWidget {
+  final String requestId;
+  const SendProposalBody({super.key, required this.requestId});
   @override
-  State<SendProposalBody> createState() => _SendProposalBodyState();
+  ConsumerState<SendProposalBody> createState() => _SendProposalBodyState();
 }
 
-class _SendProposalBodyState extends State<SendProposalBody> {
+class _SendProposalBodyState extends ConsumerState<SendProposalBody> {
 
   //stores the selected images
   final List<File?> _attachments = [null, null, null];

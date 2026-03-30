@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../Constants.dart';
 import '../model/custom_request.dart';
 import '../model/bid.dart';
+import 'dart:io';
 
 class CustomRequestService {
   final String token;
@@ -93,6 +94,36 @@ class CustomRequestService {
       return bidsJson.map((json) => Bid.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load bids');
+    }
+  }
+
+  // Place a bid on a request
+  Future<void> placeBid({
+    required String requestId,
+    required double price,
+    required String message,
+    required int estimatedDays,
+    required List<File> images,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('${Constants.requestsUri}/bid'),
+    );
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['requestId'] = requestId;
+    request.fields['price'] = price.toString();
+    request.fields['message'] = message;
+    request.fields['estimatedDays'] = estimatedDays.toString();
+
+    for (final image in images) {
+      request.files.add(await http.MultipartFile.fromPath('images', image.path));
+    }
+
+    final response = await request.send();
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to place bid: ${response.statusCode}');
     }
   }
 }

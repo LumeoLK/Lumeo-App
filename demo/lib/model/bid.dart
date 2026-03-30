@@ -10,6 +10,7 @@ class Bid {
   final List<String> images;
   final String status;
   final DateTime createdAt;
+  
 
   Bid({
     required this.id,

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/custom_request.dart';
 import '../model/bid.dart';
 import '../services/custom_request_service.dart';
+import 'dart:io';
 
 class CustomRequestState {
   final List<CustomRequest> myRequests;
@@ -111,6 +112,32 @@ class CustomRequestNotifier extends StateNotifier<CustomRequestState> {
         myRequests: [newRequest, ...state.myRequests],
         isLoading: false,
       );
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      return false;
+    }
+  }
+
+  // Place a bid on a request
+  Future<bool> submitBid({
+    required String requestId,
+    required double price,
+    required String message,
+    required int estimatedDays,
+    required List<File> images,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = await _getService();
+      await service.placeBid(
+        requestId: requestId,
+        price: price,
+        message: message,
+        estimatedDays: estimatedDays,
+        images: images,
+      );
+      state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
