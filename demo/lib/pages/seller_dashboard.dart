@@ -7,7 +7,6 @@ import "productpage.dart";
 
 import '../widgets/seller_bottom_navigation_bar.dart';
 
-
 class SellerDashboardPage extends StatefulWidget {
   const SellerDashboardPage({super.key});
 
@@ -24,7 +23,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   Map<String, dynamic> _dashboard = const {};
   int _activeNav = 0;
 
-  // ── Chart data ────────────────────────────────────────────
+  // Chart data
   final List<double> thisWeek = [15, 19, 14, 22, 18, 26, 20];
   final List<double> lastWeek = [10, 13, 11, 16, 13, 18, 13];
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -67,7 +66,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     }
   }
 
-  // ── Dashboard data getters ────────────────────────────────
+  //  Dashboard data getters
   Map<String, dynamic> get _profile => _asMap(_dashboard['profile']);
   Map<String, dynamic> get _summary => _asMap(_dashboard['summary']);
   Map<String, dynamic> get _performance => _asMap(_dashboard['performance']);
@@ -97,7 +96,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return result.isEmpty ? fallback : result;
   }
 
-  // ── Build ─────────────────────────────────────────────────
+  // Build
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,9 +149,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
   //  COVER + PROFILE
-  // ─────────────────────────────────────────────────────────
+
   Widget _buildCoverAndProfile() {
     final logo = _text(_profile['logo']);
 
@@ -251,9 +249,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
   //  SELLER SUMMARY CARDS
-  // ─────────────────────────────────────────────────────────
+
   Widget _buildSellerSummary() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -338,9 +335,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
   //  PERFORMANCE OVERVIEW
-  // ─────────────────────────────────────────────────────────
+
   Widget _buildPerformanceOverview() {
     final perfDays = _asStringList(_performance['days']);
     final perfThisWeek = _asStringList(_performance['thisWeek']);
@@ -408,9 +404,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
   //  ACTIVE LISTINGS
-  // ─────────────────────────────────────────────────────────
+
   Widget _buildActiveListings() {
     // Use API data if available, otherwise fall back to sample data
     final items = _activeListings;
@@ -635,9 +630,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
   //  NEW ORDERS
-  // ─────────────────────────────────────────────────────────
+
   Widget _buildNewOrders() {
     // Use API data if available, otherwise fall back to sample data
     final items = _newOrders.isNotEmpty
@@ -799,9 +793,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
 //  META VERIFIED BADGE PAINTER
-// ─────────────────────────────────────────────────────────────
+
 class _MetaVerifiedPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -851,9 +844,8 @@ class _MetaVerifiedPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
-// ─────────────────────────────────────────────────────────────
 //  PERFORMANCE CHART PAINTER
-// ─────────────────────────────────────────────────────────────
+
 class _ChartPainter extends CustomPainter {
   final List<double> thisWeek;
   final List<double> lastWeek;
