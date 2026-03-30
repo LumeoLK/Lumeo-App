@@ -3,6 +3,7 @@ dotenv.config();
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import axios from "axios";
+import FormData from "form-data";
 import { createMeshyTask } from "./services/meshyServices.js";
 
 // Redis connection
@@ -13,9 +14,9 @@ const redisConnection = new Redis(process.env.REDIS_URL, {
 
 console.log("Worker is listening for jobs...");
 
-// ────────────────────────────────────────────────────────
-//  WORKER 1 — Meshy AI queue
-// ────────────────────────────────────────────────────────
+// ----------------------------------------------------------------
+//  WORKER 1 - Meshy AI queue
+// ----------------------------------------------------------------
 const meshyWorker = new Worker(
   "meshy-3d-queue",
   async (job) => {
@@ -58,9 +59,9 @@ meshyWorker.on("failed", async (job, err) => {
   }
 });
 
-// ────────────────────────────────────────────────────────
-//  WORKER 2 — Blueprint 3D queue
-// ────────────────────────────────────────────────────────
+// ----------------------------------------------------------------
+//  WORKER 2 - Blueprint 3D queue
+// ----------------------------------------------------------------
 const blueprintWorker = new Worker(
   "blueprint-3d-queue",
   async (job) => {
@@ -68,37 +69,36 @@ const blueprintWorker = new Worker(
     console.log(`Processing blueprint job ${jobId}`);
 
     try {
-      // 1. Call Python ML service — get GLB bytes back
-      // const response = await axios.post(
-      //   `${process.env.ML_SERVICE_URL}/generate-3d`,
-      //   { imageUrl: blueprintUrl },
-      //   { responseType: "arraybuffer", timeout: 120000 }
-      // );
-
-      // const modelBuffer = Buffer.from(response.data);
-      // console.log(`ML done for job ${jobId} — ${modelBuffer.length} bytes`);
-
-      // Replace the ML service URL with your static test model URL
-      const SIMULATED_ML_URL =
-        "https://res.cloudinary.com/drno34my4/raw/upload/v1773127388/lumeo_3d_models/product_69afc5c3027d16efd3341435.glb";
-
-      console.log(`Simulating ML generation for job ${jobId}...`);
-
-      // We perform a GET request to the static link instead of a POST to the ML service
-      const response = await axios.get(SIMULATED_ML_URL, {
+      const blueprintResponse = await axios.get(blueprintUrl, {
         responseType: "arraybuffer",
         timeout: 120000,
       });
 
-      const modelBuffer = Buffer.from(response.data);
-      console.log(
-        `Simulation done for job ${jobId} — ${modelBuffer.length} bytes`,
+      const blueprintBuffer = Buffer.from(blueprintResponse.data);
+      const blueprintMimeType =
+        blueprintResponse.headers["content-type"] || "image/png";
+
+      const formData = new FormData();
+      formData.append("file", blueprintBuffer, {
+        filename: "blueprint.png",
+        contentType: blueprintMimeType,
+      });
+
+      const response = await axios.post(
+        `${process.env.PIPELINE_URL}/generate`,
+        formData,
+        {
+          headers: formData.getHeaders(),
+          responseType: "arraybuffer",
+          timeout: 120000,
+        },
       );
 
-      // The rest of your code remains the same...
-      // Main backend handles Cloudinary upload + DB update
+      const modelBuffer = Buffer.from(response.data);
+      console.log(`ML done for job ${jobId} - ${modelBuffer.length} bytes`);
+
       await axios.post(
-        `http://localhost:3000/api/webhooks/blueprint-3d-update`, // fix the links after tesdting
+        `${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`,
         {
           jobId,
           status: "completed",
@@ -107,13 +107,13 @@ const blueprintWorker = new Worker(
         },
       );
 
-      console.log(`Job ${jobId} complete — webhook sent`);
+      console.log(`Job ${jobId} complete - webhook sent`);
       return { success: true };
     } catch (error) {
       console.error(`Blueprint worker error for job ${jobId}:`, error.message);
 
       await axios
-        .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
+        .post(`${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`, {
           jobId,
           status: "failed",
           errorMessage: error.message,
@@ -131,9 +131,8 @@ blueprintWorker.on("failed", async (job, err) => {
 
   if (job.attemptsMade === job.opts.attempts) {
     await axios
-      .post(`http://localhost:3000/api/webhooks/blueprint-3d-update`, {
+      .post(`${process.env.BACKEND_URL}/api/webhooks/blueprint-3d-update`, {
         jobId: job.data.jobId,
-
         status: "failed",
         errorMessage: err.message,
       })
