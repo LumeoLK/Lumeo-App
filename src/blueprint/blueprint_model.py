@@ -19,9 +19,9 @@ class BlueprintModel:
 
         self.point_cloud = None
 
-    # -------------------------------------------------
+
     # LOAD & PREPROCESS
-    # -------------------------------------------------
+
     def load_image(self):
         self.image = cv2.imread(self.image_path)
         if self.image is None:
@@ -34,18 +34,18 @@ class BlueprintModel:
         self.edges = cv2.Canny(blurred, 50, 150)
         print("Blueprint preprocessing completed")
 
-    # -------------------------------------------------
+
     # VIEW SPLITTING
-    # -------------------------------------------------
+
     def split_views(self):
         h, w = self.edges.shape
         self.views["front"] = self.edges[0:h // 2, 0:w // 2]
         self.views["side"]  = self.edges[0:h // 2, w // 2:w]
         print("Blueprint views separated")
 
-    # -------------------------------------------------
+
     # DIMENSIONS
-    # -------------------------------------------------
+
     def extract_dimensions(self, view_name):
         view = self.views[view_name]
         contours, _ = cv2.findContours(view, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -56,9 +56,9 @@ class BlueprintModel:
         print(f"{view_name.upper()} dimensions (px): {w} x {h}")
         return w, h
 
-    # -------------------------------------------------
+
     # CONTOURS
-    # -------------------------------------------------
+
     def extract_contour(self, view_name):
         view = self.views[view_name]
         contours, _ = cv2.findContours(view, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -67,16 +67,16 @@ class BlueprintModel:
         print(f"{view_name.upper()} contour points: {len(main)}")
         return main
 
-    # -------------------------------------------------
+
     # SCALE
-    # -------------------------------------------------
+
     def compute_scale(self, pixel_height, real_height_cm):
         self.scale_factor = real_height_cm / pixel_height
         print(f"Scale factor: 1 px = {self.scale_factor:.4f} cm")
 
-    # -------------------------------------------------
+
     # REAL DIMENSIONS
-    # -------------------------------------------------
+
     def get_real_dimensions_cm(self):
         return {
             "width":  self.dimensions["front"]["width"] * self.scale_factor,
@@ -84,9 +84,9 @@ class BlueprintModel:
             "depth":  self.dimensions["side"]["width"] * self.scale_factor
         }
 
-    # -------------------------------------------------
+
     # POINT CLOUD
-    # -------------------------------------------------
+
     def generate_2_5d_point_cloud(self):
         self.front_contour = self.extract_contour("front")
         self.side_contour  = self.extract_contour("side")
