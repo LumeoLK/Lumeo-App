@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumeo_v2/providers/custom_request_provider.dart';
+import 'package:lumeo_v2/model/custom_request.dart';
+import 'package:lumeo_v2/model/bid.dart';
+import 'package:intl/intl.dart';
 import 'seller_send_proposal.dart';
 
 const bgColor = Color(0xFF000000);
@@ -7,10 +12,9 @@ const kOrange = Color(0xFFfbb040);
 const textColor = Colors.white;
 const hintText = Color(0xFF888888);
 
-void main() => runApp(const MaterialApp(home: RequestDetailsPage(), debugShowCheckedModeBanner: false));
-
 class RequestDetailsPage extends StatefulWidget {
-  const RequestDetailsPage({super.key});
+  final CustomRequest request;
+  const RequestDetailsPage({super.key, required this.request});
   @override
   State<RequestDetailsPage> createState() => _RequestDetailsPageState();
 }
@@ -32,7 +36,7 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: _buildAppBar(),
-      body: const RequestDetailsBody(),
+      body: RequestDetailsBody(request: widget.request),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: cardColor,
         selectedItemColor: kOrange,
@@ -50,12 +54,12 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
   AppBar _buildAppBar() => AppBar(
         backgroundColor: bgColor,
         leading: const BackButton(color: textColor),
-        title: const Column(
+        title: Column(
           children: [
-            Text('Request Details',
+            const Text('Request Details',
                 style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.bold)),
-            Text('Request ID • #COR-4821 • Posted 2 hrs ago',
-                style: TextStyle(color: hintText, fontSize: 13)),
+            Text('Request ID • #${widget.request.id.substring(0, 8).toUpperCase()} • ${DateFormat('MMM d, y').format(widget.request.createdAt)}',
+                style: const TextStyle(color: hintText, fontSize: 13)),
           ],
         ),
         centerTitle: true,
@@ -65,11 +69,26 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
       );
 }
 
-class RequestDetailsBody extends StatelessWidget {
-  const RequestDetailsBody({super.key});
+class RequestDetailsBody extends ConsumerStatefulWidget {
+  final CustomRequest request;
+  const RequestDetailsBody({super.key, required this.request});
+  @override
+  ConsumerState<RequestDetailsBody> createState() => _RequestDetailsBodyState();
+}
+
+class _RequestDetailsBodyState extends ConsumerState<RequestDetailsBody> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() =>
+      ref.read(customRequestProvider.notifier).fetchBidsForRequest(widget.request.id)
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(customRequestProvider);
+    final bids = state.bidsByRequest[widget.request.id] ?? [];
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -102,25 +121,25 @@ class RequestDetailsBody extends StatelessWidget {
                       child: const Icon(Icons.person, color: kOrange, size: 24),
                     ),
                     const SizedBox(width: 12),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Namal P.',
+                        const Text('Custom Request',
                             style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text('Posted 2 hrs ago',
-                            style: TextStyle(color: hintText, fontSize: 12)),
+                        Text(DateFormat('MMM d, y').format(widget.request.createdAt),
+                            style: const TextStyle(color: hintText, fontSize: 12)),
                       ],
                     ),
                     const Spacer(),
-                    const Text('Deadline: 12 days',
-                        style: TextStyle(color: textColor, fontSize: 13)),
+                    Text('Status: ${widget.request.status}',
+                      style: const TextStyle(color: textColor, fontSize: 13)),
                   ],
                 ),
                 const SizedBox(height: 14),
 
                 // order title
-                const Text('Need Custom Wooden Bed Frame',
-                    style: TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(widget.request.title,
+                  style: const TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 6),
 
                 // location
@@ -131,8 +150,8 @@ class RequestDetailsBody extends StatelessWidget {
                 // budget + chat icon row
                 Row(
                   children: [
-                    const Text('Budget: Rs. 85,000',
-                        style: TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text('Budget: Rs. ${widget.request.budget.toStringAsFixed(0)}',
+                      style: const TextStyle(color: kOrange, fontWeight: FontWeight.bold, fontSize: 18)),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -160,9 +179,9 @@ class RequestDetailsBody extends StatelessWidget {
               color: cardColor,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              'I need a modern wardrobe with 3 sliding doors, internal lighting, mirror panel on one door. Dimensions: 6ft × 8ft. Prefer matte dark finish and soft-close hinges.',
-              style: TextStyle(color: textColor, fontSize: 13, height: 1.6),
+            child: Text(
+              widget.request.description,
+              style: const TextStyle(color: textColor, fontSize: 13, height: 1.6),
             ),
           ),
           const SizedBox(height: 20),
@@ -204,8 +223,19 @@ class RequestDetailsBody extends StatelessWidget {
               color: cardColor,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text('No attachments added.',
-                style: TextStyle(color: hintText, fontSize: 13)),
+            child: widget.request.referenceImages.isEmpty
+                ? const Text('No attachments added.',
+                    style: TextStyle(color: hintText, fontSize: 13))
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.request.referenceImages.map((url) =>
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(url, width: 80, height: 80, fit: BoxFit.cover),
+                      )
+                    ).toList(),
+                  ),
           ),
           const SizedBox(height: 20),
 
@@ -216,9 +246,16 @@ class RequestDetailsBody extends StatelessWidget {
           const Text("For fairness, bids are anonymized — price & message hidden.",
               style: TextStyle(color: hintText, fontSize: 12)),
           const SizedBox(height: 10),
-          _bidRow('1h ago'),
-          const SizedBox(height: 8),
-          _bidRow('3h ago'),
+          if (bids.isEmpty)
+            const Text('No bids yet.', style: TextStyle(color: hintText, fontSize: 13))
+          else
+            ...bids.map((bid) => Column(
+              children: [
+                _bidRow(DateFormat('MMM d, h:mm a').format(bid.createdAt)),
+                const SizedBox(height: 8),
+              ],
+            )).toList(),
+            
           const SizedBox(height: 32),
 
           // send proposal button
@@ -228,7 +265,7 @@ class RequestDetailsBody extends StatelessWidget {
               onPressed: () {  //go to the send proposal page
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const SendProposalPage()),
+                  MaterialPageRoute(builder: (_) => SendProposalPage(requestId: widget.request.id)),
                 );
               },
               style: ElevatedButton.styleFrom(

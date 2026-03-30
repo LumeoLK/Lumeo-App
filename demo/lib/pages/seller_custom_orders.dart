@@ -291,9 +291,10 @@ class _OrdersFeedBodyState extends ConsumerState<OrdersFeedBody> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                    MaterialPageRoute(builder: (_) => RequestDetailsPage(request: order)),
                   );
                 },
+                
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kOrange,
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -458,7 +459,7 @@ class OrderCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const RequestDetailsPage()),
+                  MaterialPageRoute(builder: (_) => RequestDetailsPage(request: order)),
                 );
               },
               style: ElevatedButton.styleFrom(
