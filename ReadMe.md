@@ -1,4 +1,4 @@
-# Lumeo
+# Lumeo Visit us on https://www.lumeo.ltd
 
 Lumeo is a furniture shopping platform built around customization and AR visualization. You can browse and buy furniture, request custom pieces, chat with sellers, and see how things look in your space before buying. Sellers get their own dashboard, and the admin side handles everything from user management to order fulfillment.
 
